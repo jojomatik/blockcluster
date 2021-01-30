@@ -1,4 +1,4 @@
-# node-vue-typescript-template
+# minecraft-server-manager
 
 ## Project setup
 ```

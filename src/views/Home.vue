@@ -31,15 +31,16 @@ export default class Home extends Vue {
   ];
 
   sendMessage(): void {
-    this.$socket.emit("SEND_MESSAGE", JSON.stringify(this.servers));
+    this.$socket.emit("SEND_MESSAGE", JSON.stringify({ servers: [] }));
   }
 
   mounted() {
-    this.sockets.subscribe("MESSAGE", (data: Record<string, unknown>) => {
+    this.sockets.subscribe("MESSAGE", (data: []) => {
+      this.servers = [];
       data.forEach((elem: Record<string, unknown>) => {
-        this.servers.forEach(server => {
-          if (server.name === elem["_name"]) Object.assign(server, elem);
-        });
+        this.servers.push(
+          Object.assign(new Server("", ServerStatus.Unknown), elem)
+        );
       });
     });
   }

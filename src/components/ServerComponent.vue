@@ -1,7 +1,8 @@
 <template>
   <div class="server">
-    <h1>{{ getName() }}</h1>
+    <h1>{{ server.name }}</h1>
     <div>Status: {{ getStatus() }}</div>
+    <div>Port: {{ server.port }}</div>
   </div>
 </template>
 
@@ -16,10 +17,6 @@ export default class ServerComponent extends Vue {
 
   private getStatus(): string {
     return ServerStatus[this.server.status];
-  }
-
-  private getName(): string {
-    return this.server.name;
   }
 }
 </script>

@@ -40,7 +40,13 @@ io.on("connection", (socket: socketio.Socket) => {
         const isDir: boolean = fs.lstatSync(path).isDirectory();
         if (isDir && fs.readdirSync(path).includes(propertiesFile)) {
           const properties = PropertiesReader(path + "/" + propertiesFile);
-          servers.push(new Server(file, ServerStatus.Unknown));
+          servers.push(
+            new Server(
+              file,
+              ServerStatus.Unknown,
+              Number.parseInt(properties.get("server-port") as string)
+            )
+          );
         }
       });
 

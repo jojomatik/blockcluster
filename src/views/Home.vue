@@ -41,7 +41,7 @@ export default class Home extends Vue {
       this.servers = [];
       data.forEach((elem: Record<string, unknown>) => {
         this.servers.push(
-          Object.assign(new Server("", ServerStatus.Unknown), elem)
+          Object.assign(new Server("", ServerStatus.Unknown, 25565), elem)
         );
       });
     });

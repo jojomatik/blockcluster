@@ -5,9 +5,10 @@ export enum ServerStatus {
 }
 
 export default class Server {
-  constructor(name: string, status: ServerStatus) {
+  constructor(name: string, status: ServerStatus, port: number) {
     this._name = name;
     this._status = status;
+    this._port = port;
   }
 
   private _name: string;
@@ -28,5 +29,15 @@ export default class Server {
 
   set status(value: ServerStatus) {
     this._status = value;
+  }
+
+  private _port: number;
+
+  get port(): number {
+    return this._port;
+  }
+
+  set port(value: number) {
+    this._port = value;
   }
 }

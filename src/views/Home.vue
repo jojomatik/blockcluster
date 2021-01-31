@@ -7,7 +7,7 @@
       v-bind:key="server.name"
       v-bind:server="server"
     ></Server>
-    <button v-on:click="sendMessage">Send Message</button>
+    <button v-on:click="sendMessage">Update Status</button>
   </div>
 </template>
 
@@ -15,7 +15,7 @@
 import { Component, Vue } from "vue-property-decorator";
 import HelloWorld from "@/components/HelloWorld.vue";
 import ServerComponent from "@/components/ServerComponent.vue"; // @ is an alias to /src
-import Server, { ServerStatus } from "@/ts/components/server";
+import Server, { ServerStatus } from "../../common/components/server";
 
 @Component({
   components: {
@@ -35,8 +35,12 @@ export default class Home extends Vue {
   }
 
   mounted() {
-    this.sockets.subscribe("MESSAGE", (data: string) => {
-      console.log(data);
+    this.sockets.subscribe("MESSAGE", (data: Record<string, unknown>) => {
+      data.forEach((elem: Record<string, unknown>) => {
+        this.servers.forEach(server => {
+          if (server.name === elem["_name"]) Object.assign(server, elem);
+        });
+      });
     });
   }
 }

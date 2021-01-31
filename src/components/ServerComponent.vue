@@ -8,18 +8,18 @@
 <script lang="ts">
 import { Component, Prop, Vue } from "vue-property-decorator";
 
-import Server, { ServerStatus } from "@/ts/components/server";
+import Server, { ServerStatus } from "../../common/components/server";
 
 @Component
 export default class ServerComponent extends Vue {
   @Prop() private server!: Server;
 
   private getStatus(): string {
-    return ServerStatus[this.server.getStatus()];
+    return ServerStatus[this.server.status];
   }
 
   private getName(): string {
-    return this.server.getName();
+    return this.server.name;
   }
 }
 </script>

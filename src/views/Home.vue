@@ -7,6 +7,7 @@
       v-bind:key="server.name"
       v-bind:server="server"
     ></Server>
+    <button v-on:click="sendMessage">Send Message</button>
   </div>
 </template>
 
@@ -28,5 +29,15 @@ export default class Home extends Vue {
     new Server("Crystal", ServerStatus.Online),
     new Server("Not Crystal", ServerStatus.Unknown)
   ];
+
+  sendMessage(): void {
+    this.$socket.emit("SEND_MESSAGE", JSON.stringify(this.servers));
+  }
+
+  mounted() {
+    this.sockets.subscribe("MESSAGE", (data: string) => {
+      console.log(data);
+    });
+  }
 }
 </script>

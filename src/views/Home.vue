@@ -25,10 +25,12 @@ import Server, { ServerStatus } from "../../common/components/server";
 })
 export default class Home extends Vue {
   // noinspection JSMismatchedCollectionQueryUpdate
-  private servers: Server[] = [
-    new Server("Crystal", ServerStatus.Online),
-    new Server("Not Crystal", ServerStatus.Unknown)
-  ];
+  private servers: Server[] = [];
+
+  constructor() {
+    super();
+    this.updateServers();
+  }
 
   sendMessage(): void {
     this.$socket.emit("SEND_MESSAGE", JSON.stringify({ servers: [] }));
@@ -43,6 +45,10 @@ export default class Home extends Vue {
         );
       });
     });
+  }
+
+  updateServers() {
+    this.sendMessage();
   }
 }
 </script>

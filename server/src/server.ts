@@ -3,7 +3,8 @@ import * as socketio from "socket.io";
 import * as fs from "fs";
 import PropertiesReader from "properties-reader";
 
-import Server, { ServerStatus } from "../../common/components/server";
+import { ServerStatus } from "../../common/components/server";
+import Server from "./components/server";
 
 const app = express();
 
@@ -20,7 +21,7 @@ const options = {
 const io = new socketio.Server(server, options);
 io.on("connection", (socket: socketio.Socket) => {
   console.log(socket.id);
-  socket.on("SEND_MESSAGE", (data: string) => {
+  socket.on("SEND_MESSAGE", async (data: string) => {
     const elem = JSON.parse(data);
     if (
       "servers" in elem &&
@@ -35,20 +36,17 @@ io.on("connection", (socket: socketio.Socket) => {
         .toString();
       const propertiesFile = "server.properties";
 
-      fs.readdirSync(basePath).forEach(file => {
+      for (const file of fs.readdirSync(basePath)) {
         const path = basePath + "/" + file;
         const isDir: boolean = fs.lstatSync(path).isDirectory();
         if (isDir && fs.readdirSync(path).includes(propertiesFile)) {
           const properties = PropertiesReader(path + "/" + propertiesFile);
-          servers.push(
-            new Server(
-              file,
-              ServerStatus.Unknown,
-              Number.parseInt(properties.get("server-port") as string)
-            )
-          );
+          const port = Number.parseInt(properties.get("server-port") as string);
+          const server = new Server(file, ServerStatus.Unknown, port);
+          await server.updateStatus();
+          servers.push(server);
         }
-      });
+      }
 
       io.emit("MESSAGE", servers);
     }

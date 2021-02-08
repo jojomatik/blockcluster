@@ -6,6 +6,7 @@
       v-for="server in servers"
       v-bind:key="server.name"
       v-bind:server="server"
+      v-bind:detailed="false"
     ></Server>
     <button v-on:click="sendMessage">Update Status</button>
   </div>
@@ -37,7 +38,7 @@ export default class Home extends Vue {
   }
 
   mounted() {
-    this.sockets.subscribe("MESSAGE", (data: []) => {
+    this.sockets.subscribe("MESSAGE", (data: Record<string, unknown>[]) => {
       this.servers = [];
       data.forEach((elem: Record<string, unknown>) => {
         this.servers.push(

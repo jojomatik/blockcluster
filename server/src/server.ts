@@ -18,37 +18,53 @@ const options = {
   }
 };
 
-const io = new socketio.Server(server, options);
-io.on("connection", (socket: socketio.Socket) => {
-  console.log(socket.id);
-  socket.on("SEND_MESSAGE", async (data: string) => {
-    const elem = JSON.parse(data);
-    if (
-      "servers" in elem &&
-      Array.isArray(elem["servers"]) &&
-      elem["servers"].length === 0
-    ) {
-      const servers: Server[] = [];
-      const basePath: string = PropertiesReader(
-        "__dirname/../settings.properties"
-      )
-        .get("server-path")
-        .toString();
-      const propertiesFile = "server.properties";
+/**
+ * Returns a promise for an array of {@link Server}s based on base directory from `settings.properties`.
+ * @return a promise for an array of {@link Server}s based on base directory from `settings.properties`.
+ */
+async function getServers(): Promise<Server[]> {
+  const servers: Server[] = [];
+  const basePath: string = PropertiesReader("__dirname/../settings.properties")
+    .get("server-path")
+    .toString();
+  const propertiesFile = "server.properties";
 
-      for (const file of fs.readdirSync(basePath)) {
-        const path = basePath + "/" + file;
-        const isDir: boolean = fs.lstatSync(path).isDirectory();
-        if (isDir && fs.readdirSync(path).includes(propertiesFile)) {
-          const properties = PropertiesReader(path + "/" + propertiesFile);
-          const port = Number.parseInt(properties.get("server-port") as string);
-          const server = new Server(file, ServerStatus.Unknown, port);
-          await server.updateStatus();
-          servers.push(server);
-        }
+  for (const file of fs.readdirSync(basePath)) {
+    const path = basePath + "/" + file;
+    const isDir: boolean = fs.lstatSync(path).isDirectory();
+    if (isDir && fs.readdirSync(path).includes(propertiesFile)) {
+      const properties = PropertiesReader(path + "/" + propertiesFile);
+      const port = Number.parseInt(properties.get("server-port") as string);
+      const server = new Server(file, ServerStatus.Unknown, port);
+      await server.updateStatus();
+      servers.push(server);
+    }
+  }
+  return servers;
+}
+
+getServers().then(servers => {
+  const io = new socketio.Server(server, options);
+  io.on("connection", async (socket: socketio.Socket) => {
+    console.log(socket.id);
+    // Listen to general channel
+    await socket.on("SEND_MESSAGE", async (data: string) => {
+      const elem = JSON.parse(data);
+      if (
+        "servers" in elem &&
+        Array.isArray(elem["servers"]) &&
+        elem["servers"].length === 0
+      ) {
+        io.emit("MESSAGE", servers);
       }
+    });
 
-      io.emit("MESSAGE", servers);
+    // Listen to a channel per server
+    for (const server of servers) {
+      await socket.on("server_" + server.name, async (data: string) => {
+        if (data === "update")
+          io.emit("server_" + server.name, JSON.stringify(server));
+      });
     }
   });
 });

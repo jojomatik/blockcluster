@@ -58,8 +58,8 @@ export default class ServerComponent extends Vue {
   }
 
   /**
-   * Returns the enum constant name for the {@link server}s status.
-   * @return the enum constant name for the {@link server}s status.
+   * Returns the enum constant name for the {@link Server}'s status.
+   * @return the enum constant name for the {@link Server}'s status.
    * @private
    */
   private getStatus(): string {

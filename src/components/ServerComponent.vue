@@ -8,7 +8,9 @@
     <button v-on:click="update">Update Status</button>
   </div>
   <div v-else class="server">
-    <h3>{{ server.name }}</h3>
+    <router-link v-bind:to="'/server/' + server.name">
+      <h3>{{ server.name }}</h3>
+    </router-link>
     <div>Status: {{ getStatus() }}</div>
     <div>Port: {{ server.port }}</div>
   </div>
@@ -49,7 +51,7 @@ export default class ServerComponent extends Vue {
       "server_" +
         (this.server.name !== ""
           ? this.server.name
-          : this.$route.query["server"]),
+          : this.$route.params["server"]),
       (data: string) => {
         const server = JSON.parse(data);
         Object.assign(this.server, server);
@@ -75,7 +77,7 @@ export default class ServerComponent extends Vue {
       "server_" +
         (this.server.name !== ""
           ? this.server.name
-          : this.$route.query["server"]),
+          : this.$route.params["server"]),
       "update"
     );
   }

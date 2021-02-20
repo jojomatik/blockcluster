@@ -1,0 +1,2 @@
+FROM openjdk:17-alpine
+CMD ["java", "-version"]

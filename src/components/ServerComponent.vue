@@ -69,17 +69,31 @@ export default class ServerComponent extends Vue {
   }
 
   /**
-   * Sends a message `update` to a channel named according to the {@link Server}'s name.
+   * Sends a message `update` to the corresponding channel.
    * @private
    */
   private update(): void {
-    this.$socket.emit(
-      "server_" +
-        (this.server.name !== ""
-          ? this.server.name
-          : this.$route.params["server"]),
-      "update"
-    );
+    this.sendMessage("update");
+  }
+
+  /**
+   * Sends the message to a channel named according to the {@link Server}'s name.
+   * @param message the message to send.
+   * @private
+   */
+  private sendMessage(message: string): void {
+    this.$socket.emit("server_" + this.getName(), message);
+  }
+
+  /**
+   * Returns the name of the {@link Server}. If no server is loaded yet the server name is taken from the route params.
+   * @return the name of the {@link Server}.
+   * @private
+   */
+  private getName(): string {
+    return this.server.name !== ""
+      ? this.server.name
+      : this.$route.params["server"];
   }
 }
 </script>

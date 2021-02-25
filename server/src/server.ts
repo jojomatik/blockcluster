@@ -24,7 +24,7 @@ const options = {
  */
 async function getServers(): Promise<Server[]> {
   const servers: Server[] = [];
-  const basePath: string = PropertiesReader("__dirname/../settings.properties")
+  const basePath: string = PropertiesReader("./settings.properties")
     .get("server-path")
     .toString();
   const propertiesFile = "server.properties";

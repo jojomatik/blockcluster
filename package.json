@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "serve": "concurrently \"vue-cli-service serve\" \"cd server && npm start\"",
+    "serve": "concurrently \"vue-cli-service serve\" \"cd server && npm start\" \"cd proxy && npm start\"",
     "build": "vue-cli-service build",
     "test:unit": "vue-cli-service test:unit",
     "lint": "vue-cli-service lint"

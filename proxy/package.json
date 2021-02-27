@@ -1,0 +1,14 @@
+{
+  "name": "minecraft-server-manager-proxy",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "start": "nodemon dist/proxy.js"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.7"
+  },
+  "dependencies": {
+    "http-proxy-middleware": "^1.0.6"
+  }
+}

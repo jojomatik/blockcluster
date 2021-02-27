@@ -1,6 +1,7 @@
 {
   "name": "minecraft-server-manager-backend",
   "version": "0.1.0",
+  "private": true,
   "scripts": {
     "start": "nodemon dist/server/src/server.js"
   },

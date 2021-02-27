@@ -16,7 +16,12 @@ RUN cd proxy && npm install
 # Create servers directory to prevent errors.
 RUN mkdir servers
 # Copy app source.
-COPY . .
+COPY common ./common/
+COPY src ./src/
+COPY server ./server/
+COPY proxy ./proxy/
+# Copy compilation config files.
+COPY .eslintrc.js babel.config.js tsconfig.json ./
 # Build frontend.
 RUN npm run build
 # Compile backend and proxy.

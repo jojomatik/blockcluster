@@ -72,14 +72,14 @@ export default class Server {
   private _port: number;
 
   /**
-   * Returns {@link #status}.
+   * Returns {@link #port}.
    */
   get port(): number {
     return this._port;
   }
 
   /**
-   * The port that the {@link Server} listens to.
+   * Sets a new value for {@link #port}.
    * @private
    */
   set port(value: number) {

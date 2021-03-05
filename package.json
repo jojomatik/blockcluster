@@ -5,6 +5,7 @@
   "scripts": {
     "serve": "concurrently \"vue-cli-service serve\" \"cd server && npm start\" \"cd proxy && npm start\"",
     "build": "vue-cli-service build",
+    "start": "concurrently \"http-server dist -p 8080\" \"cd server && node dist/server/src/server.js\" \"cd proxy && node dist/proxy.js\"",
     "test:unit": "vue-cli-service test:unit",
     "lint": "vue-cli-service lint"
   },

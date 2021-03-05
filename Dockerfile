@@ -17,6 +17,7 @@ RUN cd proxy && npm install
 # Create servers directory to prevent errors.
 RUN mkdir servers
 # Copy app source.
+COPY public ./public/
 COPY common ./common/
 COPY src ./src/
 COPY server ./server/

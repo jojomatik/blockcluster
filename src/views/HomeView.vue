@@ -1,26 +1,28 @@
 <template>
-  <div class="home">
-    <img alt="Vue logo" src="../assets/logo.png" />
-    <HelloWorld msg="Welcome to Your Vue.js + TypeScript App" />
-    <Server
-      v-for="server in servers"
-      v-bind:key="server.name"
-      v-bind:server="server"
-      v-bind:detailed="false"
-    ></Server>
-    <button v-on:click="sendMessage">Update Status</button>
-  </div>
+  <v-container class="home" fluid>
+    <v-row v-for="server in servers" v-bind:key="server.name" dense>
+      <v-col cols="12">
+        <Server v-bind:detailed="false" v-bind:server="server"></Server>
+      </v-col>
+    </v-row>
+    <v-row>
+      <v-col cols="12">
+        <v-btn color="primary" v-on:click="sendMessage">
+          <v-icon left light>mdi-reload</v-icon>
+          Update Status
+        </v-btn>
+      </v-col>
+    </v-row>
+  </v-container>
 </template>
 
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
-import HelloWorld from "@/components/HelloWorld.vue";
 import ServerComponent from "@/components/ServerComponent.vue"; // @ is an alias to /src
 import Server, { ServerStatus } from "../../common/components/server";
 
 @Component({
   components: {
-    HelloWorld,
     Server: ServerComponent
   }
 })

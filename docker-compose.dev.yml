@@ -1,0 +1,11 @@
+version: "3.9"
+services:
+  manager:
+    volumes:
+    - ./common:/usr/games/minecraft/common
+    - ./src:/usr/games/minecraft/src
+    - ./server:/usr/games/minecraft/server
+    - ./proxy:/usr/games/minecraft/proxy
+    command: npm run serve
+    environment:
+      - CHOKIDAR_USEPOLLING=true

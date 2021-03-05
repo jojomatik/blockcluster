@@ -4,6 +4,7 @@ RUN apk add --update nodejs npm
 RUN npm install -g http-server
 RUN npm install -g concurrently
 RUN npm install -g typescript
+RUN npm install -g nodemon
 # Set working directory.
 WORKDIR /usr/games/minecraft
 # Copy package.json and package-lock.json for frontend, backend and proxy and install dependencies, before copying the rest. This is more efficient as only changes to these files require a new npm install.
@@ -28,4 +29,4 @@ RUN npm run build
 RUN cd server && tsc
 RUN cd proxy && tsc
 EXPOSE 80
-CMD ["concurrently", "\"http-server dist -p 8080\"", "\"cd server && node dist/server/src/server.js\"", "\"cd proxy && node dist/proxy.js\""]
+CMD ["npm", "run", "start"]

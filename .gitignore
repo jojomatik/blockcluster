@@ -2,6 +2,9 @@
 node_modules
 dist
 
+src/**/*.js*
+tests/**/*.js*
+
 
 # local env files
 .env.local

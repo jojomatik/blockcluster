@@ -1,19 +1,44 @@
 <template>
-  <div v-if="detailed" class="server">
-    <div v-if="server.name !== ''">
-      <h1>{{ server.name }}</h1>
+  <v-container v-if="detailed" class="home" fluid>
+    <v-row>
+      <v-col cols="12">
+        <v-card class="server">
+          <div class="server">
+            <div v-if="server.name !== ''">
+              <v-card-title>
+                {{ server.name }}
+              </v-card-title>
+              <v-card-text>
+                <div>Status: {{ getStatus() }}</div>
+                <div>Port: {{ server.port }}</div>
+              </v-card-text>
+            </div>
+            <v-card-actions>
+              <v-btn
+                class="server-card-button"
+                color="primary"
+                v-on:click="update"
+              >
+                <v-icon left light>mdi-reload</v-icon>
+                Update Status
+              </v-btn>
+            </v-card-actions>
+          </div>
+        </v-card>
+      </v-col>
+    </v-row>
+  </v-container>
+  <v-card v-else class="server">
+    <v-card-title>
+      <router-link v-bind:to="'/server/' + server.name">
+        <h3>{{ server.name }}</h3>
+      </router-link>
+    </v-card-title>
+    <v-card-text>
       <div>Status: {{ getStatus() }}</div>
       <div>Port: {{ server.port }}</div>
-    </div>
-    <button v-on:click="update">Update Status</button>
-  </div>
-  <div v-else class="server">
-    <router-link v-bind:to="'/server/' + server.name">
-      <h3>{{ server.name }}</h3>
-    </router-link>
-    <div>Status: {{ getStatus() }}</div>
-    <div>Port: {{ server.port }}</div>
-  </div>
+    </v-card-text>
+  </v-card>
 </template>
 
 <script lang="ts">

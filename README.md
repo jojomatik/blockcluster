@@ -13,9 +13,7 @@ docker-compose -f docker-compose.yml up
 
 ## Project setup (manual)
 ```
-npm install
-cd server && npm install
-cd proxy && npm install
+npm run install_all
 ```
 
 ### Compiles and hot-reloads for development
@@ -25,9 +23,7 @@ npm run serve
 
 ### Compiles and minifies for production
 ```
-npm run build
-cd server && tsc
-cd proxy && tsc
+npm run build_all
 ```
 
 ### Start production

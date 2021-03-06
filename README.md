@@ -1,4 +1,4 @@
-# minecraft-server-manager
+# Minecraft Server Manager
 
 ## Project setup with Docker (recommended)
 ### Compiles and hot-reloads for development

@@ -3,14 +3,14 @@ updates:
   - package-ecosystem: "npm"
     directory: "/"
     schedule:
-      interval: "daily"
+      interval: "monthly"
       
   - package-ecosystem: "npm"
     directory: "/server"
     schedule:
-      interval: "daily"
+      interval: "monthly"
       
   - package-ecosystem: "npm"
     directory: "/proxy"
     schedule:
-      interval: "daily"
+      interval: "monthly"

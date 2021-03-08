@@ -4,13 +4,16 @@ updates:
     directory: "/"
     schedule:
       interval: "monthly"
+    target-branch: "updates"
       
   - package-ecosystem: "npm"
     directory: "/server"
     schedule:
       interval: "monthly"
+    target-branch: "updates"
       
   - package-ecosystem: "npm"
     directory: "/proxy"
     schedule:
       interval: "monthly"
+    target-branch: "updates"

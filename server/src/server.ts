@@ -14,8 +14,8 @@ const server = app.listen(3001, () =>
 
 const options = {
   cors: {
-    origin: ["http://localhost:8080"]
-  }
+    origin: ["http://localhost:8080"],
+  },
 };
 
 /**
@@ -43,7 +43,7 @@ async function getServers(): Promise<Server[]> {
   return servers;
 }
 
-getServers().then(servers => {
+getServers().then((servers) => {
   const io = new socketio.Server(server, options);
   io.on("connection", async (socket: socketio.Socket) => {
     console.log(socket.id);

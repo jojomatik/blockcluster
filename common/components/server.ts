@@ -4,7 +4,7 @@
 export enum ServerStatus {
   Offline,
   Online,
-  Unknown
+  Unknown,
 }
 
 /**

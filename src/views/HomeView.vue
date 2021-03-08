@@ -23,8 +23,8 @@ import Server, { ServerStatus } from "../../common/components/server";
 
 @Component({
   components: {
-    Server: ServerComponent
-  }
+    Server: ServerComponent,
+  },
 })
 export default class Home extends Vue {
   // noinspection JSMismatchedCollectionQueryUpdate

@@ -37,9 +37,7 @@
       <div>Port: {{ server.port }}</div>
     </v-card-text>
     <v-card-actions>
-      <v-btn :to="'/server/' + server.name">
-        Details
-      </v-btn>
+      <v-btn :to="'/server/' + server.name"> Details </v-btn>
     </v-card-actions>
   </v-card>
 </template>

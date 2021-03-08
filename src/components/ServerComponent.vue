@@ -28,16 +28,19 @@
       </v-col>
     </v-row>
   </v-container>
-  <v-card v-else class="server">
+  <v-card v-else :to="'/server/' + server.name" class="server">
     <v-card-title>
-      <router-link v-bind:to="'/server/' + server.name">
-        <h3>{{ server.name }}</h3>
-      </router-link>
+      {{ server.name }}
     </v-card-title>
     <v-card-text>
       <div>Status: {{ getStatus() }}</div>
       <div>Port: {{ server.port }}</div>
     </v-card-text>
+    <v-card-actions>
+      <v-btn :to="'/server/' + server.name">
+        Details
+      </v-btn>
+    </v-card-actions>
   </v-card>
 </template>
 

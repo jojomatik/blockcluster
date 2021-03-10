@@ -61,10 +61,16 @@ getServers().then((servers) => {
 
     // Listen to a channel per server
     for (const server of servers) {
-      await socket.on("server_" + server.name, async (data: string) => {
-        if (data === "update")
-          io.emit("server_" + server.name, JSON.stringify(server));
-      });
+      await socket.on(
+        "server_" + encodeURIComponent(server.name),
+        async (data: string) => {
+          if (data === "update")
+            io.emit(
+              "server_" + encodeURIComponent(server.name),
+              JSON.stringify(server)
+            );
+        }
+      );
     }
   });
 });

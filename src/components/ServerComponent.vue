@@ -28,7 +28,11 @@
       </v-col>
     </v-row>
   </v-container>
-  <v-card v-else :to="'/server/' + server.name" class="server">
+  <v-card
+    v-else
+    :to="'/server/' + encodeURIComponent(server.name)"
+    class="server"
+  >
     <v-card-title>
       {{ server.name }}
     </v-card-title>
@@ -37,7 +41,9 @@
       <div>Port: {{ server.port }}</div>
     </v-card-text>
     <v-card-actions>
-      <v-btn :to="'/server/' + server.name"> Details </v-btn>
+      <v-btn :to="'/server/' + encodeURIComponent(server.name)">
+        Details
+      </v-btn>
     </v-card-actions>
   </v-card>
 </template>
@@ -74,10 +80,7 @@ export default class ServerComponent extends Vue {
    */
   mounted() {
     this.sockets.subscribe(
-      "server_" +
-        (this.server.name !== ""
-          ? this.server.name
-          : this.$route.params["server"]),
+      "server_" + encodeURIComponent(this.getName()),
       (data: string) => {
         const server = JSON.parse(data);
         Object.assign(this.server, server);
@@ -108,7 +111,7 @@ export default class ServerComponent extends Vue {
    * @private
    */
   private sendMessage(message: string): void {
-    this.$socket.emit("server_" + this.getName(), message);
+    this.$socket.emit("server_" + encodeURIComponent(this.getName()), message);
   }
 
   /**

@@ -33,6 +33,20 @@
   </v-app>
 </template>
 
+<script lang="ts">
+import { Component, Vue } from "vue-property-decorator";
+
+/**
+ * The main {@link Vue}-View that contains the App.
+ */
+@Component({
+  metaInfo: {
+    titleTemplate: "%s - Minecraft Server Manager",
+  },
+})
+export default class App extends Vue {}
+</script>
+
 <style lang="scss" scoped>
 .v-application a {
   margin: 10px;

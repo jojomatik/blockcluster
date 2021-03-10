@@ -5,6 +5,7 @@ import store from "./store";
 import * as socketio from "socket.io-client";
 import VueSocketIO from "vue-socket.io";
 import vuetify from "./plugins/vuetify";
+import VueMeta from "vue-meta";
 
 Vue.config.productionTip = false;
 
@@ -19,6 +20,8 @@ Vue.use(
     },
   })
 );
+
+Vue.use(VueMeta);
 
 new Vue({
   router,

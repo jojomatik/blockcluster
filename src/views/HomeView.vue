@@ -25,6 +25,9 @@ import Server, { ServerStatus } from "../../common/components/server";
   components: {
     Server: ServerComponent,
   },
+  metaInfo: {
+    title: "Home",
+  },
 })
 export default class Home extends Vue {
   // noinspection JSMismatchedCollectionQueryUpdate

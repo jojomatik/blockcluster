@@ -12,9 +12,12 @@ import Server, { ServerStatus } from "../../common/components/server";
 /**
  * A {@link Vue}-View that shows one server.
  */
-@Component({
+@Component<ServerView>({
   components: {
     Server: ServerComponent,
+  },
+  metaInfo() {
+    return { title: this.server.name };
   },
 })
 export default class ServerView extends Vue {

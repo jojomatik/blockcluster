@@ -1,4 +1,4 @@
-FROM openjdk:17-alpine
+FROM openjdk:15-alpine
 RUN apk add --update nodejs npm
 # Install http-server, concurrently and typescript.
 RUN npm install -g http-server

@@ -43,8 +43,9 @@ async function getServers(): Promise<Server[]> {
   return servers;
 }
 
+export const io = new socketio.Server(server, options);
+
 getServers().then((servers) => {
-  const io = new socketio.Server(server, options);
   io.on("connection", async (socket: socketio.Socket) => {
     console.log(socket.id);
     // Listen to general channel
@@ -64,11 +65,7 @@ getServers().then((servers) => {
       await socket.on(
         "server_" + encodeURIComponent(server.name),
         async (data: string) => {
-          if (data === "update")
-            io.emit(
-              "server_" + encodeURIComponent(server.name),
-              JSON.stringify(server)
-            );
+          await server.handleMessage(data);
         }
       );
     }

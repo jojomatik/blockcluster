@@ -1,7 +1,7 @@
 import { StatusResponse } from "minecraft-server-util/dist/model/StatusResponse";
 import * as mc from "minecraft-server-util";
 
-import CommonServer, { ServerStatus } from "../../../common/components/server";
+import CommonServer, { emptyServer, ServerStatus } from "../../../common/components/server";
 
 import { io } from "../server";
 
@@ -45,6 +45,12 @@ export default class Server extends CommonServer {
   }
 
   sendServerData() {
-    io.emit("server_" + encodeURIComponent(this.name), JSON.stringify(this));
+    io.emit(
+      "server_" + encodeURIComponent(this.name),
+      JSON.stringify(this, (key, value) => {
+        if (key === "" || key in emptyServer) return value;
+        return undefined;
+      })
+    );
   }
 }

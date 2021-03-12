@@ -9,7 +9,16 @@
                 {{ server.name }}
               </v-card-title>
               <v-card-text>
-                <div>Status: {{ getStatus() }}</div>
+                <div>
+                  Status:
+                  <v-chip
+                    :color="getColorForStatus(server.status)"
+                    colored
+                    text-color="white"
+                  >
+                    {{ getStatus() }}
+                  </v-chip>
+                </div>
                 <div>Port: {{ server.port }}</div>
               </v-card-text>
             </div>
@@ -79,7 +88,16 @@
       {{ server.name }}
     </v-card-title>
     <v-card-text>
-      <div>Status: {{ getStatus() }}</div>
+      <div>
+        Status:
+        <v-chip
+          :color="getColorForStatus(server.status)"
+          colored
+          text-color="white"
+        >
+          {{ getStatus() }}
+        </v-chip>
+      </div>
       <div>Port: {{ server.port }}</div>
     </v-card-text>
     <v-card-actions>
@@ -93,7 +111,10 @@
 <script lang="ts">
 import { Component, Prop, Vue } from "vue-property-decorator";
 
-import Server, { ServerStatus } from "../../common/components/server";
+import Server, {
+  ServerStatus,
+  getColorForStatus,
+} from "../../common/components/server";
 
 /**
  * The representation of a {@link Server} in Vue.
@@ -106,6 +127,13 @@ export default class ServerComponent extends Vue {
    * @private
    */
   private ServerStatus = ServerStatus;
+
+  /**
+   * A variable that stores the {@link getColorForStatus}-function for use in the vue template.
+   *
+   * @private
+   */
+  private getColorForStatus = getColorForStatus;
 
   /**
    * The linked {@link Server}.

@@ -15,7 +15,7 @@
             </div>
             <v-card-actions>
               <v-btn
-                v-if="server.status === ServerStatus.Offline"
+                v-if="server.status === ServerStatus.Stopped"
                 class="server-card-button"
                 color="green"
                 text
@@ -36,7 +36,7 @@
                 Start
               </v-btn>
               <v-btn
-                v-else-if="server.status === ServerStatus.Online"
+                v-else-if="server.status === ServerStatus.Started"
                 class="server-card-button"
                 color="red"
                 text

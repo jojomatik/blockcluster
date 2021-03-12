@@ -2,9 +2,9 @@
  * An enum that holds different states a {@link Server} can be in.
  */
 export enum ServerStatus {
-  Offline,
+  Stopped,
   Starting,
-  Online,
+  Started,
   Stopping,
   Unknown,
 }

@@ -28,10 +28,10 @@ export default class Server extends CommonServer {
     try {
       await this.getServerInfo();
       if (this.status != ServerStatus.Stopping)
-        this.status = ServerStatus.Online;
+        this.status = ServerStatus.Started;
     } catch (e) {
       if (this.status != ServerStatus.Starting)
-        this.status = ServerStatus.Offline;
+        this.status = ServerStatus.Stopped;
     }
   }
 

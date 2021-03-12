@@ -82,8 +82,9 @@ export default class Server extends CommonServer {
 
   /**
    * Returns the first jar file in the server directory.
+   * @private
    */
-  getJarFile(): string {
+  private getJarFile(): string {
     const files = fs.readdirSync(basePath + "/" + this.name);
     return files.find((file) => file.endsWith(".jar"));
   }
@@ -92,8 +93,9 @@ export default class Server extends CommonServer {
    * Sends this {@link Server} to the client.
    *
    * Only fields in the common superclass are transported.
+   * @private
    */
-  sendServerData() {
+  private sendServerData() {
     io.emit(
       "server_" + encodeURIComponent(this.name),
       JSON.stringify(this, (key, value) => {

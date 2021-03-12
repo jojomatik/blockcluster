@@ -102,8 +102,10 @@ import Server, { ServerStatus } from "../../common/components/server";
 export default class ServerComponent extends Vue {
   /**
    * A variable that stores the {@link ServerStatus}-enum for use in the vue template.
+   *
+   * @private
    */
-  ServerStatus = ServerStatus;
+  private ServerStatus = ServerStatus;
 
   /**
    * The linked {@link Server}.

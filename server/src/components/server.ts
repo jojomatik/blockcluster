@@ -6,21 +6,32 @@ import CommonServer, {
   ServerStatus,
 } from "../../../common/components/server";
 
-import { io } from "../server";
+import { basePath, io } from "../server";
+
+import { exec } from "child_process";
+import fs from "fs";
 
 /**
  * The server side implementation of {@link CommonServer} with additional methods that won't run on the client side.
  */
 export default class Server extends CommonServer {
   /**
+   * The PID the minecraft server runs at.
+   * @private
+   */
+  private pid: number;
+
+  /**
    * Updates {@link #status} with the current status.
    */
   async updateStatus(): Promise<void> {
     try {
       await this.getServerInfo();
-      this.status = ServerStatus.Online;
+      if (this.status != ServerStatus.Stopping)
+        this.status = ServerStatus.Online;
     } catch (e) {
-      this.status = ServerStatus.Offline;
+      if (this.status != ServerStatus.Starting)
+        this.status = ServerStatus.Offline;
     }
   }
 
@@ -46,10 +57,35 @@ export default class Server extends CommonServer {
    * @param command the message from the client.
    */
   async handleMessage(command: string): Promise<void> {
-    if (command === "update") {
-      await this.updateStatus();
-      this.sendServerData();
+    switch (command) {
+      case "start":
+        this.status = ServerStatus.Starting;
+        this.pid = exec(
+          "cd " +
+            basePath +
+            "/" +
+            this.name +
+            " && java -jar " +
+            this.getJarFile()
+        ).pid;
+        break;
+      case "stop":
+        this.status = ServerStatus.Stopping;
+        exec("kill " + this.pid, () => {
+          this.pid = null;
+        });
+        break;
     }
+    await this.updateStatus();
+    this.sendServerData();
+  }
+
+  /**
+   * Returns the first jar file in the server directory.
+   */
+  getJarFile(): string {
+    const files = fs.readdirSync(basePath + "/" + this.name);
+    return files.find((file) => file.endsWith(".jar"));
   }
 
   /**

@@ -19,14 +19,18 @@ const options = {
 };
 
 /**
+ * The base path for the servers.
+ */
+export const basePath: string = PropertiesReader("./settings.properties")
+  .get("server-path")
+  .toString();
+
+/**
  * Returns a promise for an array of {@link Server}s based on base directory from `settings.properties`.
  * @return a promise for an array of {@link Server}s based on base directory from `settings.properties`.
  */
 async function getServers(): Promise<Server[]> {
   const servers: Server[] = [];
-  const basePath: string = PropertiesReader("./settings.properties")
-    .get("server-path")
-    .toString();
   const propertiesFile = "server.properties";
 
   for (const file of fs.readdirSync(basePath)) {

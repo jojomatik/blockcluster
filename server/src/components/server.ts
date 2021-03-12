@@ -40,6 +40,11 @@ export default class Server extends CommonServer {
       });
   }
 
+  /**
+   * Handles an incoming message from the client.
+   *
+   * @param command the message from the client.
+   */
   async handleMessage(command: string): Promise<void> {
     if (command === "update") {
       await this.updateStatus();
@@ -47,6 +52,11 @@ export default class Server extends CommonServer {
     }
   }
 
+  /**
+   * Sends this {@link Server} to the client.
+   *
+   * Only fields in the common superclass are transported.
+   */
   sendServerData() {
     io.emit(
       "server_" + encodeURIComponent(this.name),

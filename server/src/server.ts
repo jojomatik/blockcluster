@@ -43,6 +43,9 @@ async function getServers(): Promise<Server[]> {
   return servers;
 }
 
+/**
+ * The socket io instance.
+ */
 export const io = new socketio.Server(server, options);
 
 getServers().then((servers) => {

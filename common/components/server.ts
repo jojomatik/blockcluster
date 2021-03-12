@@ -91,4 +91,7 @@ export default class Server {
   }
 }
 
+/**
+ * An frozen instance of {@link Server} with default values.
+ */
 export const emptyServer: Readonly<Server> = Object.freeze(new Server());

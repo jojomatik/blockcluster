@@ -1,4 +1,4 @@
-FROM openjdk:17-alpine
+FROM openjdk:15-alpine
 RUN apk add --update nodejs npm
 # Install http-server, concurrently and typescript.
 RUN npm install -g http-server
@@ -16,18 +16,19 @@ COPY proxy/package*.json ./proxy/
 RUN cd proxy && npm install
 # Create servers directory to prevent errors.
 RUN mkdir servers
-# Copy app source.
-COPY public ./public/
-COPY common ./common/
-COPY src ./src/
-COPY server ./server/
+# Copy proxy src and compile.
 COPY proxy ./proxy/
+RUN cd proxy && tsc
+# Copy app source.
+COPY common ./common/
+COPY public ./public/
+COPY src ./src/
 # Copy compilation config files.
 COPY .eslintrc.js babel.config.js tsconfig.json ./
 # Build frontend.
 RUN npm run build
-# Compile backend and proxy.
+# Copy backend src and compile.
+COPY server ./server/
 RUN cd server && tsc
-RUN cd proxy && tsc
 EXPOSE 80
 CMD ["npm", "run", "start"]

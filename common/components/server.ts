@@ -2,8 +2,10 @@
  * An enum that holds different states a {@link Server} can be in.
  */
 export enum ServerStatus {
-  Offline,
-  Online,
+  Stopped,
+  Starting,
+  Started,
+  Stopping,
   Unknown,
 }
 
@@ -17,7 +19,11 @@ export default class Server {
    * @param status the status of the server.
    * @param port the port the server listens on.
    */
-  constructor(name: string, status: ServerStatus, port: number) {
+  constructor(
+    name = "",
+    status: ServerStatus = ServerStatus.Unknown,
+    port = 0
+  ) {
     this._name = name;
     this._status = status;
     this._port = port;
@@ -86,3 +92,8 @@ export default class Server {
     this._port = value;
   }
 }
+
+/**
+ * An frozen instance of {@link Server} with default values.
+ */
+export const emptyServer: Readonly<Server> = Object.freeze(new Server());

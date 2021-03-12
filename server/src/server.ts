@@ -19,14 +19,18 @@ const options = {
 };
 
 /**
+ * The base path for the servers.
+ */
+export const basePath: string = PropertiesReader("./settings.properties")
+  .get("server-path")
+  .toString();
+
+/**
  * Returns a promise for an array of {@link Server}s based on base directory from `settings.properties`.
  * @return a promise for an array of {@link Server}s based on base directory from `settings.properties`.
  */
 async function getServers(): Promise<Server[]> {
   const servers: Server[] = [];
-  const basePath: string = PropertiesReader("./settings.properties")
-    .get("server-path")
-    .toString();
   const propertiesFile = "server.properties";
 
   for (const file of fs.readdirSync(basePath)) {
@@ -43,8 +47,12 @@ async function getServers(): Promise<Server[]> {
   return servers;
 }
 
+/**
+ * The socket io instance.
+ */
+export const io = new socketio.Server(server, options);
+
 getServers().then((servers) => {
-  const io = new socketio.Server(server, options);
   io.on("connection", async (socket: socketio.Socket) => {
     console.log(socket.id);
     // Listen to general channel
@@ -64,11 +72,7 @@ getServers().then((servers) => {
       await socket.on(
         "server_" + encodeURIComponent(server.name),
         async (data: string) => {
-          if (data === "update")
-            io.emit(
-              "server_" + encodeURIComponent(server.name),
-              JSON.stringify(server)
-            );
+          await server.handleMessage(data);
         }
       );
     }

@@ -15,6 +15,48 @@
             </div>
             <v-card-actions>
               <v-btn
+                v-if="server.status === ServerStatus.Stopped"
+                class="server-card-button"
+                color="green"
+                text
+                v-on:click="start"
+              >
+                <v-icon left light>mdi-play</v-icon>
+                Start
+              </v-btn>
+              <v-btn
+                v-else-if="server.status === ServerStatus.Starting"
+                class="server-card-button"
+                color="green"
+                disabled
+                text
+                v-on:click="start"
+              >
+                <v-icon left light>mdi-play</v-icon>
+                Start
+              </v-btn>
+              <v-btn
+                v-else-if="server.status === ServerStatus.Started"
+                class="server-card-button"
+                color="red"
+                text
+                v-on:click="stop"
+              >
+                <v-icon left light>mdi-stop</v-icon>
+                Stop
+              </v-btn>
+              <v-btn
+                v-else
+                class="server-card-button"
+                color="red"
+                disabled
+                text
+                v-on:click="stop"
+              >
+                <v-icon left light>mdi-stop</v-icon>
+                Stop
+              </v-btn>
+              <v-btn
                 class="server-card-button"
                 color="primary"
                 v-on:click="update"
@@ -59,6 +101,13 @@ import Server, { ServerStatus } from "../../common/components/server";
 @Component
 export default class ServerComponent extends Vue {
   /**
+   * A variable that stores the {@link ServerStatus}-enum for use in the vue template.
+   *
+   * @private
+   */
+  private ServerStatus = ServerStatus;
+
+  /**
    * The linked {@link Server}.
    * @private
    */
@@ -98,11 +147,27 @@ export default class ServerComponent extends Vue {
   }
 
   /**
-   * Sends a message `update` to the corresponding channel.
+   * Sends a message `update` to the corresponding channel. The backend is expected to return the current status.
    * @private
    */
   private update(): void {
     this.sendMessage("update");
+  }
+
+  /**
+   * Sends a message `start` to the corresponding channel. The backend is expected to start the server and return the current status.
+   * @private
+   */
+  private start(): void {
+    this.sendMessage("start");
+  }
+
+  /**
+   * Sends a message `stop` to the corresponding channel. The backend is expected to stop the server and return the current status.
+   * @private
+   */
+  private stop(): void {
+    this.sendMessage("stop");
   }
 
   /**

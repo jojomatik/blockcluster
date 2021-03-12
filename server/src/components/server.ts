@@ -1,7 +1,10 @@
 import { StatusResponse } from "minecraft-server-util/dist/model/StatusResponse";
 import * as mc from "minecraft-server-util";
 
-import CommonServer, { emptyServer, ServerStatus } from "../../../common/components/server";
+import CommonServer, {
+  emptyServer,
+  ServerStatus,
+} from "../../../common/components/server";
 
 import { io } from "../server";
 

@@ -113,7 +113,13 @@ export default class Server {
   static stringify(servers: Server[]) {
     let i = 0;
     return JSON.stringify(servers, (key, value) => {
-      if (key === "" || key in Server.emptyServer || Number(key) === i++) {
+      let num: number;
+      if (
+        key === "" ||
+        key in Server.emptyServer ||
+        !isNaN((num = Number(key))) ||
+        num === i++
+      ) {
         return value;
       }
       return undefined;

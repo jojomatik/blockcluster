@@ -40,7 +40,6 @@ async function getServers(): Promise<Server[]> {
       const properties = PropertiesReader(path + "/" + propertiesFile);
       const port = Number.parseInt(properties.get("server-port") as string);
       const server = new Server(file, ServerStatus.Unknown, port);
-      await server.updateStatus();
       servers.push(server);
     }
   }
@@ -63,6 +62,9 @@ getServers().then((servers) => {
         Array.isArray(elem["servers"]) &&
         elem["servers"].length === 0
       ) {
+        await Promise.all(
+          servers.map(async (server) => await server.updateStatus())
+        );
         io.emit("MESSAGE", Server.stringify(servers));
       }
     });

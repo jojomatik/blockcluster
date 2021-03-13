@@ -1,10 +1,5 @@
 <template>
-  <v-chip
-    :color="getColorForStatus(status)"
-    class="mx-2"
-    colored
-    text-color="white"
-  >
+  <v-chip :color="getColor()" class="mx-2" colored text-color="white">
     {{ getStatus() }}
   </v-chip>
 </template>
@@ -15,32 +10,9 @@ import { Component, Prop, Vue } from "vue-property-decorator";
 import { ServerStatus } from "../../common/components/server";
 
 /**
- * A function that returns a color for a {@link ServerStatus}.
- *
- * @param status the {@link ServerStatus} for which the color is needed.
- */
-function getColorForStatus(status: ServerStatus): string {
-  switch (status) {
-    case ServerStatus.Started:
-      return "green";
-    case ServerStatus.Stopped:
-      return "red";
-    case ServerStatus.Unknown:
-      return "gray";
-    case ServerStatus.Starting:
-    case ServerStatus.Stopping:
-      return "yellow darken-2";
-  }
-}
-
-/**
  * The representation of a {@link Server} in Vue.
  */
-@Component({
-  methods: {
-    getColorForStatus,
-  },
-})
+@Component
 export default class ServerStatusComponent extends Vue {
   /**
    * The linked {@link ServerStatus}.
@@ -55,6 +27,24 @@ export default class ServerStatusComponent extends Vue {
    */
   private getStatus(): string {
     return ServerStatus[this.status];
+  }
+  /**
+   * A function that returns a color for a {@link ServerStatus}.
+   *
+   * @private
+   */
+  private getColor(): string {
+    switch (this.status) {
+      case ServerStatus.Started:
+        return "green";
+      case ServerStatus.Stopped:
+        return "red";
+      case ServerStatus.Unknown:
+        return "gray";
+      case ServerStatus.Starting:
+      case ServerStatus.Stopping:
+        return "yellow darken-2";
+    }
   }
 }
 </script>

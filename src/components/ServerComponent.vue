@@ -2,77 +2,73 @@
   <v-container v-if="detailed" class="home" fluid>
     <v-row>
       <v-col cols="12">
-        <v-card class="server">
-          <div class="server">
-            <div v-if="server.name !== ''">
-              <v-card-title>
-                {{ server.name }}
-                <v-chip
-                  :color="getColorForStatus(server.status)"
-                  class="mx-2"
-                  colored
-                  text-color="white"
-                >
-                  {{ getStatus() }}
-                </v-chip>
-              </v-card-title>
-              <v-card-text>
-                <div>Port: {{ server.port }}</div>
-              </v-card-text>
-            </div>
-            <v-card-actions>
-              <v-btn
-                v-if="server.status === getStatusEnum().Stopped"
-                class="server-card-button"
-                color="green"
-                text
-                v-on:click="start"
-              >
-                <v-icon left light>mdi-play</v-icon>
-                Start
-              </v-btn>
-              <v-btn
-                v-else-if="server.status === getStatusEnum().Starting"
-                class="server-card-button"
-                color="green"
-                disabled
-                text
-                v-on:click="start"
-              >
-                <v-icon left light>mdi-play</v-icon>
-                Start
-              </v-btn>
-              <v-btn
-                v-else-if="server.status === getStatusEnum().Started"
-                class="server-card-button"
-                color="red"
-                text
-                v-on:click="stop"
-              >
-                <v-icon left light>mdi-stop</v-icon>
-                Stop
-              </v-btn>
-              <v-btn
-                v-else
-                class="server-card-button"
-                color="red"
-                disabled
-                text
-                v-on:click="stop"
-              >
-                <v-icon left light>mdi-stop</v-icon>
-                Stop
-              </v-btn>
-              <v-btn
-                class="server-card-button"
-                color="primary"
-                v-on:click="update"
-              >
-                <v-icon left light>mdi-reload</v-icon>
-                Update Status
-              </v-btn>
-            </v-card-actions>
-          </div>
+        <v-card v-if="server.name !== ''" class="server">
+          <v-card-title>
+            {{ server.name }}
+            <v-chip
+              :color="getColorForStatus(server.status)"
+              class="mx-2"
+              colored
+              text-color="white"
+            >
+              {{ getStatus() }}
+            </v-chip>
+          </v-card-title>
+          <v-card-text>
+            <div>Port: {{ server.port }}</div>
+          </v-card-text>
+          <v-card-actions>
+            <v-btn
+              v-if="server.status === getStatusEnum().Stopped"
+              class="server-card-button"
+              color="green"
+              text
+              v-on:click="start"
+            >
+              <v-icon left light>mdi-play</v-icon>
+              Start
+            </v-btn>
+            <v-btn
+              v-else-if="server.status === getStatusEnum().Starting"
+              class="server-card-button"
+              color="green"
+              disabled
+              text
+              v-on:click="start"
+            >
+              <v-icon left light>mdi-play</v-icon>
+              Start
+            </v-btn>
+            <v-btn
+              v-else-if="server.status === getStatusEnum().Started"
+              class="server-card-button"
+              color="red"
+              text
+              v-on:click="stop"
+            >
+              <v-icon left light>mdi-stop</v-icon>
+              Stop
+            </v-btn>
+            <v-btn
+              v-else
+              class="server-card-button"
+              color="red"
+              disabled
+              text
+              v-on:click="stop"
+            >
+              <v-icon left light>mdi-stop</v-icon>
+              Stop
+            </v-btn>
+            <v-btn
+              class="server-card-button"
+              color="primary"
+              v-on:click="update"
+            >
+              <v-icon left light>mdi-reload</v-icon>
+              Update Status
+            </v-btn>
+          </v-card-actions>
         </v-card>
       </v-col>
     </v-row>

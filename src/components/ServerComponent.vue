@@ -5,14 +5,7 @@
         <v-card v-if="server.name !== ''" class="server">
           <v-card-title>
             {{ server.name }}
-            <v-chip
-              :color="getColorForStatus(server.status)"
-              class="mx-2"
-              colored
-              text-color="white"
-            >
-              {{ getStatus() }}
-            </v-chip>
+            <ServerStatusComponent :status="server.status" />
           </v-card-title>
           <v-card-text>
             <div>Port: {{ server.port }}</div>
@@ -80,14 +73,7 @@
   >
     <v-card-title>
       {{ server.name }}
-      <v-chip
-        :color="getColorForStatus(server.status)"
-        class="mx-2"
-        colored
-        text-color="white"
-      >
-        {{ getStatus() }}
-      </v-chip>
+      <ServerStatusComponent :status="server.status" />
     </v-card-title>
     <v-card-text>
       <div>Port: {{ server.port }}</div>
@@ -104,35 +90,15 @@
 import { Component, Prop, Vue } from "vue-property-decorator";
 
 import Server, { ServerStatus } from "../../common/components/server";
-
-/**
- * A function that returns a color for a {@link ServerStatus}.
- *
- * @param status the {@link ServerStatus} for which the color is needed.
- */
-function getColorForStatus(status: ServerStatus): string {
-  switch (status) {
-    case ServerStatus.Started:
-      return "green";
-    case ServerStatus.Stopped:
-      return "red";
-    case ServerStatus.Unknown:
-      return "gray";
-    case ServerStatus.Starting:
-    case ServerStatus.Stopping:
-      return "yellow darken-2";
-  }
-}
+import ServerStatusComponent from "@/components/ServerStatusComponent.vue";
 
 /**
  * The representation of a {@link Server} in Vue.
  */
 @Component({
+  components: { ServerStatusComponent },
   data() {
     return { ServerStatus };
-  },
-  methods: {
-    getColorForStatus,
   },
 })
 export default class ServerComponent extends Vue {
@@ -164,15 +130,6 @@ export default class ServerComponent extends Vue {
         Object.assign(this.server, server);
       }
     );
-  }
-
-  /**
-   * Returns the enum constant name for the {@link Server}'s status.
-   * @return the enum constant name for the {@link Server}'s status.
-   * @private
-   */
-  private getStatus(): string {
-    return ServerStatus[this.server.status];
   }
 
   /**

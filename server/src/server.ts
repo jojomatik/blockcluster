@@ -63,7 +63,7 @@ getServers().then((servers) => {
         Array.isArray(elem["servers"]) &&
         elem["servers"].length === 0
       ) {
-        io.emit("MESSAGE", servers);
+        io.emit("MESSAGE", Server.stringify(servers));
       }
     });
 

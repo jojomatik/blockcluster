@@ -106,4 +106,17 @@ export default class Server {
       return undefined;
     });
   }
+
+  /**
+   * Stringifies an array of servers to send it over the network.
+   */
+  static stringify(servers: Server[]) {
+    let i = 0;
+    return JSON.stringify(servers, (key, value) => {
+      if (key === "" || key in Server.emptyServer || Number(key) === i++) {
+        return value;
+      }
+      return undefined;
+    });
+  }
 }

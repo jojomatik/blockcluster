@@ -43,9 +43,9 @@ export default class Home extends Vue {
   }
 
   mounted() {
-    this.sockets.subscribe("MESSAGE", (data: Record<string, unknown>[]) => {
+    this.sockets.subscribe("MESSAGE", (data: string) => {
       this.servers = [];
-      data.forEach((elem: Record<string, unknown>) => {
+      JSON.parse(data).forEach((elem: Record<string, unknown>) => {
         this.servers.push(
           Object.assign(new Server("", ServerStatus.Unknown, 25565), elem)
         );

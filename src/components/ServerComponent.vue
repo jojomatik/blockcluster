@@ -19,7 +19,7 @@
           </v-card-text>
           <v-card-actions>
             <v-btn
-              v-if="server.status === getStatusEnum().Stopped"
+              v-if="server.status === ServerStatus.Stopped"
               class="server-card-button"
               color="green"
               text
@@ -29,7 +29,7 @@
               Start
             </v-btn>
             <v-btn
-              v-else-if="server.status === getStatusEnum().Starting"
+              v-else-if="server.status === ServerStatus.Starting"
               class="server-card-button"
               color="green"
               disabled
@@ -40,7 +40,7 @@
               Start
             </v-btn>
             <v-btn
-              v-else-if="server.status === getStatusEnum().Started"
+              v-else-if="server.status === ServerStatus.Started"
               class="server-card-button"
               color="red"
               text
@@ -128,8 +128,10 @@ function getColorForStatus(status: ServerStatus): string {
  * The representation of a {@link Server} in Vue.
  */
 @Component({
+  data() {
+    return { ServerStatus };
+  },
   methods: {
-    getStatusEnum: () => ServerStatus,
     getColorForStatus,
   },
 })

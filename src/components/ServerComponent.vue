@@ -111,15 +111,35 @@
 <script lang="ts">
 import { Component, Prop, Vue } from "vue-property-decorator";
 
-import Server, {
-  ServerStatus,
-  getColorForStatus,
-} from "../../common/components/server";
+import Server, { ServerStatus } from "../../common/components/server";
+
+/**
+ * A function that returns a color for a {@link ServerStatus}.
+ *
+ * @param status the {@link ServerStatus} for which the color is needed.
+ */
+function getColorForStatus(status: ServerStatus): string {
+  switch (status) {
+    case ServerStatus.Started:
+      return "green";
+    case ServerStatus.Stopped:
+      return "red";
+    case ServerStatus.Unknown:
+      return "gray";
+    case ServerStatus.Starting:
+    case ServerStatus.Stopping:
+      return "yellow darken-2";
+  }
+}
 
 /**
  * The representation of a {@link Server} in Vue.
  */
-@Component
+@Component({
+  methods: {
+    getColorForStatus,
+  },
+})
 export default class ServerComponent extends Vue {
   /**
    * A variable that stores the {@link ServerStatus}-enum for use in the vue template.
@@ -127,13 +147,6 @@ export default class ServerComponent extends Vue {
    * @private
    */
   private ServerStatus = ServerStatus;
-
-  /**
-   * A variable that stores the {@link getColorForStatus}-function for use in the vue template.
-   *
-   * @private
-   */
-  private getColorForStatus = getColorForStatus;
 
   /**
    * The linked {@link Server}.

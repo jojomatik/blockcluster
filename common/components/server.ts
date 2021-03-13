@@ -10,25 +10,6 @@ export enum ServerStatus {
 }
 
 /**
- * A function that returns a color for a {@link ServerStatus}.
- *
- * @param status the {@link ServerStatus} for which the color is needed.
- */
-export function getColorForStatus(status: ServerStatus): string {
-  switch (status) {
-    case ServerStatus.Started:
-      return "green";
-    case ServerStatus.Stopped:
-      return "red";
-    case ServerStatus.Unknown:
-      return "gray";
-    case ServerStatus.Starting:
-    case ServerStatus.Stopping:
-      return "yellow darken-2";
-  }
-}
-
-/**
  * A minecraft server.
  */
 export default class Server {

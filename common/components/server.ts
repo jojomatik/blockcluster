@@ -14,6 +14,11 @@ export enum ServerStatus {
  */
 export default class Server {
   /**
+   * An frozen instance of {@link Server} with default values.
+   */
+  static emptyServer: Readonly<Server> = Object.freeze(new Server());
+
+  /**
    * Creates an instance of {@link Server} based on its name, its current state and its port.
    * @param name the name of the server.
    * @param status the status of the server.
@@ -91,9 +96,14 @@ export default class Server {
   set port(value: number) {
     this._port = value;
   }
-}
 
-/**
- * An frozen instance of {@link Server} with default values.
- */
-export const emptyServer: Readonly<Server> = Object.freeze(new Server());
+  /**
+   * Stringifies the server to send it over the network.
+   */
+  stringify() {
+    return JSON.stringify(this, (key, value) => {
+      if (key === "" || key in Server.emptyServer) return value;
+      return undefined;
+    });
+  }
+}

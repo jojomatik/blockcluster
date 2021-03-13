@@ -7,18 +7,16 @@
             <div v-if="server.name !== ''">
               <v-card-title>
                 {{ server.name }}
+                <v-chip
+                  :color="getColorForStatus(server.status)"
+                  class="mx-2"
+                  colored
+                  text-color="white"
+                >
+                  {{ getStatus() }}
+                </v-chip>
               </v-card-title>
               <v-card-text>
-                <div>
-                  Status:
-                  <v-chip
-                    :color="getColorForStatus(server.status)"
-                    colored
-                    text-color="white"
-                  >
-                    {{ getStatus() }}
-                  </v-chip>
-                </div>
                 <div>Port: {{ server.port }}</div>
               </v-card-text>
             </div>
@@ -86,18 +84,16 @@
   >
     <v-card-title>
       {{ server.name }}
+      <v-chip
+        :color="getColorForStatus(server.status)"
+        class="mx-2"
+        colored
+        text-color="white"
+      >
+        {{ getStatus() }}
+      </v-chip>
     </v-card-title>
     <v-card-text>
-      <div>
-        Status:
-        <v-chip
-          :color="getColorForStatus(server.status)"
-          colored
-          text-color="white"
-        >
-          {{ getStatus() }}
-        </v-chip>
-      </div>
       <div>Port: {{ server.port }}</div>
     </v-card-text>
     <v-card-actions>

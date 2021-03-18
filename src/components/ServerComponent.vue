@@ -94,7 +94,21 @@
       <ServerStatusComponent :status="server.status" />
     </v-card-title>
     <v-card-text>
-      <div>Port: {{ server.port }}</div>
+      <v-row>
+        <v-col cols="6">
+          <v-simple-table>
+            <colgroup>
+              <col style="width: calc(100% / 4)" />
+            </colgroup>
+            <tbody>
+              <tr>
+                <td>Port</td>
+                <td>{{ server.port }}</td>
+              </tr>
+            </tbody>
+          </v-simple-table>
+        </v-col>
+      </v-row>
     </v-card-text>
     <v-card-actions>
       <v-btn :to="'/server/' + encodeURIComponent(server.name)">

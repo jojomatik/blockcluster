@@ -19,6 +19,14 @@ export default class Server extends CommonServer {
   private pid: number;
 
   /**
+   * Updates {@link #status} as well as the selected jar file.
+   */
+  async update(): Promise<void> {
+    await this.updateStatus();
+    this.jar = this.getJarFile();
+  }
+
+  /**
    * Updates {@link #status} with the current status.
    */
   async updateStatus(): Promise<void> {
@@ -73,7 +81,7 @@ export default class Server extends CommonServer {
         });
         break;
     }
-    await this.updateStatus();
+    await this.update();
     this.sendServerData();
   }
 

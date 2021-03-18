@@ -23,15 +23,18 @@ export default class Server {
    * @param name the name of the server.
    * @param status the status of the server.
    * @param port the port the server listens on.
+   * @param jar the jar file of the server.
    */
   constructor(
     name = "",
     status: ServerStatus = ServerStatus.Unknown,
-    port = 0
+    port = 0,
+    jar: string | null = null
   ) {
     this._name = name;
     this._status = status;
     this._port = port;
+    this._jar = jar;
   }
 
   /**
@@ -95,6 +98,27 @@ export default class Server {
    */
   set port(value: number) {
     this._port = value;
+  }
+
+  /**
+   * The jar file of the {@link Server}.
+   * @private
+   */
+  private _jar: string | null;
+
+  /**
+   * Returns {@link #jar}.
+   */
+  get jar(): string | null {
+    return this._jar;
+  }
+
+  /**
+   * Sets a new value for {@link #jar}.
+   * @param value the new value.
+   */
+  set jar(value: string | null) {
+    this._jar = value;
   }
 
   /**

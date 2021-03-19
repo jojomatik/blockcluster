@@ -5,7 +5,7 @@ import CommonServer, { ServerStatus } from "../../../common/components/server";
 
 import { basePath, io } from "../server";
 
-import { exec } from "child_process";
+import { ChildProcessWithoutNullStreams, exec, spawn } from "child_process";
 import fs from "fs";
 
 /**
@@ -13,10 +13,10 @@ import fs from "fs";
  */
 export default class Server extends CommonServer {
   /**
-   * The PID the minecraft server runs at.
+   * The process of the minecraft server.
    * @private
    */
-  private pid: number;
+  private proc: ChildProcessWithoutNullStreams;
 
   /**
    * Updates {@link #status} as well as the selected jar file.
@@ -32,7 +32,7 @@ export default class Server extends CommonServer {
   async updateStatus(): Promise<void> {
     try {
       await this.getServerInfo();
-      if (this.status != ServerStatus.Stopping && this.pid != null)
+      if (this.status != ServerStatus.Stopping && this.proc != null)
         this.status = ServerStatus.Started;
     } catch (e) {
       if (this.status != ServerStatus.Starting)
@@ -65,19 +65,14 @@ export default class Server extends CommonServer {
     switch (command) {
       case "start":
         this.status = ServerStatus.Starting;
-        this.pid = exec(
-          "cd " +
-            basePath +
-            "/" +
-            this.name +
-            " && java -jar " +
-            this.getJarFile()
-        ).pid;
+        this.proc = spawn("java", ["-jar", this.getJarFile()], {
+          cwd: basePath + "/" + this.name,
+        });
         break;
       case "stop":
         this.status = ServerStatus.Stopping;
-        exec("kill " + this.pid, () => {
-          this.pid = null;
+        exec("kill " + this.proc.pid, () => {
+          this.proc = null;
         });
         break;
     }

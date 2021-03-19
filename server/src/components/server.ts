@@ -96,6 +96,8 @@ export default class Server extends CommonServer {
    * @private
    */
   private sendServerData() {
-    io.emit("server_" + encodeURIComponent(this.name), this.strip());
+    io.emit("server_" + encodeURIComponent(this.name), {
+      serverInfo: this.strip(),
+    });
   }
 }

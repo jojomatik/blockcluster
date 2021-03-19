@@ -157,8 +157,9 @@ export default class ServerComponent extends Vue {
   mounted() {
     this.sockets.subscribe(
       "server_" + encodeURIComponent(this.getName()),
-      (data: string) => {
-        Object.assign(this.server, data);
+      (data: Record<string, unknown>) => {
+        if (Object.prototype.hasOwnProperty.call(data, "serverInfo"))
+          Object.assign(this.server, data["serverInfo"]);
       }
     );
   }

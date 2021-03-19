@@ -158,8 +158,7 @@ export default class ServerComponent extends Vue {
     this.sockets.subscribe(
       "server_" + encodeURIComponent(this.getName()),
       (data: string) => {
-        const server = JSON.parse(data);
-        Object.assign(this.server, server);
+        Object.assign(this.server, data);
       }
     );
   }

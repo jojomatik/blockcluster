@@ -19,7 +19,7 @@
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
 import ServerComponent from "@/components/ServerComponent.vue"; // @ is an alias to /src
-import Server, { ServerStatus } from "../../common/components/server";
+import Server from "../../common/components/server";
 
 @Component({
   components: {
@@ -43,12 +43,10 @@ export default class Home extends Vue {
   }
 
   mounted() {
-    this.sockets.subscribe("MESSAGE", (data: string) => {
+    this.sockets.subscribe("MESSAGE", (data: Record<string, unknown>[]) => {
       this.servers = [];
-      JSON.parse(data).forEach((elem: Record<string, unknown>) => {
-        this.servers.push(
-          Object.assign(new Server("", ServerStatus.Unknown, 25565), elem)
-        );
+      data.forEach((elem: Record<string, unknown>) => {
+        this.servers.push(Object.assign(new Server(), elem));
       });
     });
   }

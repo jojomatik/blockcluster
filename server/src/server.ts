@@ -63,7 +63,7 @@ getServers().then((servers) => {
         elem["servers"].length === 0
       ) {
         await Promise.all(servers.map(async (server) => await server.update()));
-        io.emit("MESSAGE", Server.stringify(servers));
+        io.emit("MESSAGE", Server.strip(servers));
       }
     });
 

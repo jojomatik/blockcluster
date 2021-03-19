@@ -122,6 +122,21 @@ export default class Server {
   }
 
   /**
+   * Returns a server stripped of all additional properties.
+   */
+  strip(): Server {
+    const stripped: Record<string, unknown> = {};
+    for (const key in this) {
+      if (
+        key in Server.emptyServer &&
+        Object.prototype.hasOwnProperty.call(this, key)
+      )
+        stripped[key] = this[key];
+    }
+    return Object.assign(new Server(), stripped);
+  }
+
+  /**
    * Stringifies the server to send it over the network.
    */
   stringify() {
@@ -129,6 +144,17 @@ export default class Server {
       if (key === "" || key in Server.emptyServer) return value;
       return undefined;
     });
+  }
+
+  /**
+   * Returns an array of servers stripped of all additional properties.
+   */
+  static strip(servers: Server[]): Server[] {
+    const stripped: Server[] = [];
+    servers.forEach((server) => {
+      stripped.push(server.strip());
+    });
+    return stripped;
   }
 
   /**

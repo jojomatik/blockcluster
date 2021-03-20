@@ -62,11 +62,24 @@ export default class Server extends CommonServer {
    * @param command the message from the client.
    */
   async handleMessage(command: string): Promise<void> {
-    switch (command) {
+    // Split command at first space
+    const commandArr = command.split(/^([^ ]+) ?(.*)$/);
+    switch (commandArr[1]) {
       case "start":
         this.status = ServerStatus.Starting;
         this.proc = spawn("java", ["-jar", this.getJarFile()], {
           cwd: basePath + "/" + this.name,
+        });
+        this.proc.stdout.on("data", (data) => {
+          io.emit("server_" + encodeURIComponent(this.name), {
+            serverSTDOUT: data.toString(),
+          });
+        });
+
+        this.proc.stderr.on("data", (data) => {
+          io.emit("server_" + encodeURIComponent(this.name), {
+            serverSTDERR: data.toString(),
+          });
         });
         break;
       case "stop":
@@ -74,6 +87,14 @@ export default class Server extends CommonServer {
         exec("kill " + this.proc.pid, () => {
           this.proc = null;
         });
+        break;
+      case "command":
+        switch (commandArr[2]) {
+          case "stop":
+            this.status = ServerStatus.Stopping;
+            break;
+        }
+        this.proc.stdin.write(commandArr[2] + "\n");
         break;
     }
     await this.update();
@@ -99,5 +120,14 @@ export default class Server extends CommonServer {
     io.emit("server_" + encodeURIComponent(this.name), {
       serverInfo: this.strip(),
     });
+    if (
+      this.status === ServerStatus.Starting ||
+      this.status === ServerStatus.Stopping
+    ) {
+      setTimeout(async () => {
+        await this.updateStatus();
+        this.sendServerData();
+      }, 1000);
+    }
   }
 }

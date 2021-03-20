@@ -27,9 +27,17 @@
                 </v-simple-table>
               </v-col>
             </v-row>
-            <v-card v-if="messages.length !== 0" dark>
+            <v-card
+              v-if="messages.length !== 0"
+              dark
+              height="500"
+              style="display: flex; flex-direction: column"
+            >
               <v-card-title>Console</v-card-title>
-              <v-card-text class="pb-8">
+              <v-card-text
+                class="pt-2 pb-8"
+                style="display: block; flex-grow: 1; overflow: auto"
+              >
                 <v-row
                   v-bind:key="message.uuid"
                   v-for="message in this.messages"

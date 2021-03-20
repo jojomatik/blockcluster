@@ -27,6 +27,25 @@
                 </v-simple-table>
               </v-col>
             </v-row>
+            <v-card v-if="messages.length !== 0" dark>
+              <v-card-title>Console</v-card-title>
+              <v-card-text class="pb-8">
+                <v-row
+                  v-bind:key="message.uuid"
+                  v-for="message in this.messages"
+                >
+                  <v-col class="py-0">
+                    <span
+                      v-if="message.type === MessageType.Error"
+                      class="red--text"
+                    >
+                      {{ message.text }}
+                    </span>
+                    <span v-else>{{ message.text }}</span>
+                  </v-col>
+                </v-row>
+              </v-card-text>
+            </v-card>
           </v-card-text>
           <v-card-actions>
             <v-btn
@@ -123,6 +142,7 @@ import { Component, Prop, Vue } from "vue-property-decorator";
 
 import Server, { ServerStatus } from "../../common/components/server";
 import ServerStatusComponent from "@/components/ServerStatusComponent.vue";
+import Message, { MessageType } from "@/components/message";
 
 /**
  * The representation of a {@link Server} in Vue.
@@ -130,7 +150,7 @@ import ServerStatusComponent from "@/components/ServerStatusComponent.vue";
 @Component({
   components: { ServerStatusComponent },
   data() {
-    return { ServerStatus };
+    return { ServerStatus, MessageType };
   },
 })
 export default class ServerComponent extends Vue {
@@ -145,6 +165,11 @@ export default class ServerComponent extends Vue {
    * @private
    */
   @Prop() private detailed!: boolean;
+
+  /**
+   * The list of messages of this server.
+   */
+  messages: Message[] = [];
 
   constructor() {
     super();

@@ -73,6 +73,7 @@
                         class="pt-0 mt-0 ml-2"
                         sub
                         v-model="command"
+                        :disabled="this.server.status !== ServerStatus.Started"
                       />
                     </v-form>
                   </v-col>

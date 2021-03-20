@@ -62,7 +62,9 @@ export default class Server extends CommonServer {
    * @param command the message from the client.
    */
   async handleMessage(command: string): Promise<void> {
-    switch (command) {
+    // Split command at first space
+    const commandArr = command.split(/^([^ ]+) ?(.*)$/);
+    switch (commandArr[1]) {
       case "start":
         this.status = ServerStatus.Starting;
         this.proc = spawn("java", ["-jar", this.getJarFile()], {
@@ -85,6 +87,9 @@ export default class Server extends CommonServer {
         exec("kill " + this.proc.pid, () => {
           this.proc = null;
         });
+        break;
+      case "command":
+        this.proc.stdin.write(commandArr[2] + "\n");
         break;
     }
     await this.update();

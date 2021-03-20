@@ -64,7 +64,17 @@
                 <v-row style="display: flex; margin-top: auto; flex-grow: 0">
                   <v-col style="display: flex; flex-direction: row">
                     <span style="font-size: 16px" class="pt-1">> </span>
-                    <v-text-field dense class="pt-0 mt-0 ml-2"></v-text-field>
+                    <v-form
+                      @submit.prevent="sendCommand()"
+                      style="flex-grow: 1"
+                    >
+                      <v-text-field
+                        dense
+                        class="pt-0 mt-0 ml-2"
+                        sub
+                        v-model="command"
+                      />
+                    </v-form>
                   </v-col>
                 </v-row>
               </v-card-text>
@@ -190,6 +200,12 @@ export default class ServerComponent extends Vue {
   @Prop() private detailed!: boolean;
 
   /**
+   * The command that is currently written in the console input.
+   * @private
+   */
+  private command = "";
+
+  /**
    * The list of messages of this server.
    */
   messages: Message[] = [];
@@ -263,6 +279,14 @@ export default class ServerComponent extends Vue {
    */
   private stop(): void {
     this.sendMessage("stop");
+  }
+
+  /**
+   * Sends a server command from the console input to the server.
+   * @private
+   */
+  private sendCommand() {
+    this.sendMessage("command " + this.command);
   }
 
   /**

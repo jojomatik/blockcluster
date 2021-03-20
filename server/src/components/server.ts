@@ -89,6 +89,11 @@ export default class Server extends CommonServer {
         });
         break;
       case "command":
+        switch (commandArr[2]) {
+          case "stop":
+            this.status = ServerStatus.Stopping;
+            break;
+        }
         this.proc.stdin.write(commandArr[2] + "\n");
         break;
     }

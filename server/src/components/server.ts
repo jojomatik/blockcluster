@@ -68,6 +68,17 @@ export default class Server extends CommonServer {
         this.proc = spawn("java", ["-jar", this.getJarFile()], {
           cwd: basePath + "/" + this.name,
         });
+        this.proc.stdout.on("data", (data) => {
+          io.emit("server_" + encodeURIComponent(this.name), {
+            serverSTDOUT: data.toString(),
+          });
+        });
+
+        this.proc.stderr.on("data", (data) => {
+          io.emit("server_" + encodeURIComponent(this.name), {
+            serverSTDERR: data.toString(),
+          });
+        });
         break;
       case "stop":
         this.status = ServerStatus.Stopping;

@@ -40,6 +40,7 @@
                   flex-direction: column;
                   overflow: hidden;
                 "
+                class="pb-0 pt-4"
               >
                 <v-row class="mt-0 mb-0" style="overflow: auto">
                   <v-col>

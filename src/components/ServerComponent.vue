@@ -52,6 +52,7 @@
                     <span v-else>{{ message.text }}</span>
                   </v-col>
                 </v-row>
+                <span ref="consoleEnd" />
               </v-card-text>
             </v-card>
           </v-card-text>
@@ -195,21 +196,35 @@ export default class ServerComponent extends Vue {
           Object.assign(this.server, data["serverInfo"]);
         else if (Object.prototype.hasOwnProperty.call(data, "serverSTDOUT")) {
           const messages = String(data["serverSTDOUT"]);
-          messages
-            .split("\n")
-            .forEach((message) =>
-              this.messages.push(new Message(MessageType.Default, message))
-            );
+          messages.split("\n").forEach(async (message) => {
+            await this.messages.push(new Message(MessageType.Default, message));
+            this.scrollConsole();
+          });
         } else if (Object.prototype.hasOwnProperty.call(data, "serverSTDERR")) {
           const messages = String(data["serverSTDERR"]);
-          messages
-            .split("\n")
-            .forEach((message) =>
-              this.messages.push(new Message(MessageType.Error, message))
-            );
+          messages.split("\n").forEach(async (message) => {
+            await this.messages.push(new Message(MessageType.Error, message));
+            this.scrollConsole();
+          });
         }
       }
     );
+  }
+
+  /**
+   * Scrolls the console to last line.
+   */
+  scrollConsole() {
+    const ref = this.$refs["consoleEnd"];
+    let el: Element | null = null;
+    if (Array.isArray(ref)) {
+      if (ref[0] instanceof Element) el = ref[0];
+    } else if (ref instanceof Element) {
+      el = ref;
+    }
+    if (el !== null) {
+      el.scrollIntoView({ behavior: "smooth" });
+    }
   }
 
   /**

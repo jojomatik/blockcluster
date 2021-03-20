@@ -28,31 +28,45 @@
               </v-col>
             </v-row>
             <v-card
-              v-if="messages.length !== 0"
               dark
               height="500"
               style="display: flex; flex-direction: column"
             >
               <v-card-title>Console</v-card-title>
               <v-card-text
-                class="pt-2 pb-8"
-                style="display: block; flex-grow: 1; overflow: auto"
+                style="
+                  display: flex;
+                  flex-grow: 1;
+                  flex-direction: column;
+                  overflow: hidden;
+                "
               >
-                <v-row
-                  v-bind:key="message.uuid"
-                  v-for="message in this.messages"
-                >
-                  <v-col class="py-0">
-                    <span
-                      v-if="message.type === MessageType.Error"
-                      class="red--text"
+                <v-row class="mt-0 mb-0" style="overflow: auto">
+                  <v-col>
+                    <v-row
+                      v-bind:key="message.uuid"
+                      v-for="message in this.messages"
                     >
-                      {{ message.text }}
-                    </span>
-                    <span v-else>{{ message.text }}</span>
+                      <v-col class="py-0">
+                        <span
+                          v-if="message.type === MessageType.Error"
+                          class="red--text"
+                        >
+                          {{ message.text }}
+                        </span>
+                        <span v-else>{{ message.text }}</span>
+                      </v-col>
+                    </v-row>
+                    <span ref="consoleEnd" class="pb-2" />
                   </v-col>
                 </v-row>
-                <span ref="consoleEnd" />
+
+                <v-row style="display: flex; margin-top: auto; flex-grow: 0">
+                  <v-col style="display: flex; flex-direction: row">
+                    <span style="font-size: 16px" class="pt-1">> </span>
+                    <v-text-field dense class="pt-0 mt-0 ml-2"></v-text-field>
+                  </v-col>
+                </v-row>
               </v-card-text>
             </v-card>
           </v-card-text>

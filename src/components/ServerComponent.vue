@@ -40,7 +40,7 @@
                   flex-direction: column;
                   overflow: hidden;
                 "
-                class="pb-0 pt-4"
+                class="pb-4 pt-4"
               >
                 <v-row class="mt-0 mb-0" style="overflow: auto">
                   <v-col>
@@ -64,7 +64,7 @@
 
                 <v-row style="display: flex; margin-top: auto; flex-grow: 0">
                   <v-col style="display: flex; flex-direction: row">
-                    <span style="font-size: 16px" class="pt-1">> </span>
+                    <span style="font-size: 16px" class="py-1">> </span>
                     <v-form
                       @submit.prevent="sendCommand()"
                       style="flex-grow: 1"
@@ -72,7 +72,7 @@
                       <v-text-field
                         dense
                         class="pt-0 mt-0 ml-2"
-                        sub
+                        hide-details
                         v-model="command"
                         :disabled="this.server.status !== ServerStatus.Started"
                       />

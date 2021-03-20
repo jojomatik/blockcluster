@@ -194,13 +194,19 @@ export default class ServerComponent extends Vue {
         if (Object.prototype.hasOwnProperty.call(data, "serverInfo"))
           Object.assign(this.server, data["serverInfo"]);
         else if (Object.prototype.hasOwnProperty.call(data, "serverSTDOUT")) {
-          this.messages.push(
-            new Message(MessageType.Default, String(data["serverSTDOUT"]))
-          );
+          const messages = String(data["serverSTDOUT"]);
+          messages
+            .split("\n")
+            .forEach((message) =>
+              this.messages.push(new Message(MessageType.Default, message))
+            );
         } else if (Object.prototype.hasOwnProperty.call(data, "serverSTDERR")) {
-          this.messages.push(
-            new Message(MessageType.Error, String(data["serverSTDERR"]))
-          );
+          const messages = String(data["serverSTDERR"]);
+          messages
+            .split("\n")
+            .forEach((message) =>
+              this.messages.push(new Message(MessageType.Error, message))
+            );
         }
       }
     );

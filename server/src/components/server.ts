@@ -115,5 +115,14 @@ export default class Server extends CommonServer {
     io.emit("server_" + encodeURIComponent(this.name), {
       serverInfo: this.strip(),
     });
+    if (
+      this.status === ServerStatus.Starting ||
+      this.status === ServerStatus.Stopping
+    ) {
+      setTimeout(async () => {
+        await this.updateStatus();
+        this.sendServerData();
+      }, 1000);
+    }
   }
 }

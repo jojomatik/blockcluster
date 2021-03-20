@@ -208,7 +208,8 @@ export default class ServerComponent extends Vue {
   /**
    * The list of messages of this server.
    */
-  messages: Message[] = [];
+  // noinspection JSMismatchedCollectionQueryUpdate
+  private messages: Message[] = [];
 
   constructor() {
     super();

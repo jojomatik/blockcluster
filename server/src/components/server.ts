@@ -3,7 +3,7 @@ import * as mc from "minecraft-server-util";
 
 import CommonServer, { ServerStatus } from "../../../common/components/server";
 
-import { basePath, io } from "../server";
+import { basePath, io } from "../backend";
 
 import { ChildProcessWithoutNullStreams, exec, spawn } from "child_process";
 import fs from "fs";

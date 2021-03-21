@@ -8,7 +8,7 @@ import Server from "./components/server";
 
 const app = express();
 
-const server = app.listen(3001, () =>
+const backend = app.listen(3001, () =>
   console.log("Backend running on port 3001.")
 );
 
@@ -49,7 +49,7 @@ async function getServers(): Promise<Server[]> {
 /**
  * The socket io instance.
  */
-export const io = new socketio.Server(server, options);
+export const io = new socketio.Server(backend, options);
 
 getServers().then((servers) => {
   io.on("connection", async (socket: socketio.Socket) => {

@@ -2,7 +2,7 @@
   <v-container v-if="detailed" class="home" fluid>
     <v-row>
       <v-col cols="12">
-        <v-card v-if="server.name !== ''" class="server">
+        <v-card class="server">
           <v-card-title>
             {{ server.name }}
             <ServerStatusComponent :status="server.status" />

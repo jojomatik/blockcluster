@@ -7,6 +7,7 @@ import { basePath, io } from "../server";
 
 import { ChildProcessWithoutNullStreams, exec, spawn } from "child_process";
 import fs from "fs";
+import Message, { MessageType } from "../../../common/components/message";
 
 /**
  * The server side implementation of {@link CommonServer} with additional methods that won't run on the client side.
@@ -17,6 +18,12 @@ export default class Server extends CommonServer {
    * @private
    */
   private proc: ChildProcessWithoutNullStreams;
+
+  /**
+   * An array of the latest messages from the server.
+   * @private
+   */
+  private messages: Message[] = [];
 
   /**
    * Updates {@link #status} as well as the selected jar file.
@@ -71,14 +78,24 @@ export default class Server extends CommonServer {
           cwd: basePath + "/" + this.name,
         });
         this.proc.stdout.on("data", (data) => {
-          io.emit("server_" + encodeURIComponent(this.name), {
-            serverSTDOUT: data.toString(),
+          const messages = data.toString().split("\n");
+          messages.forEach(async (messageText: string) => {
+            if (messageText !== "") {
+              await this.sendConsoleMessage(
+                new Message(MessageType.Default, messageText)
+              );
+            }
           });
         });
 
         this.proc.stderr.on("data", (data) => {
-          io.emit("server_" + encodeURIComponent(this.name), {
-            serverSTDERR: data.toString(),
+          const messages = data.toString().split("\n");
+          messages.forEach(async (messageText: string) => {
+            if (messageText !== "") {
+              await this.sendConsoleMessage(
+                new Message(MessageType.Error, messageText)
+              );
+            }
           });
         });
         break;
@@ -96,9 +113,28 @@ export default class Server extends CommonServer {
         }
         this.proc.stdin.write(commandArr[2] + "\n");
         break;
+      case "getMessages":
+        this.messages.forEach((message) => this.sendConsoleMessage(message));
+        break;
     }
     await this.update();
     this.sendServerData();
+  }
+
+  /**
+   * Sends a console message to the frontend and adds it to the list of messages.
+   *
+   * If the list of messages is `>= 50` the first element is removed.
+   *
+   * @param message the message to send.
+   * @private
+   */
+  private async sendConsoleMessage(message: Message) {
+    await this.messages.push(message);
+    if (this.messages.length >= 50) await this.messages.shift();
+    await io.emit("server_" + encodeURIComponent(this.name), {
+      message: message,
+    });
   }
 
   /**

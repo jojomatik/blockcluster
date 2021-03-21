@@ -35,7 +35,7 @@ export default class Message {
    * @param type the {@link MessageType} of this message.
    * @param text the text of this message.
    */
-  constructor(type: MessageType, text: string) {
+  constructor(type: MessageType = MessageType.Default, text = "") {
     this.type = type;
     this.text = text;
   }

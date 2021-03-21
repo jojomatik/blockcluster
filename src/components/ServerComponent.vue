@@ -177,7 +177,7 @@ import { Component, Prop, Vue } from "vue-property-decorator";
 
 import Server, { ServerStatus } from "../../common/components/server";
 import ServerStatusComponent from "@/components/ServerStatusComponent.vue";
-import Message, { MessageType } from "@/components/message";
+import Message, { MessageType } from "../../common/components/message";
 
 /**
  * The representation of a {@link Server} in Vue.
@@ -216,6 +216,7 @@ export default class ServerComponent extends Vue {
   constructor() {
     super();
     this.update();
+    this.getMessages();
   }
 
   /**
@@ -224,21 +225,14 @@ export default class ServerComponent extends Vue {
   mounted() {
     this.sockets.subscribe(
       "server_" + encodeURIComponent(this.getName()),
-      (data: Record<string, unknown>) => {
+      async (data: Record<string, unknown>) => {
         if (Object.prototype.hasOwnProperty.call(data, "serverInfo"))
           Object.assign(this.server, data["serverInfo"]);
-        else if (Object.prototype.hasOwnProperty.call(data, "serverSTDOUT")) {
-          const messages = String(data["serverSTDOUT"]);
-          messages.split("\n").forEach(async (message) => {
-            await this.messages.push(new Message(MessageType.Default, message));
-            this.scrollConsole();
-          });
-        } else if (Object.prototype.hasOwnProperty.call(data, "serverSTDERR")) {
-          const messages = String(data["serverSTDERR"]);
-          messages.split("\n").forEach(async (message) => {
-            await this.messages.push(new Message(MessageType.Error, message));
-            this.scrollConsole();
-          });
+        else if (Object.prototype.hasOwnProperty.call(data, "message")) {
+          await this.messages.push(
+            Object.assign(new Message(), data["message"])
+          );
+          this.scrollConsole();
         }
       }
     );
@@ -266,6 +260,14 @@ export default class ServerComponent extends Vue {
    */
   private update(): void {
     this.sendMessage("update");
+  }
+
+  /**
+   * Sends a message `getMessages` to the corresponding channel. The backend is expected to return the latest 50 messages.
+   * @private
+   */
+  private getMessages(): void {
+    this.sendMessage("getMessages");
   }
 
   /**

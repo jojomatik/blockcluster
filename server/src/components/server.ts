@@ -31,6 +31,7 @@ export default class Server extends CommonServer {
   async update(): Promise<void> {
     await this.updateStatus();
     this.jar = this.getJarFile();
+    this.flags = this.getFlags();
   }
 
   /**
@@ -74,9 +75,13 @@ export default class Server extends CommonServer {
     switch (commandArr[1]) {
       case "start":
         this.status = ServerStatus.Starting;
-        this.proc = spawn("java", ["-jar", this.getJarFile()], {
-          cwd: basePath + "/" + this.name,
-        });
+        this.proc = spawn(
+          "java",
+          this.flags.concat(["-jar", this.getJarFile()]),
+          {
+            cwd: basePath + "/" + this.name,
+          }
+        );
         this.proc.stdout.on("data", (data) => {
           const messages = data.toString().split("\n");
           messages.forEach(async (messageText: string) => {
@@ -116,6 +121,20 @@ export default class Server extends CommonServer {
       case "getMessages":
         await this.sendConsoleMessage(this.messages, false);
         break;
+      case "set":
+        // eslint-disable-next-line no-case-declarations
+        const data = JSON.parse(commandArr[2]);
+        for (const key in data) {
+          if (Object.prototype.hasOwnProperty.call(data, key)) {
+            switch (key) {
+              case "flags":
+                this.flags = data[key];
+                await this.writeFlags();
+                break;
+            }
+          }
+        }
+        break;
     }
     await this.update();
     this.sendServerData();
@@ -149,6 +168,31 @@ export default class Server extends CommonServer {
   private getJarFile(): string {
     const files = fs.readdirSync(basePath + "/" + this.name);
     return files.find((file) => file.endsWith(".jar"));
+  }
+
+  /**
+   * Returns the flags found in the `flags.txt` file in the server directory.
+   * @private
+   */
+  private getFlags(): string[] {
+    try {
+      return String(
+        fs.readFileSync(basePath + "/" + this.name + "/flags.txt")
+      ).split(" ");
+    } catch (e) {
+      return [];
+    }
+  }
+
+  /**
+   * Writes the flags to the `flags.txt` file in the server directory.
+   * @private
+   */
+  private async writeFlags(): Promise<void> {
+    await fs.writeFileSync(
+      basePath + "/" + this.name + "/flags.txt",
+      this.flags.join(" ")
+    );
   }
 
   /**

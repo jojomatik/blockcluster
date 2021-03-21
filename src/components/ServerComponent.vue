@@ -9,10 +9,10 @@
           </v-card-title>
           <v-card-text>
             <v-row>
-              <v-col cols="6">
+              <v-col>
                 <v-simple-table>
                   <colgroup>
-                    <col style="width: calc(100% / 4)" />
+                    <col style="width: calc(100% / 8)" />
                   </colgroup>
                   <tbody>
                     <tr>
@@ -22,6 +22,20 @@
                     <tr>
                       <td>Executable</td>
                       <td>{{ server.jar }}</td>
+                    </tr>
+                    <tr>
+                      <td>Flags</td>
+                      <td style="display: flex; flex-direction: row">
+                        <v-text-field
+                          hide-details
+                          dense
+                          class="mt-2 pr-2"
+                          v-model="flagString"
+                        />
+                        <v-btn dense class="mt-1" @click="sendFlags()">
+                          Save
+                        </v-btn>
+                      </td>
                     </tr>
                   </tbody>
                 </v-simple-table>
@@ -209,6 +223,12 @@ export default class ServerComponent extends Vue {
   private command = "";
 
   /**
+   * The flags that are currently written in the flag input.
+   * @private
+   */
+  private _flagString!: string;
+
+  /**
    * The list of messages of this server.
    */
   // noinspection JSMismatchedCollectionQueryUpdate
@@ -306,6 +326,15 @@ export default class ServerComponent extends Vue {
   }
 
   /**
+   * Sends the flags to the backend.
+   */
+  private sendFlags() {
+    this.sendMessage(
+      "set " + JSON.stringify({ flags: this._flagString?.split(" ") })
+    );
+  }
+
+  /**
    * Sends the message to a channel named according to the {@link Server}'s name.
    * @param message the message to send.
    * @private
@@ -323,6 +352,22 @@ export default class ServerComponent extends Vue {
     return this.server.name !== ""
       ? this.server.name
       : this.$route.params["server"];
+  }
+
+  /**
+   * Returns the flag String based on the flags of the server.
+   */
+  get flagString(): string {
+    this.flagString = this.server.flags.join(" ");
+    return this._flagString;
+  }
+
+  /**
+   * Sets the flagString.
+   * @param flags the flags to set.
+   */
+  set flagString(flags: string) {
+    this._flagString = flags;
   }
 }
 </script>

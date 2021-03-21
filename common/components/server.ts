@@ -122,6 +122,27 @@ export default class Server {
   }
 
   /**
+   * The java flags of this server.
+   * @private
+   */
+  private _flags: string[] = [];
+
+  /**
+   * Returns {@link #flags}.
+   */
+  get flags(): string[] {
+    return this._flags;
+  }
+
+  /**
+   * Sets a new value for {@link #flags}.
+   * @param value the new value.
+   */
+  set flags(value: string[]) {
+    this._flags = value;
+  }
+
+  /**
    * Returns a server stripped of all additional properties.
    */
   strip(): Server {

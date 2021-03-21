@@ -31,6 +31,7 @@
               dark
               height="500"
               style="display: flex; flex-direction: column"
+              class="mt-4"
             >
               <v-card-title>Console</v-card-title>
               <v-card-text

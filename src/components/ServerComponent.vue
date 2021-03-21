@@ -229,9 +229,19 @@ export default class ServerComponent extends Vue {
         if (Object.prototype.hasOwnProperty.call(data, "serverInfo"))
           Object.assign(this.server, data["serverInfo"]);
         else if (Object.prototype.hasOwnProperty.call(data, "message")) {
-          await this.messages.push(
-            Object.assign(new Message(), data["message"])
-          );
+          if (Array.isArray(data["message"]))
+            await Promise.all(
+              data["message"].map(
+                async (message) =>
+                  await this.messages.push(
+                    Object.assign(new Message(), message)
+                  )
+              )
+            );
+          else
+            await this.messages.push(
+              Object.assign(new Message(), data["message"])
+            );
           this.scrollConsole();
         }
       }

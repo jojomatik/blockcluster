@@ -114,9 +114,7 @@ export default class Server extends CommonServer {
         this.proc.stdin.write(commandArr[2] + "\n");
         break;
       case "getMessages":
-        this.messages.forEach((message) =>
-          this.sendConsoleMessage(message, false)
-        );
+        await this.sendConsoleMessage(this.messages, false);
         break;
     }
     await this.update();
@@ -124,18 +122,20 @@ export default class Server extends CommonServer {
   }
 
   /**
-   * Sends a console message to the frontend and adds it to the list of messages.
+   * Sends one or multiple console message(s) to the frontend and adds it to the list of messages.
    *
    * If the list of messages is `>= 50` the first element is removed.
    *
-   * @param message the message to send.
+   * @param message the message(s) to send.
    * @param cache if the message should be cached.
    * @private
    */
-  private async sendConsoleMessage(message: Message, cache = true) {
+  private async sendConsoleMessage(message: Message | Message[], cache = true) {
     if (cache) {
-      await this.messages.push(message);
-      if (this.messages.length >= 50) await this.messages.shift();
+      if (Array.isArray(message)) this.messages = this.messages.concat(message);
+      else await this.messages.push(message as Message);
+      if (this.messages.length > 50)
+        this.messages = this.messages.slice(this.messages.length - 50 - 1);
     }
     await io.emit("server_" + encodeURIComponent(this.name), {
       message: message,

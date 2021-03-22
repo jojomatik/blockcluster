@@ -75,6 +75,13 @@ getServers().then((servers) => {
           await server.handleMessage(data);
         }
       );
+      const watchFilePath = basePath + "/" + server.name + "/start";
+      fs.watchFile(watchFilePath, async (curr) => {
+        if (curr.isFile()) {
+          await server.start();
+          fs.unlinkSync(watchFilePath);
+        }
+      });
     }
   });
 });

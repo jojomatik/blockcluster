@@ -74,35 +74,7 @@ export default class Server extends CommonServer {
     const commandArr = command.split(/^([^ ]+) ?(.*)$/);
     switch (commandArr[1]) {
       case "start":
-        this.status = ServerStatus.Starting;
-        this.proc = spawn(
-          "java",
-          this.flags.concat(["-jar", this.getJarFile()]),
-          {
-            cwd: basePath + "/" + this.name,
-          }
-        );
-        this.proc.stdout.on("data", (data) => {
-          const messages = data.toString().split("\n");
-          messages.forEach(async (messageText: string) => {
-            if (messageText !== "") {
-              await this.sendConsoleMessage(
-                new Message(MessageType.Default, messageText)
-              );
-            }
-          });
-        });
-
-        this.proc.stderr.on("data", (data) => {
-          const messages = data.toString().split("\n");
-          messages.forEach(async (messageText: string) => {
-            if (messageText !== "") {
-              await this.sendConsoleMessage(
-                new Message(MessageType.Error, messageText)
-              );
-            }
-          });
-        });
+        await this.start();
         break;
       case "stop":
         this.status = ServerStatus.Stopping;
@@ -214,5 +186,36 @@ export default class Server extends CommonServer {
         this.sendServerData();
       }, 1000);
     }
+  }
+
+  /**
+   * Starts the {@link Server}.
+   */
+  public async start() {
+    this.status = ServerStatus.Starting;
+    this.proc = spawn("java", this.flags.concat(["-jar", this.getJarFile()]), {
+      cwd: basePath + "/" + this.name,
+    });
+    this.proc.stdout.on("data", (data) => {
+      const messages = data.toString().split("\n");
+      messages.forEach(async (messageText: string) => {
+        if (messageText !== "") {
+          await this.sendConsoleMessage(
+            new Message(MessageType.Default, messageText)
+          );
+        }
+      });
+    });
+
+    this.proc.stderr.on("data", (data) => {
+      const messages = data.toString().split("\n");
+      messages.forEach(async (messageText: string) => {
+        if (messageText !== "") {
+          await this.sendConsoleMessage(
+            new Message(MessageType.Error, messageText)
+          );
+        }
+      });
+    });
   }
 }

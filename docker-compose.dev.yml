@@ -4,7 +4,7 @@ services:
     volumes:
     - ./common:/usr/games/minecraft/common
     - ./src:/usr/games/minecraft/src
-    - ./server:/usr/games/minecraft/server
+    - ./backend:/usr/games/minecraft/backend
     - ./proxy:/usr/games/minecraft/proxy
     command: npm run serve
     environment:

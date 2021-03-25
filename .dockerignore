@@ -1,6 +1,6 @@
 node_modules
-server/node_modules
+backend/node_modules
 proxy/node_modules
 npm-debug.log
-server/dist
+backend/dist
 proxy/dist

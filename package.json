@@ -3,11 +3,11 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "install_all": "concurrently \"npm install\" \"cd server && npm install\" \"cd proxy && npm install\"",
-    "serve": "concurrently \"vue-cli-service serve\" \"cd server && npm start\" \"cd proxy && npm start\"",
+    "install_all": "concurrently \"npm install\" \"cd backend && npm install\" \"cd proxy && npm install\"",
+    "serve": "concurrently \"vue-cli-service serve\" \"cd backend && npm start\" \"cd proxy && npm start\"",
     "build": "vue-cli-service build",
-    "build_all": "concurrently \"vue-cli-service build\" \"cd server && tsc\" \"cd proxy && tsc\"",
-    "start": "concurrently \"http-server dist -p 8080\" \"cd server && node dist/server/src/backend.js\" \"cd proxy && node dist/proxy.js\"",
+    "build_all": "concurrently \"vue-cli-service build\" \"cd backend && tsc\" \"cd proxy && tsc\"",
+    "start": "concurrently \"http-server dist -p 8080\" \"cd backend && node dist/backend/src/backend.js\" \"cd proxy && node dist/proxy.js\"",
     "test:unit": "vue-cli-service test:unit",
     "lint": "vue-cli-service lint"
   },

@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="48 48 416 416">
+    <rect y="64" class="server" />
+    <circle cx="112" cy="112" class="led" />
+    <rect y="120" class="drive" />
+    <rect y="208" class="server" />
+    <circle cx="112" cy="256" class="led" />
+    <rect y="264" class="drive" />
+    <rect y="352" class="server" />
+    <circle cx="112" cy="400" class="led" />
+    <rect y="408" class="drive" />
+
+    <style>
+        .server {
+        x: 64px;
+        fill: #BBB;
+        width: 384px;
+        height: 96px;
+        stroke: #888;
+        stroke-width: 8px;
+        rx: 16px;
+        }
+
+        .drive {
+        x: 208px;
+        width: 192px;
+        height: 16px;
+        fill: #222;
+        rx: 4px;
+        }
+
+        .led {
+        r: 24;
+        fill: #00EE00;
+        }
+    </style>
+</svg>

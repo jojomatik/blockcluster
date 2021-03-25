@@ -41,61 +41,10 @@
                 </v-simple-table>
               </v-col>
             </v-row>
-            <v-card
-              dark
-              height="500"
-              style="display: flex; flex-direction: column"
-              class="mt-4"
-            >
-              <v-card-title>Console</v-card-title>
-              <v-card-text
-                style="
-                  display: flex;
-                  flex-grow: 1;
-                  flex-direction: column;
-                  overflow: hidden;
-                "
-                class="pb-4 pt-4"
-              >
-                <v-row class="mt-0 mb-0" style="overflow: auto">
-                  <v-col>
-                    <v-row
-                      v-bind:key="message.uuid"
-                      v-for="message in this.messages"
-                    >
-                      <v-col class="py-0">
-                        <span
-                          v-if="message.type === MessageType.Error"
-                          class="red--text"
-                        >
-                          {{ message.text }}
-                        </span>
-                        <span v-else>{{ message.text }}</span>
-                      </v-col>
-                    </v-row>
-                    <span ref="consoleEnd" class="pb-2" />
-                  </v-col>
-                </v-row>
-
-                <v-row style="display: flex; margin-top: auto; flex-grow: 0">
-                  <v-col style="display: flex; flex-direction: row">
-                    <span style="font-size: 16px" class="py-1">> </span>
-                    <v-form
-                      @submit.prevent="sendCommand()"
-                      style="flex-grow: 1"
-                    >
-                      <v-text-field
-                        dense
-                        class="pt-0 mt-0 ml-2"
-                        hide-details
-                        v-model="command"
-                        :disabled="this.server.status !== ServerStatus.Started"
-                      />
-                    </v-form>
-                  </v-col>
-                </v-row>
-              </v-card-text>
-            </v-card>
+            <ConsoleComponent
+              :server="this"
+              :status="server.status"
+            ></ConsoleComponent>
           </v-card-text>
           <v-card-actions>
             <v-btn
@@ -192,15 +141,15 @@ import { Component, Prop, Vue } from "vue-property-decorator";
 
 import Server, { ServerStatus } from "../../common/components/server";
 import ServerStatusComponent from "@/components/ServerStatusComponent.vue";
-import Message, { MessageType } from "../../common/components/message";
+import ConsoleComponent from "@/components/ConsoleComponent.vue";
 
 /**
  * The representation of a {@link Server} in Vue.
  */
 @Component({
-  components: { ServerStatusComponent },
+  components: { ConsoleComponent, ServerStatusComponent },
   data() {
-    return { ServerStatus, MessageType };
+    return { ServerStatus };
   },
 })
 export default class ServerComponent extends Vue {
@@ -217,27 +166,14 @@ export default class ServerComponent extends Vue {
   @Prop() private detailed!: boolean;
 
   /**
-   * The command that is currently written in the console input.
-   * @private
-   */
-  private command = "";
-
-  /**
    * The flags that are currently written in the flag input.
    * @private
    */
   private _flagString!: string;
 
-  /**
-   * The list of messages of this server.
-   */
-  // noinspection JSMismatchedCollectionQueryUpdate
-  private messages: Message[] = [];
-
   constructor() {
     super();
     this.update();
-    this.getMessages();
   }
 
   /**
@@ -249,40 +185,8 @@ export default class ServerComponent extends Vue {
       async (data: Record<string, unknown>) => {
         if (Object.prototype.hasOwnProperty.call(data, "serverInfo"))
           Object.assign(this.server, data["serverInfo"]);
-        else if (Object.prototype.hasOwnProperty.call(data, "message")) {
-          if (Array.isArray(data["message"]))
-            await Promise.all(
-              data["message"].map(
-                async (message) =>
-                  await this.messages.push(
-                    Object.assign(new Message(), message)
-                  )
-              )
-            );
-          else
-            await this.messages.push(
-              Object.assign(new Message(), data["message"])
-            );
-          this.scrollConsole();
-        }
       }
     );
-  }
-
-  /**
-   * Scrolls the console to last line.
-   */
-  scrollConsole() {
-    const ref = this.$refs["consoleEnd"];
-    let el: Element | null = null;
-    if (Array.isArray(ref)) {
-      if (ref[0] instanceof Element) el = ref[0];
-    } else if (ref instanceof Element) {
-      el = ref;
-    }
-    if (el !== null) {
-      el.scrollIntoView({ behavior: "smooth" });
-    }
   }
 
   /**
@@ -291,14 +195,6 @@ export default class ServerComponent extends Vue {
    */
   private update(): void {
     this.sendMessage("update");
-  }
-
-  /**
-   * Sends a message `getMessages` to the corresponding channel. The backend is expected to return the latest 50 messages.
-   * @private
-   */
-  private getMessages(): void {
-    this.sendMessage("getMessages");
   }
 
   /**
@@ -318,14 +214,6 @@ export default class ServerComponent extends Vue {
   }
 
   /**
-   * Sends a server command from the console input to the server.
-   * @private
-   */
-  private sendCommand() {
-    this.sendMessage("command " + this.command);
-  }
-
-  /**
    * Sends the flags to the backend.
    */
   private sendFlags() {
@@ -339,7 +227,7 @@ export default class ServerComponent extends Vue {
    * @param message the message to send.
    * @private
    */
-  private sendMessage(message: string): void {
+  sendMessage(message: string): void {
     this.$socket.emit("server_" + encodeURIComponent(this.getName()), message);
   }
 
@@ -348,7 +236,7 @@ export default class ServerComponent extends Vue {
    * @return the name of the {@link Server}.
    * @private
    */
-  private getName(): string {
+  getName(): string {
     return this.server.name !== ""
       ? this.server.name
       : this.$route.params["server"];

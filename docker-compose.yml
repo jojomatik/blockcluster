@@ -4,4 +4,4 @@ services:
     ports:
       - 80:80
     build: .
-    image: registry.gitlab.jojomatik.de/jojomatik/minecraft-server-manager
+    image: registry.gitlab.jojomatik.de/jojomatik/blockcluster

@@ -1,4 +1,17 @@
-# Minecraft Server Manager
+# blockcluster
+
+An in-browser manager for your minecraft servers.
+
+## Features
+- Start and stop servers
+- View current status
+- View console log and send commands
+- Change start flags
+
+## Roadmap for future releases
+- Authentication
+- Show resource usage
+- Create servers and download server jars
 
 ## Project setup with Docker (recommended)
 ### Compiles and hot-reloads for development

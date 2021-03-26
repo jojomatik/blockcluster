@@ -41,10 +41,7 @@
                 </v-simple-table>
               </v-col>
             </v-row>
-            <ConsoleComponent
-              :server="this"
-              :status="server.status"
-            ></ConsoleComponent>
+            <ConsoleComponent :server="this" :status="server.status" />
           </v-card-text>
           <v-card-actions>
             <v-btn

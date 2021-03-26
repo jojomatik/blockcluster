@@ -43,7 +43,7 @@ export default class Server extends CommonServer {
       if (this.status != ServerStatus.Stopping && this.proc != null)
         this.status = ServerStatus.Started;
     } catch (e) {
-      if (this.status != ServerStatus.Starting)
+      if (this.status != ServerStatus.Starting && this.proc == null)
         this.status = ServerStatus.Stopped;
     }
   }
@@ -77,10 +77,7 @@ export default class Server extends CommonServer {
         await this.start();
         break;
       case "stop":
-        this.status = ServerStatus.Stopping;
-        exec("kill " + this.proc.pid, () => {
-          this.proc = null;
-        });
+        await this.stop();
         break;
       case "command":
         switch (commandArr[2]) {
@@ -215,6 +212,18 @@ export default class Server extends CommonServer {
             new Message(MessageType.Error, messageText)
           );
         }
+      });
+    });
+  }
+
+  /**
+   * Stops the {@link Server}.
+   */
+  public async stop() {
+    this.status = ServerStatus.Stopping;
+    exec("kill " + this.proc.pid, () => {
+      this.proc.addListener("exit", () => {
+        this.proc = null;
       });
     });
   }

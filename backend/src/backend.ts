@@ -84,4 +84,10 @@ getServers().then((servers) => {
       });
     }
   });
+
+  process.on("SIGTERM", function () {
+    servers.forEach(async (server) => {
+      if (server.status == ServerStatus.Started) await server.stop();
+    });
+  });
 });

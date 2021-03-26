@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "start": "nodemon dist/server/src/backend.js"
+    "start": "nodemon dist/backend/src/backend.js"
   },
   "devDependencies": {
     "@types/properties-reader": "^2.1.0",

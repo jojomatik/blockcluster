@@ -172,7 +172,6 @@ export default class Server extends CommonServer {
    * Sends this {@link Server} to the client.
    *
    * Only fields in the common superclass are transported.
-   * @private
    */
   sendServerData() {
     io.emit("server_" + encodeURIComponent(this.name), {

@@ -1,4 +1,4 @@
-# blockcluster
+# blockcluster [![Docker CI](https://github.com/jojomatik/blockcluster/actions/workflows/docker_ci.yml/badge.svg)](https://github.com/jojomatik/blockcluster/actions/workflows/docker_ci.yml)
 
 An in-browser manager for your minecraft servers.
 

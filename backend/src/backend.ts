@@ -75,15 +75,20 @@ getServers().then((servers) => {
           await server.handleMessage(data);
         }
       );
-      const watchFilePath = basePath + "/" + server.name + "/start";
-      fs.watchFile(watchFilePath, async (curr) => {
-        if (curr.isFile()) {
-          await server.start();
-          fs.unlinkSync(watchFilePath);
-        }
-      });
     }
   });
+
+  // Listen to a channel per server
+  for (const server of servers) {
+    const watchFilePath = basePath + "/" + server.name + "/start";
+    fs.watchFile(watchFilePath, async (curr) => {
+      if (curr.isFile()) {
+        await server.start();
+        server.sendServerData();
+        fs.unlinkSync(watchFilePath);
+      }
+    });
+  }
 
   process.on("SIGTERM", function () {
     servers.forEach(async (server) => {

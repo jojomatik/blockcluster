@@ -33,7 +33,7 @@ import { Component, Vue } from "vue-property-decorator";
  */
 @Component({
   metaInfo: {
-    titleTemplate: "%s - Minecraft Server Manager",
+    titleTemplate: "%s - blockcluster",
   },
 })
 export default class App extends Vue {}

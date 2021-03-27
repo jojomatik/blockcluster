@@ -84,6 +84,7 @@ getServers().then((servers) => {
     fs.watchFile(watchFilePath, async (curr) => {
       if (curr.isFile()) {
         await server.start();
+        server.sendServerData();
         fs.unlinkSync(watchFilePath);
       }
     });

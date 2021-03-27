@@ -82,7 +82,11 @@ export default class Server extends CommonServer {
       case "command":
         switch (commandArr[2]) {
           case "stop":
+          case "restart":
             this.status = ServerStatus.Stopping;
+            this.proc.addListener("exit", () => {
+              this.proc = null;
+            });
             break;
         }
         this.proc.stdin.write(commandArr[2] + "\n");
@@ -170,7 +174,7 @@ export default class Server extends CommonServer {
    * Only fields in the common superclass are transported.
    * @private
    */
-  private sendServerData() {
+  sendServerData() {
     io.emit("server_" + encodeURIComponent(this.name), {
       serverInfo: this.strip(),
     });

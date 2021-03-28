@@ -30,20 +30,7 @@ export default class Server extends CommonServer {
    * The config of this {@link Server}.
    * @private
    */
-  private config: ServerConfig = ((): ServerConfig => {
-    let conf: ServerConfig;
-    try {
-      conf = Object.assign(
-        new ServerConfig(),
-        JSON.parse(
-          String(fs.readFileSync(this.getPath() + "/blockcluster.cfg"))
-        )
-      );
-    } catch (e) {
-      conf = new ServerConfig();
-    }
-    return conf;
-  })();
+  private config: ServerConfig;
 
   /**
    * Updates {@link #status} as well as the selected jar file.
@@ -51,6 +38,7 @@ export default class Server extends CommonServer {
   async update(): Promise<void> {
     await this.updateStatus();
     this.jar = this.getJarFile();
+    this.config = await this.readConfig();
     this.flags = await this.getFlags();
   }
 
@@ -180,6 +168,25 @@ export default class Server extends CommonServer {
     } catch (e) {
       return [];
     }
+  }
+
+  /**
+   * Reads the config from the `blockcluster.cfg` file in the server directory.
+   * @private
+   */
+  private async readConfig(): Promise<ServerConfig> {
+    let conf: ServerConfig;
+    try {
+      conf = Object.assign(
+        new ServerConfig(),
+        JSON.parse(
+          String(fs.readFileSync(this.getPath() + "/blockcluster.cfg"))
+        )
+      );
+    } catch (e) {
+      conf = new ServerConfig();
+    }
+    return conf;
   }
 
   /**

@@ -110,21 +110,33 @@ export default class ConsoleComponent extends Vue {
       "server_" + encodeURIComponent(this.server.getName()),
       async (data: Record<string, unknown>) => {
         if (Object.prototype.hasOwnProperty.call(data, "message")) {
-          let len = this.messages.length;
+          const len = this.messages.length;
           if (Array.isArray(data["message"]))
-            await Promise.all(
-              data["message"].map(async (message) => {
-                await this.addDatetimeMessage(++len, message);
-                await this.messages.push(Object.assign(new Message(), message));
-              })
-            );
+            for (let i = len; i < len + data["message"].length; i++) {
+              if (i == 0) await this.addDatetimeMessage(data["message"][i]);
+              else
+                await this.addDatetimeMessage(
+                  data["message"][i],
+                  data["message"][i - 1]._timestamp
+                );
+              await this.messages.push(
+                Object.assign(new Message(), data["message"][i])
+              );
+            }
           else {
-            await this.addDatetimeMessage(
-              len,
-              data["message"] as {
-                _timestamp: number;
-              }
-            );
+            if (len == 0)
+              await this.addDatetimeMessage(
+                data["message"] as {
+                  _timestamp: number;
+                }
+              );
+            else
+              await this.addDatetimeMessage(
+                data["message"] as {
+                  _timestamp: number;
+                },
+                this.messages[len - 1].timestamp
+              );
             await this.messages.push(
               Object.assign(new Message(), data["message"])
             );
@@ -137,19 +149,19 @@ export default class ConsoleComponent extends Vue {
 
   /**
    * Adds a date time message if necessary.
-   * @param len current length of the {@link messages}.
    * @param message the new message.
+   * @param lastTimestamp the timestamp of the last message.
    *
    * @private
    */
   private async addDatetimeMessage(
-    len: number,
-    message: { _timestamp: number }
+    message: { _timestamp: number },
+    lastTimestamp?: number
   ) {
     const newDate = moment(message._timestamp);
     if (
-      len == 0 ||
-      Math.floor(this.messages[len - 1].timestamp / (24 * 60 * 60 * 1000)) <
+      !lastTimestamp ||
+      Math.floor(lastTimestamp / (24 * 60 * 60 * 1000)) <
         Math.floor(message._timestamp / (24 * 60 * 60 * 1000))
     )
       await this.messages.push(

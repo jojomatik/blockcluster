@@ -8,10 +8,17 @@ export default class ServerConfig {
   public flags: string[];
 
   /**
+   * Whether or not the server should start with the backend.
+   */
+  public autostart: boolean;
+
+  /**
    * Creates a new {@link ServerConfig}
    * @param flags the flags of the server, default = `[]`
+   * @param autostart whether or not the server should start with the backend.
    */
-  constructor(flags: string[] = []) {
+  constructor(flags: string[] = [], autostart = false) {
     this.flags = flags;
+    this.autostart = autostart;
   }
 }

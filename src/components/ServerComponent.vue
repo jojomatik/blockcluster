@@ -24,6 +24,16 @@
                       <td>{{ server.jar }}</td>
                     </tr>
                     <tr>
+                      <td>Autostart</td>
+                      <td>
+                        <v-switch
+                          class="ma-auto mb-1"
+                          hide-details
+                          v-model="autostart"
+                        />
+                      </td>
+                    </tr>
+                    <tr>
                       <td>Flags</td>
                       <td style="display: flex; flex-direction: row">
                         <v-text-field
@@ -204,6 +214,22 @@ export default class ServerComponent extends Vue {
    */
   set flagString(flags: string) {
     this._flagString = flags;
+  }
+
+  /**
+   * Returns the autostart option of the server.
+   */
+  get autostart(): boolean {
+    return this.server.autostart;
+  }
+
+  /**
+   * Sets the autostart option of the server.
+   * @param value the autostart option to be sent to the server.
+   */
+  set autostart(value: boolean) {
+    this.server.autostart = value;
+    this.sendMessage("set " + JSON.stringify({ autostart: value }));
   }
 }
 </script>

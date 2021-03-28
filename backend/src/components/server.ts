@@ -40,6 +40,7 @@ export default class Server extends CommonServer {
     this.jar = this.getJarFile();
     this.config = await this.readConfig();
     this.flags = await this.getFlags();
+    this.autostart = this.config.autostart;
   }
 
   /**
@@ -110,6 +111,10 @@ export default class Server extends CommonServer {
             switch (key) {
               case "flags":
                 this.flags = data[key];
+                await this.writeConfig();
+                break;
+              case "autostart":
+                this.autostart = data[key];
                 await this.writeConfig();
                 break;
             }
@@ -286,5 +291,21 @@ export default class Server extends CommonServer {
   set flags(value: string[]) {
     super.flags = value;
     this.config.flags = value;
+  }
+
+  /**
+   * Returns {@link #autostart}.
+   */
+  get autostart(): boolean {
+    return this.config.autostart;
+  }
+
+  /**
+   * Sets a new value for {@link #autostart}.
+   * @param value the new value.
+   */
+  set autostart(value: boolean) {
+    super.autostart = value;
+    this.config.autostart = value;
   }
 }

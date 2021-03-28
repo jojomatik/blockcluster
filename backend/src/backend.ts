@@ -88,6 +88,11 @@ getServers().then((servers) => {
         fs.unlinkSync(watchFilePath);
       }
     });
+    server.update().then(async () => {
+      if (server.autostart) {
+        await server.start();
+      }
+    });
   }
 
   process.on("SIGTERM", function () {

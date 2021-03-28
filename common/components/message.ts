@@ -49,7 +49,6 @@ export default class Message {
     timestamp: number = Date.now()
   ) {
     this.timestamp = timestamp;
-    console.log(timestamp);
     this.type = type;
     this.text = text;
   }

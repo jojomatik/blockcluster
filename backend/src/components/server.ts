@@ -122,7 +122,6 @@ export default class Server extends CommonServer {
             switch (key) {
               case "flags":
                 this.flags = data[key];
-                this.config.flags = this.flags;
                 await this.writeConfig();
                 break;
             }
@@ -264,5 +263,21 @@ export default class Server extends CommonServer {
    */
   private getPath(): string {
     return basePath + "/" + this.name;
+  }
+
+  /**
+   * Returns the flags from the config.
+   */
+  get flags(): string[] {
+    return this.config.flags;
+  }
+
+  /**
+   * Sets a new value for {@link #flags}.
+   * @param value the new value.
+   */
+  set flags(value: string[]) {
+    super.flags = value;
+    this.config.flags = value;
   }
 }

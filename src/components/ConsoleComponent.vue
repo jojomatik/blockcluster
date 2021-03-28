@@ -22,6 +22,12 @@
               <span v-if="message.type === MessageType.Error" class="red--text">
                 {{ message.text }}
               </span>
+              <span
+                style="color: teal; text-decoration: underline"
+                v-else-if="message.type === MessageType.DateChange"
+              >
+                {{ message.text }}
+              </span>
               <span v-else>{{ message.text }}</span>
             </v-col>
           </v-row>
@@ -53,6 +59,7 @@ import { Component, Prop, Vue } from "vue-property-decorator";
 import { ServerStatus } from "../../common/components/server";
 import Message, { MessageType } from "../../common/components/message";
 import ServerComponent from "@/components/ServerComponent.vue";
+import moment from "moment";
 
 /**
  * The representation of a {@link Server}'s console in Vue.
@@ -103,23 +110,51 @@ export default class ConsoleComponent extends Vue {
       "server_" + encodeURIComponent(this.server.getName()),
       async (data: Record<string, unknown>) => {
         if (Object.prototype.hasOwnProperty.call(data, "message")) {
+          let len = this.messages.length;
           if (Array.isArray(data["message"]))
             await Promise.all(
-              data["message"].map(
-                async (message) =>
-                  await this.messages.push(
-                    Object.assign(new Message(), message)
-                  )
-              )
+              data["message"].map(async (message) => {
+                await this.addDatetimeMessage(++len, message);
+                await this.messages.push(Object.assign(new Message(), message));
+              })
             );
-          else
+          else {
+            await this.addDatetimeMessage(
+              len,
+              data["message"] as {
+                _timestamp: number;
+              }
+            );
             await this.messages.push(
               Object.assign(new Message(), data["message"])
             );
+          }
           this.scrollConsole();
         }
       }
     );
+  }
+
+  /**
+   * Adds a date time message if necessary.
+   * @param len current length of the {@link messages}.
+   * @param message the new message.
+   *
+   * @private
+   */
+  private async addDatetimeMessage(
+    len: number,
+    message: { _timestamp: number }
+  ) {
+    const newDate = moment(message._timestamp);
+    if (
+      len == 0 ||
+      Math.floor(this.messages[len - 1].timestamp / (24 * 60 * 60 * 1000)) <
+        Math.floor(message._timestamp / (24 * 60 * 60 * 1000))
+    )
+      await this.messages.push(
+        new Message(MessageType.DateChange, newDate.format("YYYY-MM-DD"))
+      );
   }
 
   /**

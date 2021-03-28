@@ -8,6 +8,7 @@ import { basePath, io } from "../backend";
 import { ChildProcessWithoutNullStreams, exec, spawn } from "child_process";
 import fs from "fs";
 import Message, { MessageType } from "../../../common/components/message";
+import ServerConfig from "./server_config";
 
 /**
  * The server side implementation of {@link CommonServer} with additional methods that won't run on the client side.
@@ -26,12 +27,20 @@ export default class Server extends CommonServer {
   private messages: Message[] = [];
 
   /**
+   * The config of this {@link Server}.
+   * @private
+   */
+  private config: ServerConfig;
+
+  /**
    * Updates {@link #status} as well as the selected jar file.
    */
   async update(): Promise<void> {
     await this.updateStatus();
     this.jar = this.getJarFile();
-    this.flags = this.getFlags();
+    this.config = await this.readConfig();
+    this.flags = await this.getFlags();
+    this.autostart = this.config.autostart;
   }
 
   /**
@@ -102,7 +111,11 @@ export default class Server extends CommonServer {
             switch (key) {
               case "flags":
                 this.flags = data[key];
-                await this.writeFlags();
+                await this.writeConfig();
+                break;
+              case "autostart":
+                this.autostart = data[key];
+                await this.writeConfig();
                 break;
             }
           }
@@ -139,7 +152,7 @@ export default class Server extends CommonServer {
    * @private
    */
   private getJarFile(): string {
-    const files = fs.readdirSync(basePath + "/" + this.name);
+    const files = fs.readdirSync(this.getPath());
     return files.find((file) => file.endsWith(".jar"));
   }
 
@@ -147,24 +160,48 @@ export default class Server extends CommonServer {
    * Returns the flags found in the `flags.txt` file in the server directory.
    * @private
    */
-  private getFlags(): string[] {
+  private async getFlags(): Promise<string[]> {
     try {
-      return String(
-        fs.readFileSync(basePath + "/" + this.name + "/flags.txt")
-      ).split(" ");
+      if (this.config.flags.length == 0) {
+        this.config.flags = String(
+          fs.readFileSync(this.getPath() + "/flags.txt")
+        ).split(" ");
+        fs.unlinkSync(this.getPath() + "/flags.txt");
+        await this.writeConfig();
+      }
+      return this.config.flags;
     } catch (e) {
       return [];
     }
   }
 
   /**
-   * Writes the flags to the `flags.txt` file in the server directory.
+   * Reads the config from the `blockcluster.cfg` file in the server directory.
    * @private
    */
-  private async writeFlags(): Promise<void> {
+  private async readConfig(): Promise<ServerConfig> {
+    let conf: ServerConfig;
+    try {
+      conf = Object.assign(
+        new ServerConfig(),
+        JSON.parse(
+          String(fs.readFileSync(this.getPath() + "/blockcluster.cfg"))
+        )
+      );
+    } catch (e) {
+      conf = new ServerConfig();
+    }
+    return conf;
+  }
+
+  /**
+   * Writes the config to the `blockcluster.cfg` file in the server directory.
+   * @private
+   */
+  private async writeConfig(): Promise<void> {
     await fs.writeFileSync(
-      basePath + "/" + this.name + "/flags.txt",
-      this.flags.join(" ")
+      this.getPath() + "/blockcluster.cfg",
+      JSON.stringify(this.config)
     );
   }
 
@@ -194,7 +231,7 @@ export default class Server extends CommonServer {
   public async start() {
     this.status = ServerStatus.Starting;
     this.proc = spawn("java", this.flags.concat(["-jar", this.getJarFile()]), {
-      cwd: basePath + "/" + this.name,
+      cwd: this.getPath(),
     });
     this.proc.stdout.on("data", (data) => {
       const messages = data.toString().split("\n");
@@ -229,5 +266,46 @@ export default class Server extends CommonServer {
         this.proc = null;
       });
     });
+  }
+
+  /**
+   * Returns the path of this {@link Server}.
+   *
+   * @private
+   */
+  private getPath(): string {
+    return basePath + "/" + this.name;
+  }
+
+  /**
+   * Returns the flags from the config.
+   */
+  get flags(): string[] {
+    return this.config.flags;
+  }
+
+  /**
+   * Sets a new value for {@link #flags}.
+   * @param value the new value.
+   */
+  set flags(value: string[]) {
+    super.flags = value;
+    this.config.flags = value;
+  }
+
+  /**
+   * Returns {@link #autostart}.
+   */
+  get autostart(): boolean {
+    return this.config.autostart;
+  }
+
+  /**
+   * Sets a new value for {@link #autostart}.
+   * @param value the new value.
+   */
+  set autostart(value: boolean) {
+    super.autostart = value;
+    this.config.autostart = value;
   }
 }

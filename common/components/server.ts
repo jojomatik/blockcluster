@@ -24,17 +24,20 @@ export default class Server {
    * @param status the status of the server.
    * @param port the port the server listens on.
    * @param jar the jar file of the server.
+   * @param autostart whether the server should start with the backend.
    */
   constructor(
     name = "",
     status: ServerStatus = ServerStatus.Unknown,
     port = 0,
-    jar: string | null = null
+    jar: string | null = null,
+    autostart = false
   ) {
     this._name = name;
     this._status = status;
     this._port = port;
     this._jar = jar;
+    this._autostart = autostart;
   }
 
   /**
@@ -140,6 +143,27 @@ export default class Server {
    */
   set flags(value: string[]) {
     this._flags = value;
+  }
+
+  /**
+   * Whether the server should start with the backend.
+   * @private
+   */
+  private _autostart: boolean;
+
+  /**
+   * Returns {@link #autostart}.
+   */
+  get autostart(): boolean {
+    return this._autostart;
+  }
+
+  /**
+   * Sets a new value for {@link #autostart}.
+   * @param value the new value.
+   */
+  set autostart(value: boolean) {
+    this._autostart = value;
   }
 
   /**

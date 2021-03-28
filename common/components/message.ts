@@ -6,12 +6,19 @@ import { v4 as uuid } from "uuid";
 export enum MessageType {
   Default,
   Error,
+  DateChange,
 }
 
 /**
  * A message from the server either from STDOUT or from STDERR.
  */
 export default class Message {
+  /**
+   * The time of this {@link Message}.
+   * @private
+   */
+  private _timestamp!: number;
+
   /**
    * The {@link MessageType} of this {@link Message}.
    * @private
@@ -34,10 +41,32 @@ export default class Message {
    * Creates a {@link Message} based on its type and text.
    * @param type the {@link MessageType} of this message.
    * @param text the text of this message.
+   * @param timestamp the time the message was sent.
    */
-  constructor(type: MessageType = MessageType.Default, text = "") {
+  constructor(
+    type: MessageType = MessageType.Default,
+    text = "",
+    timestamp: number = Date.now()
+  ) {
+    this.timestamp = timestamp;
+    console.log(timestamp);
     this.type = type;
     this.text = text;
+  }
+
+  /**
+   * Returns the {@link _timestamp}.
+   */
+  get timestamp(): number {
+    return this._timestamp;
+  }
+
+  /**
+   * Sets a new value for {@link _timestamp}.
+   * @param value the new value.
+   */
+  set timestamp(value: number) {
+    this._timestamp = value;
   }
 
   /**

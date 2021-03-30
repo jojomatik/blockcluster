@@ -93,6 +93,13 @@ getServers().then((servers) => {
         await server.start();
       }
     });
+    server.measureUsage().then(() => {
+      server.sendServerData();
+      setInterval(async () => {
+        await server.measureUsage();
+        server.sendServerData();
+      }, 10000);
+    });
   }
 
   process.on("SIGTERM", function () {

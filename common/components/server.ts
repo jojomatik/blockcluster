@@ -167,6 +167,27 @@ export default class Server {
   }
 
   /**
+   * A list of date time resource usage pairs.
+   * @private
+   */
+  private _resourceUsage: { time: number; cpu: number; memory: number }[] = [];
+
+  /**
+   * Returns {@link #resourceUsage}.
+   */
+  get resourceUsage(): { time: number; cpu: number; memory: number }[] {
+    return this._resourceUsage;
+  }
+
+  /**
+   * Sets a new value for {@link #resourceUsage}.
+   * @param value the new value.
+   */
+  set resourceUsage(value: { time: number; cpu: number; memory: number }[]) {
+    this._resourceUsage = value;
+  }
+
+  /**
    * Returns a server stripped of all additional properties.
    */
   strip(): Server {

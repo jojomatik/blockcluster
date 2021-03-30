@@ -51,6 +51,9 @@
                 </v-simple-table>
               </v-col>
             </v-row>
+            <ResourceChartComponent
+              :resource-usage="this.server.resourceUsage"
+            />
             <ConsoleComponent :server="this" :status="server.status" />
           </v-card-text>
           <v-card-actions>
@@ -112,12 +115,14 @@ import Server, { ServerStatus } from "../../common/components/server";
 import ServerStatusComponent from "@/components/ServerStatusComponent.vue";
 import ConsoleComponent from "@/components/ConsoleComponent.vue";
 import StateChangeButtonComponent from "@/components/StateChangeButtonComponent.vue";
+import ResourceChartComponent from "@/components/ResourceChartComponent.vue";
 
 /**
  * The representation of a {@link Server} in Vue.
  */
 @Component({
   components: {
+    ResourceChartComponent,
     StateChangeButtonComponent,
     ConsoleComponent,
     ServerStatusComponent,

@@ -312,18 +312,19 @@ export default class Server extends CommonServer {
 
   /**
    * Measures the current resource usage and adds it to the list.
+   * @param measuringTime if set this time is used as the time parameter of the data points.
    */
-  async measureUsage() {
+  async measureUsage(measuringTime: number = Date.now()) {
     if (this.proc != null) {
       const usage = await pidusage(this.proc.pid);
       this.resourceUsage.push({
-        time: Date.now(),
+        time: measuringTime,
         cpu: usage.cpu,
         memory: usage.memory,
       });
     } else {
       this.resourceUsage.push({
-        time: Date.now(),
+        time: measuringTime,
         cpu: 0,
         memory: 0,
       });

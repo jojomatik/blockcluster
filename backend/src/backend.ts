@@ -95,12 +95,16 @@ getServers().then((servers) => {
     });
     server.measureUsage().then(() => {
       server.sendServerData();
-      setInterval(async () => {
-        await server.measureUsage();
-        server.sendServerData();
-      }, 10000);
     });
   }
+
+  setInterval(async () => {
+    const time: number = Date.now();
+    for (const server of servers) {
+      await server.measureUsage(time);
+      server.sendServerData();
+    }
+  }, 10000);
 
   process.on("SIGTERM", function () {
     servers.forEach(async (server) => {

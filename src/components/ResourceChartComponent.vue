@@ -35,7 +35,7 @@
             },
           },
           max: (max) => {
-            return Math.max(max, 2000);
+            return Math.max(max, 1600);
           },
           tickAmount: 4,
           forceNiceScale: true,

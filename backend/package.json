@@ -12,9 +12,9 @@
   },
   "dependencies": {
     "express": "^4.17.1",
-    "minecraft-server-util": "^3.4.3",
+    "minecraft-server-util": "^3.4.4",
     "pidusage": "^2.0.21",
     "properties-reader": "^2.2.0",
-    "socket.io": "^3.1.2"
+    "socket.io": "^4.0.1"
   }
 }

@@ -86,11 +86,11 @@ export default class ResourceChartComponent extends Vue {
    * The resource usage.
    * @private
    */
-  @Prop() private resourceUsage: {
+  @Prop() private resourceUsage!: {
     time: number;
     cpu: number;
     memory: number;
-  }[] = [];
+  }[];
 }
 </script>
 

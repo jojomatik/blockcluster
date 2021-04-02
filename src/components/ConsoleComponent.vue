@@ -15,7 +15,7 @@
       "
       class="pb-4 pt-4"
     >
-      <v-row class="mt-0 mb-0" style="overflow: auto">
+      <v-row class="mt-0 mb-0" style="overflow: auto" ref="console">
         <v-col>
           <v-row v-bind:key="message.uuid" v-for="message in this.messages">
             <v-col class="py-0">
@@ -175,14 +175,17 @@ export default class ConsoleComponent extends Vue {
    */
   private scrollConsole() {
     const ref = this.$refs["consoleEnd"];
-    let el: Element | null = null;
+    let el: HTMLElement | null = null;
     if (Array.isArray(ref)) {
-      if (ref[0] instanceof Element) el = ref[0];
-    } else if (ref instanceof Element) {
+      if (ref[0] instanceof HTMLElement) el = ref[0];
+    } else if (ref instanceof HTMLElement) {
       el = ref;
     }
     if (el !== null) {
-      el.scrollIntoView({ behavior: "smooth" });
+      (this.$refs["console"] as Element).scroll({
+        top: el.offsetTop,
+        behavior: "smooth",
+      });
     }
   }
 

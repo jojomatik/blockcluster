@@ -10,6 +10,7 @@ import fs from "fs";
 import Message, { MessageType } from "../../../common/components/message";
 import ServerConfig from "./server_config";
 import pidusage from "pidusage";
+import ResourceUsage from "../../../common/components/resource_usage";
 
 /**
  * The server side implementation of {@link CommonServer} with additional methods that won't run on the client side.
@@ -314,20 +315,14 @@ export default class Server extends CommonServer {
    * Measures the current resource usage and adds it to the list.
    * @param measuringTime if set this time is used as the time parameter of the data points.
    */
-  async measureUsage(measuringTime: number = Date.now()) {
+  async measureUsage(measuringTime?: number) {
     if (this.proc != null) {
       const usage = await pidusage(this.proc.pid);
-      this.resourceUsage.push({
-        time: measuringTime,
-        cpu: usage.cpu,
-        memory: usage.memory,
-      });
+      this.resourceUsage.push(
+        new ResourceUsage(measuringTime, usage.cpu, usage.memory)
+      );
     } else {
-      this.resourceUsage.push({
-        time: measuringTime,
-        cpu: 0,
-        memory: 0,
-      });
+      this.resourceUsage.push(new ResourceUsage(measuringTime, 0, 0));
     }
     if (this.resourceUsage.length > 60) this.resourceUsage.shift();
   }

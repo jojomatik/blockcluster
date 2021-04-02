@@ -72,6 +72,7 @@
 import { Component, Prop, Vue } from "vue-property-decorator";
 
 import VueApexChart from "vue-apexcharts";
+import ResourceUsage from "../../common/components/resource_usage";
 
 /**
  * The representation of a {@link Server} in Vue.
@@ -86,11 +87,7 @@ export default class ResourceChartComponent extends Vue {
    * The resource usage.
    * @private
    */
-  @Prop() private resourceUsage!: {
-    time: number;
-    cpu: number;
-    memory: number;
-  }[];
+  @Prop() private resourceUsage!: ResourceUsage[];
 }
 </script>
 

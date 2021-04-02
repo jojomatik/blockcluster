@@ -1,3 +1,5 @@
+import ResourceUsage from "./resource_usage";
+
 /**
  * An enum that holds different states a {@link Server} can be in.
  */
@@ -170,12 +172,12 @@ export default class Server {
    * A list of date time resource usage pairs.
    * @private
    */
-  private _resourceUsage: { time: number; cpu: number; memory: number }[] = [];
+  private _resourceUsage: ResourceUsage[] = [];
 
   /**
    * Returns {@link #resourceUsage}.
    */
-  get resourceUsage(): { time: number; cpu: number; memory: number }[] {
+  get resourceUsage(): ResourceUsage[] {
     return this._resourceUsage;
   }
 
@@ -183,7 +185,7 @@ export default class Server {
    * Sets a new value for {@link #resourceUsage}.
    * @param value the new value.
    */
-  set resourceUsage(value: { time: number; cpu: number; memory: number }[]) {
+  set resourceUsage(value: ResourceUsage[]) {
     this._resourceUsage = value;
   }
 

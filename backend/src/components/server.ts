@@ -93,9 +93,6 @@ export default class Server extends CommonServer {
           case "stop":
           case "restart":
             this.status = ServerStatus.Stopping;
-            this.proc.addListener("exit", () => {
-              this.proc = null;
-            });
             break;
         }
         this.proc.stdin.write(commandArr[2] + "\n");
@@ -214,10 +211,7 @@ export default class Server extends CommonServer {
     io.emit("server_" + encodeURIComponent(this.name), {
       serverInfo: this.strip(),
     });
-    if (
-      this.status === ServerStatus.Starting ||
-      this.status === ServerStatus.Stopping
-    ) {
+    if (this.status === ServerStatus.Starting) {
       setTimeout(async () => {
         await this.updateStatus();
         this.sendServerData();
@@ -254,6 +248,12 @@ export default class Server extends CommonServer {
         }
       });
     });
+
+    this.proc.addListener("exit", async () => {
+      this.proc = null;
+      await this.update();
+      this.sendServerData();
+    });
   }
 
   /**
@@ -261,11 +261,7 @@ export default class Server extends CommonServer {
    */
   public async stop() {
     this.status = ServerStatus.Stopping;
-    exec("kill " + this.proc.pid, () => {
-      this.proc.addListener("exit", () => {
-        this.proc = null;
-      });
-    });
+    exec("kill " + this.proc.pid);
   }
 
   /**

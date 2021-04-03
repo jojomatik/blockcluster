@@ -7,6 +7,7 @@ An in-browser manager for your minecraft servers.
 - View current status
 - View console log and send commands
 - Change start flags
+- Start servers with backend
 
 ## Roadmap for future releases
 - Authentication

@@ -12,12 +12,14 @@
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
+    "apexcharts": "^3.26.0",
     "concurrently": "^6.0.0",
     "core-js": "^3.10.0",
     "moment": "^2.29.1",
     "socket.io-client": "^4.0.1",
     "uuid": "^8.3.2",
     "vue": "^2.6.11",
+    "vue-apexcharts": "^1.6.0",
     "vue-class-component": "^7.2.3",
     "vue-meta": "^2.4.0",
     "vue-property-decorator": "^9.1.2",

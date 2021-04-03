@@ -6,6 +6,7 @@ import * as socketio from "socket.io-client";
 import VueSocketIO from "vue-socket.io";
 import vuetify from "./plugins/vuetify";
 import VueMeta from "vue-meta";
+import VueApexCharts from "vue-apexcharts";
 
 Vue.config.productionTip = false;
 
@@ -22,6 +23,8 @@ Vue.use(
 );
 
 Vue.use(VueMeta);
+
+Vue.use(VueApexCharts);
 
 new Vue({
   router,

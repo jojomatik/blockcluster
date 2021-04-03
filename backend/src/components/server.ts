@@ -9,6 +9,8 @@ import { ChildProcessWithoutNullStreams, exec, spawn } from "child_process";
 import fs from "fs";
 import Message, { MessageType } from "../../../common/components/message";
 import ServerConfig from "./server_config";
+import pidusage from "pidusage";
+import ResourceUsage from "../../../common/components/resource_usage";
 
 /**
  * The server side implementation of {@link CommonServer} with additional methods that won't run on the client side.
@@ -303,5 +305,21 @@ export default class Server extends CommonServer {
   set autostart(value: boolean) {
     super.autostart = value;
     this.config.autostart = value;
+  }
+
+  /**
+   * Measures the current resource usage and adds it to the list.
+   * @param measuringTime if set this time is used as the time parameter of the data points.
+   */
+  async measureUsage(measuringTime?: number) {
+    if (this.proc != null) {
+      const usage = await pidusage(this.proc.pid);
+      this.resourceUsage.push(
+        new ResourceUsage(measuringTime, usage.cpu, usage.memory)
+      );
+    } else {
+      this.resourceUsage.push(new ResourceUsage(measuringTime, 0, 0));
+    }
+    if (this.resourceUsage.length > 60) this.resourceUsage.shift();
   }
 }

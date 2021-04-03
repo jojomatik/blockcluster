@@ -79,6 +79,7 @@ getServers().then((servers) => {
   });
 
   // Listen to a channel per server
+  const time: number = Date.now();
   for (const server of servers) {
     const watchFilePath = basePath + "/" + server.name + "/start";
     fs.watchFile(watchFilePath, async (curr) => {
@@ -93,7 +94,18 @@ getServers().then((servers) => {
         await server.start();
       }
     });
+    server.measureUsage(time).then(() => {
+      server.sendServerData();
+    });
   }
+
+  setInterval(async () => {
+    const time: number = Date.now();
+    for (const server of servers) {
+      await server.measureUsage(time);
+      server.sendServerData();
+    }
+  }, 10000);
 
   process.on("SIGTERM", function () {
     servers.forEach(async (server) => {

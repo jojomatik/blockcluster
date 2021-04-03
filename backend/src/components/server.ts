@@ -35,6 +35,12 @@ export default class Server extends CommonServer {
   private config: ServerConfig;
 
   /**
+   * A timeout used while starting the server to check the status every second.
+   * @private
+   */
+  private timeout: NodeJS.Timeout | null;
+
+  /**
    * Updates {@link #status} as well as the selected jar file.
    */
   async update(): Promise<void> {
@@ -213,11 +219,14 @@ export default class Server extends CommonServer {
     io.emit("server_" + encodeURIComponent(this.name), {
       serverInfo: this.strip(),
     });
-    if (this.status === ServerStatus.Starting) {
-      setTimeout(async () => {
+    if (this.status === ServerStatus.Starting && this.timeout == null) {
+      this.timeout = setInterval(async () => {
         await this.updateStatus();
-        this.sendServerData();
+        if (this.status != ServerStatus.Starting) this.sendServerData();
       }, 1000);
+    } else if (this.timeout != null) {
+      clearInterval(this.timeout);
+      this.timeout = null;
     }
   }
 

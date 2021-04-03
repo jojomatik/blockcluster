@@ -79,6 +79,7 @@ getServers().then((servers) => {
   });
 
   // Listen to a channel per server
+  const time: number = Date.now();
   for (const server of servers) {
     const watchFilePath = basePath + "/" + server.name + "/start";
     fs.watchFile(watchFilePath, async (curr) => {
@@ -93,7 +94,7 @@ getServers().then((servers) => {
         await server.start();
       }
     });
-    server.measureUsage().then(() => {
+    server.measureUsage(time).then(() => {
       server.sendServerData();
     });
   }

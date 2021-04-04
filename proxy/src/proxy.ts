@@ -6,12 +6,12 @@ const app = express();
 app.use(
   "/",
   createProxyMiddleware(
-    pathname => {
+    (pathname) => {
       return pathname.startsWith("/sockjs-node/");
     },
     {
       target: "http://localhost:8080",
-      ws: true
+      ws: true,
     }
   )
 );
@@ -19,12 +19,12 @@ app.use(
 app.use(
   "/",
   createProxyMiddleware(
-    pathname => {
+    (pathname) => {
       return pathname.startsWith("/socket.io/");
     },
     {
       target: "http://localhost:3001",
-      ws: true
+      ws: true,
     }
   )
 );
@@ -33,7 +33,7 @@ app.use(
   createProxyMiddleware({
     target: "http://localhost:8080",
     // Remove path, if it has no file extension. Important for vue router.
-    pathRewrite: { ".*\\/[^.]*$": "" }
+    pathRewrite: { ".*\\/[^.]*$": "" },
   })
 );
 app.listen(80);

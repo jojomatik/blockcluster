@@ -206,7 +206,8 @@ export default class Server extends CommonServer {
   private async writeConfig(): Promise<void> {
     await fs.writeFileSync(
       this.getPath() + "/blockcluster.cfg",
-      JSON.stringify(this.config)
+      JSON.stringify(this.config),
+      { mode: 0o666 }
     );
   }
 
@@ -235,9 +236,14 @@ export default class Server extends CommonServer {
    */
   public async start() {
     this.status = ServerStatus.Starting;
-    this.proc = spawn("java", this.flags.concat(["-jar", this.getJarFile()]), {
-      cwd: this.getPath(),
-    });
+    this.proc = spawn(
+      "umask 0000 && java",
+      this.flags.concat(["-jar", this.getJarFile()]),
+      {
+        cwd: this.getPath(),
+        shell: true,
+      }
+    );
     this.proc.stdout.on("data", (data) => {
       const messages = data.toString().split("\n");
       messages.forEach(async (messageText: string) => {

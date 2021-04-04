@@ -30,5 +30,10 @@ RUN npm run build
 # Copy backend src and compile.
 COPY backend ./backend/
 RUN cd backend && tsc
-EXPOSE 80
+
+# Add group and user
+RUN addgroup -S blockcluster -g 1080 && adduser -S blockcluster -G blockcluster -u 1080
+USER blockcluster
+
+EXPOSE 8081
 CMD ["npm", "run", "start"]

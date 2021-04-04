@@ -9,6 +9,8 @@ import { ChildProcessWithoutNullStreams, exec, spawn } from "child_process";
 import fs from "fs";
 import Message, { MessageType } from "../../../common/components/message";
 import ServerConfig from "./server_config";
+import pidusage from "pidusage";
+import ResourceUsage from "../../../common/components/resource_usage";
 
 /**
  * The server side implementation of {@link CommonServer} with additional methods that won't run on the client side.
@@ -31,6 +33,12 @@ export default class Server extends CommonServer {
    * @private
    */
   private config: ServerConfig;
+
+  /**
+   * A timeout used while starting the server to check the status every second.
+   * @private
+   */
+  private timeout: NodeJS.Timeout | null;
 
   /**
    * Updates {@link #status} as well as the selected jar file.
@@ -198,7 +206,8 @@ export default class Server extends CommonServer {
   private async writeConfig(): Promise<void> {
     await fs.writeFileSync(
       this.getPath() + "/blockcluster.cfg",
-      JSON.stringify(this.config)
+      JSON.stringify(this.config),
+      { mode: 0o666 }
     );
   }
 
@@ -211,11 +220,14 @@ export default class Server extends CommonServer {
     io.emit("server_" + encodeURIComponent(this.name), {
       serverInfo: this.strip(),
     });
-    if (this.status === ServerStatus.Starting) {
-      setTimeout(async () => {
+    if (this.status === ServerStatus.Starting && this.timeout == null) {
+      this.timeout = setInterval(async () => {
         await this.updateStatus();
-        this.sendServerData();
+        if (this.status != ServerStatus.Starting) this.sendServerData();
       }, 1000);
+    } else if (this.timeout != null) {
+      clearInterval(this.timeout);
+      this.timeout = null;
     }
   }
 
@@ -224,9 +236,14 @@ export default class Server extends CommonServer {
    */
   public async start() {
     this.status = ServerStatus.Starting;
-    this.proc = spawn("java", this.flags.concat(["-jar", this.getJarFile()]), {
-      cwd: this.getPath(),
-    });
+    this.proc = spawn(
+      "umask 0000 && java",
+      this.flags.concat(["-jar", this.getJarFile()]),
+      {
+        cwd: this.getPath(),
+        shell: true,
+      }
+    );
     this.proc.stdout.on("data", (data) => {
       const messages = data.toString().split("\n");
       messages.forEach(async (messageText: string) => {
@@ -303,5 +320,21 @@ export default class Server extends CommonServer {
   set autostart(value: boolean) {
     super.autostart = value;
     this.config.autostart = value;
+  }
+
+  /**
+   * Measures the current resource usage and adds it to the list.
+   * @param measuringTime if set this time is used as the time parameter of the data points.
+   */
+  async measureUsage(measuringTime?: number) {
+    if (this.proc != null) {
+      const usage = await pidusage(this.proc.pid);
+      this.resourceUsage.push(
+        new ResourceUsage(measuringTime, usage.cpu, usage.memory)
+      );
+    } else {
+      this.resourceUsage.push(new ResourceUsage(measuringTime, 0, 0));
+    }
+    if (this.resourceUsage.length > 60) this.resourceUsage.shift();
   }
 }

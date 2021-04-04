@@ -2,6 +2,6 @@ version: "3.9"
 services:
   manager:
     ports:
-      - 80:80
+      - 8081:8081
     build: .
     image: registry.gitlab.jojomatik.de/jojomatik/blockcluster

@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "apexcharts": "^3.26.0",
-    "concurrently": "^6.0.0",
+    "concurrently": "^6.0.2",
     "core-js": "^3.10.0",
     "moment": "^2.29.1",
     "socket.io-client": "^4.0.1",
@@ -30,7 +30,7 @@
   },
   "devDependencies": {
     "@mdi/font": "^5.9.55",
-    "@types/jest": "^26.0.22",
+    "@types/jest": "^26.0.23",
     "@types/uuid": "^8.3.0",
     "@typescript-eslint/eslint-plugin": "^2.33.0",
     "@typescript-eslint/parser": "^2.33.0",

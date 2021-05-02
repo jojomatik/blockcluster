@@ -12,7 +12,7 @@
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
-    "apexcharts": "^3.26.0",
+    "apexcharts": "^3.26.1",
     "concurrently": "^6.0.2",
     "core-js": "^3.10.0",
     "moment": "^2.29.1",

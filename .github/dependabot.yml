@@ -5,6 +5,7 @@ updates:
     schedule:
       interval: "monthly"
     target-branch: "updates"
+    open-pull-requests-limit: 50
       
   - package-ecosystem: "npm"
     directory: "/backend"

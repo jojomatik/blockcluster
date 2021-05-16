@@ -5,13 +5,13 @@ An in-browser manager for your minecraft servers.
 ## Features
 - Start and stop servers
 - View current status
+- Show resource usage
 - View console log and send commands
 - Change start flags
 - Start servers with backend
 
 ## Roadmap for future releases
 - Authentication
-- Show resource usage
 - Create servers and download server jars
 
 ## Project setup with Docker (recommended)

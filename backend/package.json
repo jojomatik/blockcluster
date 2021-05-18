@@ -15,6 +15,6 @@
     "minecraft-server-util": "^3.5.1",
     "pidusage": "^2.0.21",
     "properties-reader": "^2.2.0",
-    "socket.io": "^4.0.1"
+    "socket.io": "^4.1.2"
   }
 }

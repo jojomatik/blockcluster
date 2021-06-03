@@ -1,6 +1,6 @@
 <template>
   <v-btn
-    v-if="this.status === ServerStatus.Stopped"
+    v-if="isToggle() && this.status === ServerStatus.Stopped"
     class="server-card-button"
     color="green"
     text
@@ -10,7 +10,7 @@
     Start
   </v-btn>
   <v-btn
-    v-else-if="this.status === ServerStatus.Starting"
+    v-else-if="isToggle() && this.status === ServerStatus.Starting"
     class="server-card-button"
     color="green"
     disabled
@@ -21,7 +21,7 @@
     Start
   </v-btn>
   <v-btn
-    v-else-if="this.status === ServerStatus.Started"
+    v-else-if="isToggle() && this.status === ServerStatus.Started"
     class="server-card-button"
     color="red"
     text
@@ -29,17 +29,38 @@
   >
     <v-icon left light>mdi-stop</v-icon>
     Stop
+  </v-btn>
+  <v-btn
+    v-else-if="isToggle()"
+    class="server-card-button"
+    color="red"
+    disabled
+    text
+    v-on:click="stop"
+  >
+    <v-icon left light>mdi-stop</v-icon>
+    Stop
+  </v-btn>
+  <v-btn
+    v-else-if="!isToggle() && this.status === ServerStatus.Started"
+    class="server-card-button"
+    color="orange"
+    text
+    v-on:click="restart"
+  >
+    <v-icon left light>mdi-restart</v-icon>
+    Restart
   </v-btn>
   <v-btn
     v-else
     class="server-card-button"
-    color="red"
+    color="orange"
     disabled
     text
-    v-on:click="stop"
+    v-on:click="restart"
   >
-    <v-icon left light>mdi-stop</v-icon>
-    Stop
+    <v-icon left light>mdi-restart</v-icon>
+    Restart
   </v-btn>
 </template>
 
@@ -71,6 +92,21 @@ export default class StateChangeButtonComponent extends Vue {
   @Prop() private status!: ServerStatus;
 
   /**
+   * Whether the button should toggle the status (i.e. start and stop) or restart the server.
+   * @private
+   */
+  @Prop() private type!: "toggle" | "restart";
+
+  /**
+   * Returns {@code true} if {@code this.type === "toggle"} (i.e. if the button should toggle the status/ start or stop the server) and {@code false} if the button should restart the server.
+   * @return {@code true} if {@code this.type === "toggle"}.
+   * @private
+   */
+  private isToggle(): boolean {
+    return this.type === "toggle";
+  }
+
+  /**
    * Sends a message `start` to the corresponding channel. The backend is expected to start the server and return the current status.
    * @private
    */
@@ -84,6 +120,14 @@ export default class StateChangeButtonComponent extends Vue {
    */
   private stop(): void {
     this.server.sendMessage("stop");
+  }
+
+  /**
+   * Sends a message `restart` to the corresponding channel. The backend is expected to restart the server and return the current status.
+   * @private
+   */
+  private restart(): void {
+    this.server.sendMessage("restart");
   }
 }
 </script>

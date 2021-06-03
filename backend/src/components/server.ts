@@ -96,6 +96,9 @@ export default class Server extends CommonServer {
       case "stop":
         await this.stop();
         break;
+      case "restart":
+        await this.restart();
+        break;
       case "command":
         switch (commandArr[2]) {
           case "stop":
@@ -279,6 +282,16 @@ export default class Server extends CommonServer {
   public async stop() {
     this.status = ServerStatus.Stopping;
     exec("kill " + this.proc.pid);
+  }
+
+  /**
+   * Restarts the {@link Server}.
+   */
+  public async restart() {
+    await this.stop();
+    this.proc.addListener("exit", async () => {
+      await this.start();
+    });
   }
 
   /**

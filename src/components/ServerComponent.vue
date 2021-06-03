@@ -60,6 +60,12 @@
             <StateChangeButtonComponent
               :server="this"
               :status="server.status"
+              type="toggle"
+            />
+            <StateChangeButtonComponent
+              :server="this"
+              :status="server.status"
+              type="restart"
             />
             <v-btn
               class="server-card-button"

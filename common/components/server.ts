@@ -25,6 +25,7 @@ export default class Server {
    * @param name the name of the server.
    * @param status the status of the server.
    * @param port the port the server listens on.
+   * @param world the main world of the server.
    * @param jar the jar file of the server.
    * @param autostart whether the server should start with the backend.
    */
@@ -32,12 +33,14 @@ export default class Server {
     name = "",
     status: ServerStatus = ServerStatus.Unknown,
     port = 0,
+    world = "",
     jar: string | null = null,
     autostart = false
   ) {
     this._name = name;
     this._status = status;
     this._port = port;
+    this._world = world;
     this._jar = jar;
     this._autostart = autostart;
   }
@@ -103,6 +106,27 @@ export default class Server {
    */
   set port(value: number) {
     this._port = value;
+  }
+
+  /**
+   * The name of the world of the {@link Server}.
+   * @private
+   */
+  private _world: string;
+
+  /**
+   * Returns {@link #world}.
+   */
+  get world(): string {
+    return this._world;
+  }
+
+  /**
+   * Sets a new value for {@link #world}.
+   * @param value the new value.
+   */
+  set world(value: string) {
+    this._world = value;
   }
 
   /**

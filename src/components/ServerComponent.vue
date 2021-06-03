@@ -56,10 +56,16 @@
             />
             <ConsoleComponent :server="this" :status="server.status" />
           </v-card-text>
-          <v-card-actions>
+          <v-card-actions class="px-4">
             <StateChangeButtonComponent
               :server="this"
               :status="server.status"
+              type="toggle"
+            />
+            <StateChangeButtonComponent
+              :server="this"
+              :status="server.status"
+              type="restart"
             />
             <v-btn
               class="server-card-button"
@@ -69,6 +75,11 @@
               <v-icon left light>mdi-reload</v-icon>
               Update Status
             </v-btn>
+            <WorldDeleteDialogComponent
+              buttonClass="ml-auto"
+              :server="this"
+              :status="server.status"
+            />
           </v-card-actions>
         </v-card>
       </v-col>
@@ -116,12 +127,14 @@ import ServerStatusComponent from "@/components/ServerStatusComponent.vue";
 import ConsoleComponent from "@/components/ConsoleComponent.vue";
 import StateChangeButtonComponent from "@/components/StateChangeButtonComponent.vue";
 import ResourceChartComponent from "@/components/ResourceChartComponent.vue";
+import WorldDeleteDialogComponent from "@/components/WorldDeleteDialogComponent.vue";
 
 /**
  * The representation of a {@link Server} in Vue.
  */
 @Component({
   components: {
+    WorldDeleteDialogComponent,
     ResourceChartComponent,
     StateChangeButtonComponent,
     ConsoleComponent,

@@ -56,7 +56,7 @@
             />
             <ConsoleComponent :server="this" :status="server.status" />
           </v-card-text>
-          <v-card-actions>
+          <v-card-actions class="px-4">
             <StateChangeButtonComponent
               :server="this"
               :status="server.status"

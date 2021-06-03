@@ -39,7 +39,8 @@ async function getServers(): Promise<Server[]> {
     if (isDir && fs.readdirSync(path).includes(propertiesFile)) {
       const properties = PropertiesReader(path + "/" + propertiesFile);
       const port = Number.parseInt(properties.get("server-port") as string);
-      const server = new Server(file, ServerStatus.Unknown, port);
+      const world = properties.get("level-name") as string;
+      const server = new Server(file, ServerStatus.Unknown, port, world);
       servers.push(server);
     }
   }

@@ -5,7 +5,12 @@ import CommonServer, { ServerStatus } from "../../../common/components/server";
 
 import { basePath, io } from "../backend";
 
-import { ChildProcessWithoutNullStreams, exec, spawn } from "child_process";
+import {
+  ChildProcessWithoutNullStreams,
+  exec,
+  spawn,
+  execSync,
+} from "child_process";
 import fs from "fs";
 import Message, { MessageType } from "../../../common/components/message";
 import ServerConfig from "./server_config";
@@ -98,6 +103,9 @@ export default class Server extends CommonServer {
         break;
       case "restart":
         await this.restart();
+        break;
+      case "deleteWorld":
+        await this.deleteWorld();
         break;
       case "command":
         switch (commandArr[2]) {
@@ -292,6 +300,27 @@ export default class Server extends CommonServer {
     this.proc.addListener("exit", async () => {
       await this.start();
     });
+  }
+
+  /**
+   * Deletes the world defined in {@code server.properties} and stops and starts the server again if it was started.
+   * @param gracefully whether the current {@link ServerStatus} should be checked and the server stopped in case it is currently running.
+   * @param previousStatus the {@link ServerStatus} the server should return to after deleting the world.
+   * @private
+   */
+  private async deleteWorld(gracefully = true, previousStatus = this.status) {
+    if (this.status === ServerStatus.Stopped || gracefully === false) {
+      execSync("rm -r " + this.getPath() + "/" + this.world);
+      execSync("rm -r " + this.getPath() + "/" + this.world + "_nether");
+      execSync("rm -r " + this.getPath() + "/" + this.world + "_the_end");
+      if (previousStatus === ServerStatus.Started) await this.start();
+    } else {
+      const currentStatus = this.status;
+      if (currentStatus === ServerStatus.Started) await this.stop();
+      this.proc.addListener("exit", async () => {
+        await this.deleteWorld(false, currentStatus);
+      });
+    }
   }
 
   /**

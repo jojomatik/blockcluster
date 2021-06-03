@@ -71,7 +71,7 @@ import { ServerStatus } from "../../common/components/server";
 import ServerComponent from "@/components/ServerComponent.vue";
 
 /**
- * The representation of a {@link Server} in Vue.
+ * A button that changes the current state of a server.
  */
 @Component({
   data() {

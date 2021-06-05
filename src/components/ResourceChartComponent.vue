@@ -49,6 +49,10 @@
       stroke: {
         curve: 'smooth',
       },
+      colors: [
+        this.$vuetify.theme.currentTheme.accent,
+        this.$vuetify.theme.currentTheme.secondary,
+      ],
     }"
     :series="[
       {

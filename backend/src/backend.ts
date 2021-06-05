@@ -116,8 +116,11 @@ getServers().then((servers) => {
     });
     watchedFiles.forEach((file) => fs.unwatchFile(file));
     clearTimeout(timeout);
-    backend.close(() => {
-      console.log("Backend stopped.");
+    io.close(() => {
+      console.log("Websocket stopped.");
+      backend.close(() => {
+        console.log("Backend stopped.");
+      });
     });
   });
 });

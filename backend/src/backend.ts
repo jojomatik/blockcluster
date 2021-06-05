@@ -112,5 +112,8 @@ getServers().then((servers) => {
     servers.forEach(async (server) => {
       if (server.status == ServerStatus.Started) await server.stop();
     });
+    backend.close(() => {
+      console.log("Backend stopped.");
+    });
   });
 });

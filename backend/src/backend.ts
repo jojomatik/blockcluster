@@ -81,8 +81,10 @@ getServers().then((servers) => {
 
   // Listen to a channel per server
   const time: number = Date.now();
+  const watchedFiles: string[] = [];
   for (const server of servers) {
     const watchFilePath = basePath + "/" + server.name + "/start";
+    watchedFiles.push(watchFilePath);
     fs.watchFile(watchFilePath, async (curr) => {
       if (curr.isFile()) {
         await server.start();
@@ -112,6 +114,7 @@ getServers().then((servers) => {
     servers.forEach(async (server) => {
       if (server.status == ServerStatus.Started) await server.stop();
     });
+    watchedFiles.forEach((file) => fs.unwatchFile(file));
     backend.close(() => {
       console.log("Backend stopped.");
     });

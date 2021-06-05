@@ -4,6 +4,7 @@
     :options="{
       chart: {
         id: 'resource-usage',
+        foreColor: this.$vuetify.theme.currentTheme.text,
         toolbar: {
           show: false,
         },

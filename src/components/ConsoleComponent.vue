@@ -1,6 +1,7 @@
 <template>
   <v-card
     dark
+    color="black"
     height="500"
     style="display: flex; flex-direction: column"
     class="mt-4"

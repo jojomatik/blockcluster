@@ -65,6 +65,13 @@ export default class Home extends Vue {
     });
   }
 
+  /**
+   * Unsubscribes the channel subscribed to in {@link #mounted}.
+   */
+  destroyed() {
+    this.sockets.unsubscribe("MESSAGE");
+  }
+
   updateServers() {
     this.sendMessage();
   }

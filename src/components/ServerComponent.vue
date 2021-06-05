@@ -188,6 +188,13 @@ export default class ServerComponent extends Vue {
   }
 
   /**
+   * Unsubscribes the channel subscribed to in {@link #mounted}.
+   */
+  destroyed() {
+    this.sockets.unsubscribe("server_" + encodeURIComponent(this.getName()));
+  }
+
+  /**
    * Sends a message `update` to the corresponding channel. The backend is expected to return the current status.
    * @private
    */

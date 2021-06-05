@@ -149,6 +149,15 @@ export default class ConsoleComponent extends Vue {
   }
 
   /**
+   * Unsubscribes the channel subscribed to in {@link #mounted}.
+   */
+  destroyed() {
+    this.sockets.unsubscribe(
+      "server_" + encodeURIComponent(this.server.getName())
+    );
+  }
+
+  /**
    * Adds a date time message if necessary.
    * @param message the new message.
    * @param lastTimestamp the timestamp of the last message.

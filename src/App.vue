@@ -23,7 +23,12 @@
       <router-link to="/about">About</router-link>
 
       <v-spacer></v-spacer>
-      <v-switch v-model="$vuetify.theme.dark" hide-details color="secondary">
+      <v-switch
+        v-model="$vuetify.theme.dark"
+        hide-details
+        color="secondary"
+        @change="storeTheme"
+      >
         <template v-slot:label>
           <span class="secondary--text">Dark mode</span>
         </template>
@@ -47,7 +52,26 @@ import { Component, Vue } from "vue-property-decorator";
     titleTemplate: "%s - blockcluster",
   },
 })
-export default class App extends Vue {}
+export default class App extends Vue {
+  /**
+   * Loads the selected theme from local storage.
+   */
+  mounted() {
+    this.$nextTick(() => {
+      this.$nextTick(() => {
+        this.$vuetify.theme.dark = localStorage.getItem("dark") === "true";
+      });
+    });
+  }
+
+  /**
+   * Stores the selected theme in local storage.
+   * @private
+   */
+  private storeTheme() {
+    localStorage.setItem("dark", this.$vuetify.theme.dark.toString());
+  }
+}
 </script>
 
 <style lang="scss" scoped>

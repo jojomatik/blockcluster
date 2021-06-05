@@ -102,7 +102,7 @@ getServers().then((servers) => {
     });
   }
 
-  setInterval(async () => {
+  const timeout = setInterval(async () => {
     const time: number = Date.now();
     for (const server of servers) {
       await server.measureUsage(time);
@@ -115,6 +115,7 @@ getServers().then((servers) => {
       if (server.status == ServerStatus.Started) await server.stop();
     });
     watchedFiles.forEach((file) => fs.unwatchFile(file));
+    clearTimeout(timeout);
     backend.close(() => {
       console.log("Backend stopped.");
     });

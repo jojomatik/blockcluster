@@ -29,6 +29,7 @@
                         <v-switch
                           class="ma-auto mb-1"
                           hide-details
+                          color="secondary"
                           v-model="autostart"
                         />
                       </td>
@@ -42,7 +43,12 @@
                           class="mt-2 pr-2"
                           v-model="flagString"
                         />
-                        <v-btn dense class="mt-1" @click="sendFlags()">
+                        <v-btn
+                          dense
+                          class="mt-1"
+                          color="secondary"
+                          @click="sendFlags()"
+                        >
                           Save
                         </v-btn>
                       </td>

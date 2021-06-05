@@ -8,6 +8,9 @@
         toolbar: {
           show: false,
         },
+        background: this.$vuetify.theme.dark
+          ? this.$vuetify.theme.currentTheme.primary
+          : '#FFFFFF',
       },
       xaxis: {
         categories: resourceUsage.map((usage) => {
@@ -54,6 +57,9 @@
         this.$vuetify.theme.currentTheme.accent,
         this.$vuetify.theme.currentTheme.secondary,
       ],
+      theme: {
+        mode: this.$vuetify.theme.dark ? 'dark' : 'light',
+      },
     }"
     :series="[
       {

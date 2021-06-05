@@ -36,4 +36,10 @@ app.use(
     pathRewrite: { ".*\\/[^.]*$": "" },
   })
 );
-app.listen(8081);
+const proxy = app.listen(8081);
+
+process.on("SIGTERM", function () {
+  proxy.close(() => {
+    console.log("Proxy stopped.");
+  });
+});

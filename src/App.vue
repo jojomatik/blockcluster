@@ -1,6 +1,6 @@
 <template>
   <v-app>
-    <v-app-bar app color="primary" dark>
+    <v-app-bar app color="primary" class="secondary--text">
       <div class="d-flex align-center">
         <v-img
           alt="blockcluster Icon"
@@ -10,7 +10,7 @@
           transition="scale-transition"
           width="40"
         />
-        <h2 style="letter-spacing: 2px">blockcluster</h2>
+        <h2 style="letter-spacing: 1px">blockcluster</h2>
       </div>
 
       <router-link to="/">Home</router-link> |

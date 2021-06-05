@@ -18,7 +18,7 @@
     </v-row>
     <v-row>
       <v-col cols="12">
-        <v-btn color="primary" v-on:click="sendMessage">
+        <v-btn color="secondary" v-on:click="sendMessage">
           <v-icon left light>mdi-reload</v-icon>
           Update Status
         </v-btn>

@@ -69,7 +69,7 @@
             />
             <v-btn
               class="server-card-button"
-              color="primary"
+              color="secondary"
               v-on:click="update"
             >
               <v-icon left light>mdi-reload</v-icon>

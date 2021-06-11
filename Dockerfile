@@ -22,7 +22,7 @@ RUN npm run build
 COPY backend ./backend/
 RUN cd backend && tsc
 
-FROM adoptopenjdk/openjdk15:alpine-jre AS base
+FROM openjdk:15-alpine AS base
 RUN apk add --update nodejs npm
 # Install concurrently.
 RUN npm install -g concurrently

@@ -1,6 +1,20 @@
 {
   "name": "blockcluster-frontend",
   "version": "0.4.0",
+  "homepage": "https://github.com/jojomatik/blockcluster",
+  "bugs": {
+    "url": "https://github.com/jojomatik/blockcluster/issues",
+    "email": "dev@jojomatik.de"
+  },
+  "license": "AGPL-3.0-or-later",
+  "author": {
+    "name": "jojomatik",
+    "email": "dev@jojomatik.de"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jojomatik/blockcluster.git"
+  },
   "private": true,
   "scripts": {
     "install_all": "concurrently \"npm install\" \"cd backend && npm install\"",

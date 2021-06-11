@@ -3,11 +3,11 @@
   "version": "0.4.0",
   "private": true,
   "scripts": {
-    "install_all": "concurrently \"npm install\" \"cd backend && npm install\" \"cd proxy && npm install\"",
-    "serve": "concurrently \"vue-cli-service serve\" \"cd backend && npm start\" \"cd proxy && npm start\"",
+    "install_all": "concurrently \"npm install\" \"cd backend && npm install\"",
+    "serve": "concurrently \"vue-cli-service serve --port 8081\" \"cd backend && cross-env NODE_ENV=develop npm start\"",
     "build": "vue-cli-service build",
-    "build_all": "concurrently \"vue-cli-service build\" \"cd backend && tsc\" \"cd proxy && tsc\"",
-    "start": "concurrently \"http-server dist -p 8080\" \"cd backend && node dist/backend/src/backend.js\" \"cd proxy && node dist/proxy.js\"",
+    "build_all": "concurrently \"vue-cli-service build\" \"cd backend && tsc\"",
+    "start": "cd backend && node dist/backend/src/backend.js",
     "test:unit": "vue-cli-service test:unit",
     "lint": "vue-cli-service lint"
   },
@@ -44,6 +44,7 @@
     "@vue/eslint-config-prettier": "^6.0.0",
     "@vue/eslint-config-typescript": "^5.0.2",
     "@vue/test-utils": "^1.2.0",
+    "cross-env": "^7.0.3",
     "eslint": "^6.7.2",
     "eslint-plugin-prettier": "^3.4.0",
     "eslint-plugin-vue": "^7.10.0",

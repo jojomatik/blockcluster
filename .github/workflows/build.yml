@@ -48,32 +48,11 @@ jobs:
         run: npm install
       - name: Build backend
         run: cd backend && tsc
-  npm_build_proxy:
-    name: Build proxy
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: Cache node modules
-        uses: actions/cache@v2
-        env:
-          cache-name: cache-node-modules-proxy
-        with:
-          # npm cache files are stored in `~/.npm` on Linux/macOS
-          path: ~/.npm
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('proxy/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-build-${{ env.cache-name }}-
-
-      - name: Install proxy dependencies
-        run: cd proxy && npm install
-      - name: Build proxy
-        run: cd proxy && tsc
   docker_build:
     name: Build docker image
     needs:
       - npm_build_frontend
       - npm_build_backend
-      - npm_build_proxy
     runs-on: ubuntu-latest
     steps:
       - name: Set up Docker Buildx

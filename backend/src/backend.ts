@@ -5,11 +5,14 @@ import PropertiesReader from "properties-reader";
 
 import { ServerStatus } from "../../common/components/server";
 import Server from "./components/server";
+import path from "path";
 
 const app = express();
 
-const backend = app.listen(3001, () =>
-  console.log("Backend running on port 3001.")
+const port = process.env.NODE_ENV === "develop" ? 3001 : 8081;
+
+const backend = app.listen(port, () =>
+  console.log("Backend running on port " + port + ".")
 );
 
 const options = {
@@ -17,6 +20,12 @@ const options = {
     origin: ["http://localhost:8080"],
   },
 };
+
+app.use(express.static(path.join(__dirname, "../../../../dist")));
+
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "../../../../dist/index.html"));
+});
 
 /**
  * The base path for the servers.

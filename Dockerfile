@@ -1,10 +1,8 @@
 ARG ENVIRONMENT=production
 
 FROM node AS builder
-# Install concurrently, typescript and nodemon.
-RUN npm install -g concurrently
+# Install typescript.
 RUN npm install -g typescript
-RUN npm install -g nodemon
 # Set working directory.
 WORKDIR /usr/games/minecraft
 # Copy package.json and package-lock.json for frontend and backend and install dependencies, before copying the rest. This is more efficient as only changes to these files require a new npm install.

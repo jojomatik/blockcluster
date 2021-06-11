@@ -14,43 +14,59 @@ An in-browser manager for your minecraft servers.
 - Authentication
 - Create servers and download server jars
 
-## Project setup with Docker (recommended)
-### Compiles and hot-reloads for development
+## Building
+### Building with `docker-compose` (recommended)
+Prerequisites:
+- Git
+- Docker
+- Docker Compose
+
+Run the following commands:
+```sh
+git clone https://github.com/jojomatik/blockcluster
+cd blockcluster
 ```
+
+**To build for production**, run the following command:
+```sh
+docker-compose up
+```
+Open `http://[your ip]:8081` in your browser.
+
+**To enable hot reloads**, configure a file watcher for the TypeScript files in the `backend/src` directory to run `tsc` in the `backend` directory and run the following command:
+```sh
 docker-compose -f docker-compose.yml -f docker-compose.dev.yml up
 ```
+Open `http://[your ip]:8081` in your browser.
 
-### Compiles and minifies for production and starts production
-```
-docker-compose -f docker-compose.yml up
-```
-
-## Project setup (manual)
-```
-npm run install_all
+To make sure that the container is recreated and the image rebuilt, use either command with additional options, e.g.:
+```sh
+docker-compose up --force-recreate --build
 ```
 
-### Compiles and hot-reloads for development
-```
-npm run serve
+### Building manually
+Prerequisites:
+- Git
+- Node.js and npm
+- TypeScript installed globally (`npm install -g typescript`)
+
+Run the following commands:
+```sh
+git clone https://github.com/jojomatik/blockcluster
+cd blockcluster
+npm install_all
 ```
 
-### Compiles and minifies for production
-```
+**To build for production**, run the following commands:
+```sh
 npm run build_all
-```
-
-### Start production
-```
 npm run start
 ```
+Open `http://[your ip]:8081` in your browser.
 
-### Run your unit tests
-```
-npm run test:unit
-```
 
-### Lints and fixes files
+**To enable hot reloads**, configure a file watcher for the TypeScript files in the `backend/src` directory to run `tsc` in the `backend` directory and run the following command:
+```sh
+npm run serve
 ```
-npm run lint
-```
+Open `http://[your ip]:8081` in your browser.

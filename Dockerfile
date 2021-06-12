@@ -44,8 +44,6 @@ WORKDIR /usr/games/minecraft
 RUN mkdir servers
 
 FROM base AS base-production
-# Copy package.json and package-lock.json for frontend and install production dependencies.
-COPY package*.json ./
 
 FROM base AS base-develop
 # Install concurrently.
@@ -73,4 +71,4 @@ EXPOSE 8081
 HEALTHCHECK --timeout=3s \
   CMD curl -f http://localhost:8081/ || exit 1
 
-CMD ["npm", "run", "start"]
+CMD cd backend && node dist/backend/src/backend.js

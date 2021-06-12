@@ -37,8 +37,6 @@ ENV JAVA_HOME=/opt/java
 ENV PATH=/opt/java/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 COPY --from=jdk /opt/jre-15-ea /opt/java
 RUN apk add --update nodejs npm
-# Install concurrently.
-RUN npm install -g concurrently
 # Set working directory.
 WORKDIR /usr/games/minecraft
 # Create servers directory to prevent errors.
@@ -50,6 +48,8 @@ COPY package*.json ./
 RUN npm install --only=prod
 
 FROM base AS base-develop
+# Install concurrently.
+RUN npm install -g concurrently
 # Copy package.json and package-lock.json for frontend and install all dependencies.
 COPY package*.json ./
 RUN npm install

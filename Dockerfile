@@ -46,7 +46,6 @@ RUN mkdir servers
 FROM base AS base-production
 # Copy package.json and package-lock.json for frontend and install production dependencies.
 COPY package*.json ./
-RUN npm install --only=prod
 
 FROM base AS base-develop
 # Install concurrently.

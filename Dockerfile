@@ -38,6 +38,7 @@ ENV JAVA_HOME=/opt/java
 ENV PATH=/opt/java/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 COPY --from=jdk /opt/jre-15-ea /opt/java
 RUN apk add --update nodejs npm
+COPY LICENSE README.md ./
 # Set working directory.
 WORKDIR /usr/games/minecraft
 # Create servers directory to prevent errors.

@@ -32,6 +32,7 @@ WORKDIR /opt/jdk-15-ea/bin
 RUN jlink --output /opt/jre-15-ea --compress=2 --no-header-files --no-man-pages --module-path ../jmods --add-modules java.base,java.compiler,java.datatransfer,java.desktop,java.instrument,java.logging,java.management,java.management.rmi,java.naming,java.net.http,java.prefs,java.rmi,java.scripting,java.se,java.security.jgss,java.security.sasl,java.smartcardio,java.sql,java.sql.rowset,java.transaction.xa,java.xml,java.xml.crypto,jdk.crypto.cryptoki,jdk.crypto.ec,jdk.unsupported,jdk.zipfs
 
 FROM alpine AS base
+RUN apk --no-cache add curl
 RUN apk add --no-cache java-cacerts
 ENV JAVA_HOME=/opt/java
 ENV PATH=/opt/java/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
@@ -70,4 +71,7 @@ RUN addgroup -S blockcluster -g 1080 && adduser -S blockcluster -G blockcluster 
 USER blockcluster
 
 EXPOSE 8081
+HEALTHCHECK --timeout=3s \
+  CMD curl -f http://localhost:8081/ || exit 1
+
 CMD ["npm", "run", "start"]

@@ -16,6 +16,11 @@ COPY public ./public/
 COPY src ./src/
 # Copy compilation config files.
 COPY .eslintrc.js babel.config.js tsconfig.json ./
+# Store git commit and ref.
+ARG git_sha
+ARG git_ref
+RUN echo "VUE_APP_GIT_SHA=$git_sha" > ./.env
+RUN echo "VUE_APP_GIT_REF=$git_ref" >> ./.env
 # Build frontend.
 RUN npm run build
 # Copy backend src and compile.
@@ -50,6 +55,7 @@ RUN cd backend && npm install --only=prod
 COPY backend/settings.properties backend/settings.properties
 COPY --from=builder /usr/games/minecraft/dist dist
 COPY --from=builder /usr/games/minecraft/backend/dist backend/dist
+COPY --from=builder /usr/games/minecraft/.env ./
 
 # Add group and user
 RUN addgroup -S blockcluster -g 1080 && adduser -S blockcluster -G blockcluster -u 1080

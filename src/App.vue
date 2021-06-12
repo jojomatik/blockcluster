@@ -56,21 +56,67 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <v-main>
       <router-view />
     </v-main>
+    <v-footer class="footer" color="transparent">
+      <v-col>
+        <v-row class="justify-center">
+          <span> Copyright © 2021 jojomatik </span>
+        </v-row>
+        <v-row class="justify-center">
+          <span>
+            The source code of blockcluster is licensed under the AGPL-3.0
+            license.
+          </span>
+        </v-row>
+        <v-row class="justify-center">
+          <span>
+            View the source code and license on
+            <v-chip
+              small
+              :href="GIT_ROOT"
+              id="gh-link"
+              color="#24292e"
+              text-color="white"
+            >
+              <v-icon class="pr-1 medium_icon">mdi-github</v-icon>
+              GitHub
+            </v-chip>
+            <GitHubVersionLink :git-root="GIT_ROOT" :version="version">
+            </GitHubVersionLink>
+          </span>
+        </v-row>
+      </v-col>
+    </v-footer>
   </v-app>
 </template>
 
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
+import GitHubVersionLink from "@/components/GitHubVersionLink.vue";
+import { getVersion } from "../common/version";
+
+/**
+ * The link to the GitHub repository.
+ */
+const GIT_ROOT = "https://github.com/jojomatik/blockcluster";
 
 /**
  * The main {@link Vue}-View that contains the App.
  */
 @Component({
+  components: { GitHubVersionLink },
   metaInfo: {
     titleTemplate: "%s - blockcluster",
   },
+  data() {
+    return { GIT_ROOT };
+  },
 })
 export default class App extends Vue {
+  /**
+   * The current version of this software. Either a release version (e.g. `v0.1.0`) or a short commit SHA.
+   */
+  version = getVersion();
+
   /**
    * Loads the selected theme from local storage.
    */
@@ -99,5 +145,18 @@ export default class App extends Vue {
   &.router-link-exact-active {
     text-decoration: none;
   }
+}
+
+.footer {
+  font-size: 12px;
+}
+
+#gh-link {
+  .medium_icon {
+    font-size: 24px;
+    width: fit-content;
+  }
+  padding: 2px 6px 2px 0;
+  margin: 0;
 }
 </style>

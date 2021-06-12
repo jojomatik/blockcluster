@@ -25,13 +25,14 @@ import { ServerStatus } from "../../common/components/server";
 import Server from "./components/server";
 import path from "path";
 
+import dotenv from "dotenv";
+import dotenvExpand from "dotenv-expand";
+dotenvExpand(dotenv.config({ path: "../.env" }));
+dotenvExpand(dotenv.config({ path: "../.env.local" }));
+
+import { getVersion } from "../../common/version";
+
 const app = express();
-
-const port = process.env.NODE_ENV === "develop" ? 3001 : 8081;
-
-const backend = app.listen(port, () =>
-  console.log("Backend running on port " + port + ".")
-);
 
 const options = {
   cors: {
@@ -39,11 +40,31 @@ const options = {
   },
 };
 
+/**
+ * The current version of this software. Either a release version (e.g. `v0.1.0`) or a short commit SHA.
+ */
+const version = getVersion();
+
+// Handles queries to the version API endpoint and returns the version.
+app.get("/api/version", async (req, res) => {
+  res.contentType("application/json");
+  res.send({ version: version });
+  res.status(200).end();
+});
+
 app.use(express.static(path.join(__dirname, "../../../../dist")));
 
 app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname, "../../../../dist/index.html"));
 });
+
+const port = process.env.NODE_ENV === "develop" ? 3001 : 8081;
+
+const backend = app.listen(port, () =>
+  console.log(
+    "Backend (revision " + version + ") running on port " + port + "."
+  )
+);
 
 /**
  * The base path for the servers.

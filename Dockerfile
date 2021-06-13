@@ -4,7 +4,7 @@ FROM node AS builder
 # Install typescript.
 RUN npm install -g typescript
 # Set working directory.
-WORKDIR /usr/games/minecraft
+WORKDIR /usr/games/blockcluster
 # Copy package.json and package-lock.json for frontend and backend and install dependencies, before copying the rest. This is more efficient as only changes to these files require a new npm install.
 COPY package*.json ./
 RUN npm install
@@ -40,7 +40,7 @@ COPY --from=jdk /opt/jre-15-ea /opt/java
 RUN apk add --update nodejs npm
 COPY LICENSE README.md ./
 # Set working directory.
-WORKDIR /usr/games/minecraft
+WORKDIR /usr/games/blockcluster
 # Create servers directory to prevent errors.
 RUN mkdir servers
 
@@ -60,9 +60,9 @@ COPY backend/package*.json ./backend/
 RUN cd backend && npm install --only=prod
 
 COPY backend/settings.properties backend/settings.properties
-COPY --from=builder /usr/games/minecraft/dist dist
-COPY --from=builder /usr/games/minecraft/backend/dist backend/dist
-COPY --from=builder /usr/games/minecraft/.env ./
+COPY --from=builder /usr/games/blockcluster/dist dist
+COPY --from=builder /usr/games/blockcluster/backend/dist backend/dist
+COPY --from=builder /usr/games/blockcluster/.env ./
 
 # Add group and user
 RUN addgroup -S blockcluster -g 1080 && adduser -S blockcluster -G blockcluster -u 1080

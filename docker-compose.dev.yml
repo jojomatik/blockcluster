@@ -2,11 +2,11 @@ version: "3.9"
 services:
   manager:
     volumes:
-    - ./common:/usr/games/minecraft/common
-    - ./src:/usr/games/minecraft/src
-    - ./backend:/usr/games/minecraft/backend
-    - ./proxy:/usr/games/minecraft/proxy
-    - ./public:/usr/games/minecraft/public
+    - ./common:/usr/games/blockcluster/common
+    - ./src:/usr/games/blockcluster/src
+    - ./backend:/usr/games/blockcluster/backend
+    - ./proxy:/usr/games/blockcluster/proxy
+    - ./public:/usr/games/blockcluster/public
     command: npm run serve
     environment:
       - CHOKIDAR_USEPOLLING=true

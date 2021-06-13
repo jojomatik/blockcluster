@@ -4,4 +4,4 @@ services:
     ports:
       - 8081:8081
     build: .
-    image: registry.gitlab.jojomatik.de/jojomatik/blockcluster
+    image: jojomatik/blockcluster

@@ -55,7 +55,7 @@ RUN npm install
 COPY .eslintrc.js babel.config.js tsconfig.json vue.config.js ./
 
 FROM base-${ENVIRONMENT}
-# Copy package.json and package-lock.json for backend and proxy and install production dependencies.
+# Copy package.json and package-lock.json for backend and install production dependencies.
 COPY backend/package*.json ./backend/
 RUN cd backend && npm install --only=prod
 

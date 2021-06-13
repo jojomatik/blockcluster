@@ -14,6 +14,52 @@ An in-browser manager for your minecraft servers.
 - Authentication
 - Create servers and download server jars
 
+## Setup 
+### Setup with docker (recommended)
+Prerequisites:
+- Docker
+
+Customize `/path/to/servers/on/host/machine` and the port directives `-p port:port` to your liking and run:
+```sh
+docker run -d -v /path/to/servers/on/host/machine:/usr/games/blockcluster/servers -p 8081:8081 25565-25569:25565-25569 jojomatik/blockcluster:latest
+```
+Open `http://[your ip]:8081` in your browser.
+
+### Setup with `docker-compose` (also recommended)
+Prerequisites:
+- Docker
+- Docker Compose
+
+Download [`docker-compose.yml`](docker-compose.yml) and customize it to your liking and add a volume mount to your servers on the host machine. E.g.:
+```
+version: "3.9"
+services:
+  manager:
+    ports:
+      - 8081:8081
+      - 25565:25565
+    image: jojomatik/blockcluster
+    volumes:
+      - /path/to/servers/on/host/machine:/usr/games/blockcluster/servers
+```
+
+Then run the following command:
+```sh
+docker-compose up
+```
+Open `http://[your ip]:8081` in your browser.
+
+### Manual setup 
+Prerequisites:
+- Git
+- Node.js and npm
+- TypeScript installed globally (`npm install -g typescript`)
+
+1. First build the app using the instructions from ["Building manually"](#building-manually).
+2. Create the `servers/` subdirectory and move your servers into it.
+3. Run `npm run start` and open `http://[your ip]:8081` in your browser.
+
+
 ## Building
 ### Building with `docker-compose` (recommended)
 Prerequisites:

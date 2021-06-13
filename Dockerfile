@@ -15,7 +15,7 @@ COPY common ./common/
 COPY public ./public/
 COPY src ./src/
 # Copy compilation config files.
-COPY .eslintrc.js babel.config.js tsconfig.json ./
+COPY .eslintrc.js babel.config.js tsconfig.json vue.config.js ./
 # Store git commit and ref.
 ARG git_sha
 ARG git_ref

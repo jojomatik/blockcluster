@@ -1,3 +1,6 @@
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const LicenseCheckerWebpackPlugin = require("license-checker-webpack-plugin");
+
 module.exports = {
   transpileDependencies: ["vuetify"],
   devServer: {
@@ -10,5 +13,14 @@ module.exports = {
         target: "http://localhost:3001",
       },
     },
+  },
+  configureWebpack: {
+    plugins: [
+      new LicenseCheckerWebpackPlugin({
+        allow: "(Apache-2.0 OR BSD-2-Clause OR BSD-3-Clause OR MIT OR 0BSD)",
+        emitError: true,
+        outputFilename: "ThirdPartyNotices.txt",
+      }),
+    ],
   },
 };

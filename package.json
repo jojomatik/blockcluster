@@ -27,7 +27,6 @@
   },
   "dependencies": {
     "apexcharts": "^3.27.1",
-    "concurrently": "^6.2.0",
     "core-js": "^3.14.0",
     "moment": "^2.29.1",
     "socket.io-client": "^4.1.2",
@@ -58,6 +57,7 @@
     "@vue/eslint-config-prettier": "^6.0.0",
     "@vue/eslint-config-typescript": "^5.0.2",
     "@vue/test-utils": "^1.2.0",
+    "concurrently": "^6.2.0",
     "cross-env": "^7.0.3",
     "eslint": "^6.7.2",
     "eslint-plugin-prettier": "^3.4.0",

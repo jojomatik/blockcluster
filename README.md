@@ -101,7 +101,8 @@ Run the following commands:
 ```sh
 git clone https://github.com/jojomatik/blockcluster
 cd blockcluster
-npm install_all
+npm install
+cd backend && npm install
 ```
 
 **To build for production**, run the following commands:

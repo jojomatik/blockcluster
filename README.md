@@ -55,6 +55,7 @@ Prerequisites:
 - Git
 - Node.js and npm
 - TypeScript installed globally (`npm install -g typescript`)
+- Java (to run the minecraft servers)
 
 1. First build the app using the instructions from ["Building manually"](#building-manually).
 2. Create the `servers/` subdirectory and move your servers into it.
@@ -96,6 +97,7 @@ Prerequisites:
 - Git
 - Node.js and npm
 - TypeScript installed globally (`npm install -g typescript`)
+- Java (only to run the minecraft servers)
 
 Run the following commands:
 ```sh

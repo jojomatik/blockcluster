@@ -1,21 +1,11 @@
 {
   "name": "blockcluster-frontend",
   "version": "0.7.0",
-  "homepage": "https://github.com/jojomatik/blockcluster",
-  "bugs": {
-    "url": "https://github.com/jojomatik/blockcluster/issues",
-    "email": "dev@jojomatik.de"
-  },
-  "license": "AGPL-3.0-or-later",
+  "private": true,
   "author": {
     "name": "jojomatik",
     "email": "dev@jojomatik.de"
   },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/jojomatik/blockcluster.git"
-  },
-  "private": true,
   "scripts": {
     "install_all": "concurrently \"npm install\" \"cd backend && npm install\"",
     "serve": "concurrently \"vue-cli-service serve --port 8081\" \"cd backend && cross-env NODE_ENV=develop npm start\"",
@@ -71,5 +61,15 @@
     "vue-cli-plugin-vuetify": "~2.4.1",
     "vue-template-compiler": "^2.6.14",
     "vuetify-loader": "^1.7.0"
+  },
+  "bugs": {
+    "url": "https://github.com/jojomatik/blockcluster/issues",
+    "email": "dev@jojomatik.de"
+  },
+  "homepage": "https://github.com/jojomatik/blockcluster",
+  "license": "AGPL-3.0-or-later",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jojomatik/blockcluster.git"
   }
 }

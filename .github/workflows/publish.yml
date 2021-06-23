@@ -87,7 +87,7 @@ jobs:
           push: true
           tags: ${{ steps.docker_meta.outputs.tags }}
           cache-from: type=local,src=/tmp/.buildx-cache
-          cache-to: type=local,dest=/tmp/.buildx-cache-new
+          cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
           build-args: |
             git_sha=${{github.sha}}
             git_ref=${{github.ref}}

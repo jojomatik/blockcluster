@@ -34,7 +34,7 @@ jobs:
 
       - name: Install frontend dependencies
         if: steps.cache.outputs.cache-hit != 'true'
-        run: npm ci
+        run: npm ci --prefer-offline --no-audit
       - name: Build frontend
         run: npm run build
   npm_build_backend:
@@ -67,7 +67,7 @@ jobs:
         run: mv backend/package*.json .
       - name: Install backend dependencies
         if: steps.cache.outputs.cache-hit != 'true'
-        run: npm ci
+        run: npm ci --prefer-offline --no-audit
       - name: Build backend
         run: cd backend && tsc
   push_to_registry:

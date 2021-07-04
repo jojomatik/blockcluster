@@ -2,8 +2,9 @@ name: Build and publish Docker image
 on:
   push:
     branches: [master, beta]
-    tags:
-      - 'v*'
+  release:
+    types:
+      - published
 
 jobs:
   npm_build_frontend:

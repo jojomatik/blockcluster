@@ -3,7 +3,7 @@ on:
   push:
     branches: [develop]
   pull_request:
-    branches: [master, develop]
+    branches: [master, beta, develop]
 
 jobs:
   npm_build_frontend:

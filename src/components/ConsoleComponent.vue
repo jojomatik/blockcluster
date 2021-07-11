@@ -116,6 +116,18 @@ export default class ConsoleComponent extends Vue {
   // noinspection JSMismatchedCollectionQueryUpdate
   private messages: Message[] = [];
 
+  /**
+   * Whether or not the console is scrolling at the moment.
+   * @private
+   */
+  private scrolling = false;
+
+  /**
+   * Whether or not the console has been requested to scroll.
+   * @private
+   */
+  private scrollRequested = false;
+
   constructor() {
     super();
     this.getMessages();
@@ -202,6 +214,7 @@ export default class ConsoleComponent extends Vue {
    * @private
    */
   private scrollConsole() {
+    this.scrollRequested = true;
     const ref = this.$refs["consoleEnd"];
     let el: HTMLElement | null = null;
     if (Array.isArray(ref)) {
@@ -210,10 +223,35 @@ export default class ConsoleComponent extends Vue {
       el = ref;
     }
     if (el !== null) {
-      (this.$refs["console"] as Element).scroll({
-        top: el.offsetTop,
-        behavior: "smooth",
-      });
+      const console = this.$refs["console"] as HTMLElement;
+      if (this.scrolling) {
+        return;
+      }
+      this.scrollRequested = false;
+      if (el.offsetTop >= console.offsetTop + console.offsetHeight) {
+        console.scroll({
+          top: el.offsetTop,
+          behavior: "smooth",
+        });
+        this.checkScrollEnd(console);
+        this.scrolling = true;
+      }
+    }
+  }
+
+  /**
+   * Recursively checks if scrolling is finished for each frame and restarts scrolling afterwards if requested.
+   * @param element the element (i.e. the console) for which it should be checked if scrolling is finished.
+   * @param lastTop the value of `element.scrollTop` from the last iteration, compared with the current value to check if scrolling is still in progress. Defaults to -1.
+   * @private
+   */
+  private checkScrollEnd(element: Element, lastTop = -1) {
+    if (element.scrollTop === lastTop) {
+      this.scrolling = false;
+      if (this.scrollRequested) this.scrollConsole();
+    } else {
+      lastTop = element.scrollTop;
+      window.requestAnimationFrame(() => this.checkScrollEnd(element, lastTop));
     }
   }
 

@@ -69,9 +69,13 @@ const backend = app.listen(port, () =>
 /**
  * The base path for the servers.
  */
-export const basePath: string = PropertiesReader("./settings.properties")
-  .get("server-path")
-  .toString();
+export const basePath: string = ((): string => {
+  const basePath = PropertiesReader("./settings.properties")
+    .get("server-path")
+    .toString();
+  if (path.isAbsolute(basePath)) return basePath;
+  return path.join(__dirname, "../../../..", basePath);
+})();
 
 /**
  * Returns a promise for an array of {@link Server}s based on base directory from `settings.properties`.

@@ -70,9 +70,11 @@ const backend = app.listen(port, () =>
  * The base path for the servers.
  */
 export const basePath: string = ((): string => {
-  const basePath = PropertiesReader("./settings.properties")
-    .get("server-path")
-    .toString();
+  let basePath: string = process.env.SERVER_PATH;
+  if (!basePath)
+    basePath = PropertiesReader("./settings.properties")
+      .get("server-path")
+      .toString();
   if (path.isAbsolute(basePath)) return basePath;
   return path.join(__dirname, "../../../..", basePath);
 })();

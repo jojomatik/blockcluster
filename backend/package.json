@@ -10,21 +10,21 @@
     "start": "nodemon dist/backend/src/backend.js"
   },
   "devDependencies": {
+    "@types/express": "^4.17.1",
     "@types/pidusage": "^2.0.1",
     "@types/properties-reader": "^2.1.0",
-    "@types/express": "^4.17.1",
     "@types/uuid": "^8.3.0",
     "nodemon": "^2.0.9"
   },
   "dependencies": {
+    "dotenv": "^10.0.0",
+    "dotenv-expand": "^5.1.0",
     "express": "^4.17.1",
-    "uuid": "^8.3.2",
     "minecraft-server-util": "^3.5.2",
     "pidusage": "^2.0.21",
     "properties-reader": "^2.2.0",
     "socket.io": "^4.1.2",
-    "dotenv": "^10.0.0",
-    "dotenv-expand": "^5.1.0"
+    "uuid": "^8.3.2"
   },
   "bugs": {
     "url": "https://github.com/jojomatik/blockcluster/issues",

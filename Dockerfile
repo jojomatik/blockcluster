@@ -59,7 +59,6 @@ FROM base-${ENVIRONMENT}
 COPY backend/package*.json ./backend/
 RUN cd backend && npm install --only=prod
 
-COPY backend/settings.properties backend/settings.properties
 COPY --from=builder /usr/games/blockcluster/dist dist
 COPY --from=builder /usr/games/blockcluster/backend/dist backend/dist
 COPY --from=builder /usr/games/blockcluster/.env ./

@@ -58,7 +58,9 @@ Prerequisites:
 - Java (to run the minecraft servers)
 
 1. First build the app using the instructions from ["Building manually"](#building-manually).
-2. Create the `servers/` subdirectory and move your servers into it.
+2. Either
+   - create the `servers/` subdirectory and move your servers into it or
+   - set the environment variable `SERVER_PATH` to the relative or absolute path of your servers.
 3. Run `npm run start` and open `http://[your ip]:8081` in your browser.
 
 

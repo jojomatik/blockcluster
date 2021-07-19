@@ -271,7 +271,7 @@ export default class Server extends CommonServer {
       : "";
     this.proc = spawn(
       permissionPrefix + "java",
-      this.flags.concat(["-jar", this.getJarFile()]),
+      this.flags.concat(["-jar", this.getJarFile(), "nogui"]),
       {
         cwd: this.getPath(),
         shell: true,

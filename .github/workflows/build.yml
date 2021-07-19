@@ -1,9 +1,9 @@
 name: Build
 on:
   push:
-    branches: [develop]
+    branches: [develop, next]
   pull_request:
-    branches: [master, beta, develop]
+    branches: [master, beta, develop, next]
 
 jobs:
   npm_build_frontend:

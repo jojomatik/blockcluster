@@ -33,6 +33,7 @@ import fs from "fs";
 import Message, { MessageType } from "../../../common/components/message";
 import ServerConfig from "./server_config";
 import pidusage from "pidusage";
+import commandExists from "command-exists";
 import ResourceUsage from "../../../common/components/resource_usage";
 
 /**
@@ -265,8 +266,11 @@ export default class Server extends CommonServer {
    */
   public async start() {
     this.status = ServerStatus.Starting;
+    const permissionPrefix = commandExists.sync("umask")
+      ? "umask 0000 && "
+      : "";
     this.proc = spawn(
-      "umask 0000 && java",
+      permissionPrefix + "java",
       this.flags.concat(["-jar", this.getJarFile()]),
       {
         cwd: this.getPath(),

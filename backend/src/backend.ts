@@ -69,7 +69,9 @@ const backend = app.listen(port, () =>
 /**
  * The base path for the minecraft servers.
  *
- * The minecraft server path is read from the environment variable `SERVER_PATH` if available. Otherwise the property `server-path` in file `settings.properties` is used.
+ * The minecraft server path is read from the environment variable `SERVER_PATH` if available.
+ *
+ * Otherwise the property `server-path` in file `settings.properties` is used (deprecated, this functionality will be removed by v1.0.0).
  *
  * By default its value is the directory `servers/` relative to the root directory of blockcluster.
  */

@@ -27,15 +27,15 @@ RUN npm run build
 COPY backend ./backend/
 RUN cd backend && tsc
 
-FROM openjdk:15-alpine AS jdk
-RUN jlink --output /opt/jre-15-ea --compress=2 --no-header-files --no-man-pages --module-path ../jmods --add-modules java.base,java.compiler,java.datatransfer,java.desktop,java.instrument,java.logging,java.management,java.management.rmi,java.naming,java.net.http,java.prefs,java.rmi,java.scripting,java.se,java.security.jgss,java.security.sasl,java.smartcardio,java.sql,java.sql.rowset,java.transaction.xa,java.xml,java.xml.crypto,jdk.crypto.cryptoki,jdk.crypto.ec,jdk.unsupported,jdk.zipfs
+FROM openjdk:16-alpine AS jdk
+RUN jlink --output /opt/jre-16 --compress=2 --no-header-files --no-man-pages --module-path ../jmods --add-modules java.base,java.compiler,java.datatransfer,java.desktop,java.instrument,java.logging,java.management,java.management.rmi,java.naming,java.net.http,java.prefs,java.rmi,java.scripting,java.se,java.security.jgss,java.security.sasl,java.smartcardio,java.sql,java.sql.rowset,java.transaction.xa,java.xml,java.xml.crypto,jdk.crypto.cryptoki,jdk.crypto.ec,jdk.unsupported,jdk.zipfs
 
 FROM alpine:3.13 AS base
 RUN apk --no-cache add curl
 RUN apk add --no-cache java-cacerts
 ENV JAVA_HOME=/opt/java
 ENV PATH=/opt/java/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-COPY --from=jdk /opt/jre-15-ea /opt/java
+COPY --from=jdk /opt/jre-16 /opt/java
 RUN apk add --update nodejs npm
 COPY LICENSE README.md ./
 # Set working directory.

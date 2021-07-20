@@ -121,8 +121,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          persist-credentials: false
+          token: ${{ secrets.GH_TOKEN }}
       - uses: actions/setup-node@v2
       - name: Cache node modules
         uses: actions/cache@v2
@@ -152,7 +151,6 @@ jobs:
         run: npm ci --prefer-offline --no-audit
       - name: Release
         env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.BOT_TOKEN }}
           GIT_AUTHOR_NAME: ${{ secrets.BUMP_GIT_NAME }}
           GIT_AUTHOR_EMAIL: ${{ secrets.BUMP_GIT_EMAIL }}

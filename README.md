@@ -3,6 +3,8 @@
 
 An in-browser manager for your minecraft servers.
 
+![Screenshot of Blockcluster](docs/screenshot.png)
+
 ## Features
 - Start and stop servers
 - View current status

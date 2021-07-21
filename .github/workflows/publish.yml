@@ -104,8 +104,8 @@ jobs:
         with:
           push: true
           tags: ${{ steps.docker_meta.outputs.tags }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=gha,scope=blockcluster
+          cache-to: type=gha,scope=blockcluster,mode=max
           build-args: |
             git_sha=${{github.sha}}
             git_ref=${{github.ref}}

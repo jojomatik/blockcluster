@@ -173,11 +173,11 @@ export default class Server extends CommonServer {
   private async sendConsoleMessage(message: Message | Message[], cache = true) {
     if (cache) {
       if (Array.isArray(message)) this.messages = this.messages.concat(message);
-      else await this.messages.push(message as Message);
+      else this.messages.push(message as Message);
       if (this.messages.length > 50)
         this.messages = this.messages.slice(this.messages.length - 50);
     }
-    await io.emit("server_" + encodeURIComponent(this.name), {
+    io.emit("server_" + encodeURIComponent(this.name), {
       message: message,
     });
   }

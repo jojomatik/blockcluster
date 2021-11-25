@@ -16,6 +16,9 @@ You should have received a copy of the GNU Affero General Public License
 along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
+import { getDefaultRuntime } from "../../../common/components/java_runtime";
+import { getJavaRuntimes } from "./java_runtime";
+
 /**
  * A class that represents the config file of a server.
  */
@@ -31,12 +34,23 @@ export default class ServerConfig {
   public autostart: boolean;
 
   /**
+   * The path to the java runtime used to run the server.
+   */
+  public javaPath: string;
+
+  /**
    * Creates a new {@link ServerConfig}
    * @param flags the flags of the server, default = `[]`
    * @param autostart whether or not the server should start with the backend.
+   * @param javaPath the path to the java runtime used to run the server.
    */
-  constructor(flags: string[] = [], autostart = false) {
+  constructor(
+    flags: string[] = [],
+    autostart = false,
+    javaPath: string = getDefaultRuntime(getJavaRuntimes()).path
+  ) {
     this.flags = flags;
     this.autostart = autostart;
+    this.javaPath = javaPath;
   }
 }

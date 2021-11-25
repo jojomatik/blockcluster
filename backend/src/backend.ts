@@ -31,6 +31,7 @@ dotenvExpand(dotenv.config({ path: "../.env" }));
 dotenvExpand(dotenv.config({ path: "../.env.local" }));
 
 import { getVersion } from "../../common/version";
+import { getJavaRuntimes } from "./components/java_runtime";
 
 const app = express();
 
@@ -131,6 +132,11 @@ getServers().then((servers) => {
         await Promise.all(servers.map(async (server) => await server.update()));
         io.emit("MESSAGE", Server.strip(servers));
       }
+    });
+
+    // Respond with the available java runtimes when a message is received on `JAVA_RUNTIMES`.
+    socket.on("JAVA_RUNTIMES", () => {
+      io.emit("JAVA_RUNTIMES", getJavaRuntimes());
     });
 
     // Listen to a channel per server

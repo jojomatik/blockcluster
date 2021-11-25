@@ -8,6 +8,7 @@ An in-browser manager for your minecraft servers.
 - View current status
 - Show resource usage
 - View console log and send commands
+- Select different java runtimes (See also: ["Adding custom java runtimes"](#adding-custom-java-runtimes))
 - Change start flags
 - Start servers with backend
 
@@ -63,6 +64,35 @@ Prerequisites:
    - set the environment variable `SERVER_PATH` to the relative or absolute path of your servers.
 3. Run `npm run start` and open `http://[your ip]:8081` in your browser.
 
+### Adding custom java runtimes
+By default, the docker image based on [`docker-compose.yml`](docker-compose.yml) and the [`Dockerfile`](Dockerfile) includes java 11 and java 17. Those are the most relevant LTS java version for running minecraft servers (see [#150](https://github.com/jojomatik/blockcluster/issues/150) for more details).
+
+#### Windows
+All java runtimes in the `PATH` environment variable will be discovered and presented as an option in the frontend.
+
+#### Docker
+Mount additional java runtimes in the `/opt/java-xx` directory.
+
+With the `docker run` command:
+```sh
+docker run -d -v /path/to/servers/on/host/machine:/usr/games/blockcluster/servers -v /path/to/java-xx/on/host/machine:/opt/java-xx -p 8081:8081 25565-25569:25565-25569 jojomatik/blockcluster:latest
+```
+or with `docker-compose`
+```
+version: "3.9"
+services:
+  manager:
+    ports:
+      - 8081:8081
+      - 25565:25565
+    image: jojomatik/blockcluster
+    volumes:
+      - /path/to/servers/on/host/machine:/usr/games/blockcluster/servers
+      - /path/to/java-xx/on/host/machine:/opt/java-xx
+```
+```sh
+docker-compose up
+```
 
 ## Building
 ### Building with `docker-compose` (recommended)

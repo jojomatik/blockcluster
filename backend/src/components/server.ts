@@ -71,6 +71,7 @@ export default class Server extends CommonServer {
     await this.updateStatus();
     this.jar = this.getJarFile();
     this.config = await this.readConfig();
+    this.javaPath = this.getJavaPath();
     this.flags = await this.getFlags();
     this.autostart = this.config.autostart;
   }
@@ -152,6 +153,10 @@ export default class Server extends CommonServer {
                 this.autostart = data[key];
                 await this.writeConfig();
                 break;
+              case "javaRuntime":
+                this.javaPath = data[key];
+                await this.writeConfig();
+                break;
             }
           }
         }
@@ -189,6 +194,14 @@ export default class Server extends CommonServer {
   private getJarFile(): string {
     const files = fs.readdirSync(this.getPath());
     return files.find((file) => file.endsWith(".jar"));
+  }
+
+  /**
+   * Returns the first jar file in the server directory.
+   * @private
+   */
+  private getJavaPath(): string {
+    return this.config.javaPath;
   }
 
   /**
@@ -270,7 +283,7 @@ export default class Server extends CommonServer {
       ? "umask 0000 && "
       : "";
     this.proc = spawn(
-      permissionPrefix + "java",
+      permissionPrefix + this.javaPath + "/bin/java",
       this.flags.concat(["-jar", this.getJarFile(), "nogui"]),
       {
         cwd: this.getPath(),
@@ -385,6 +398,22 @@ export default class Server extends CommonServer {
   set autostart(value: boolean) {
     super.autostart = value;
     this.config.autostart = value;
+  }
+
+  /**
+   * Returns {@link #_javaPath}.
+   */
+  get javaPath(): string | null {
+    return this.config.javaPath;
+  }
+
+  /**
+   * Sets a new value for {@link #_javaPath}.
+   * @param value the new value.
+   */
+  set javaPath(value: string | null) {
+    super.javaPath = value;
+    this.config.javaPath = value;
   }
 
   /**

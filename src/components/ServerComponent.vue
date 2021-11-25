@@ -53,6 +53,26 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                       </td>
                     </tr>
                     <tr>
+                      <td>Java Runtime</td>
+                      <td style="display: flex; flex-direction: row">
+                        <v-select
+                          hide-details
+                          dense
+                          :items="javaRuntimes"
+                          :item-text="
+                            (item) =>
+                              `${item.isDefault ? 'Default - ' : ''}${
+                                item.name
+                              } - ${item.path}`
+                          "
+                          item-value="_path"
+                          item-color="secondary"
+                          class="mt-2 pr-2"
+                          v-model="javaRuntime"
+                        />
+                      </td>
+                    </tr>
+                    <tr>
                       <td>Flags</td>
                       <td style="display: flex; flex-direction: row">
                         <v-text-field
@@ -152,6 +172,9 @@ import ConsoleComponent from "@/components/ConsoleComponent.vue";
 import StateChangeButtonComponent from "@/components/StateChangeButtonComponent.vue";
 import ResourceChartComponent from "@/components/ResourceChartComponent.vue";
 import WorldDeleteDialogComponent from "@/components/WorldDeleteDialogComponent.vue";
+import JavaRuntime, {
+  getDefaultRuntime,
+} from "../../common/components/java_runtime";
 
 /**
  * The representation of a {@link Server} in Vue.
@@ -182,6 +205,12 @@ export default class ServerComponent extends Vue {
   @Prop() private detailed!: boolean;
 
   /**
+   * The list of available {@link JavaRuntime}s.
+   * @private
+   */
+  private javaRuntimes: JavaRuntime[] = [];
+
+  /**
    * The flags that are currently written in the flag input.
    * @private
    */
@@ -203,13 +232,24 @@ export default class ServerComponent extends Vue {
           Object.assign(this.server, data["serverInfo"]);
       }
     );
+    this.sockets.subscribe(
+      "JAVA_RUNTIMES",
+      (data: Record<string, unknown>[]) => {
+        this.javaRuntimes = [];
+        data.forEach((elem: Record<string, unknown>) => {
+          this.javaRuntimes.push(Object.assign(new JavaRuntime(), elem));
+        });
+      }
+    );
+    this.$socket.emit("JAVA_RUNTIMES");
   }
 
   /**
-   * Unsubscribes the channel subscribed to in {@link #mounted}.
+   * Unsubscribes the channels subscribed to in {@link #mounted}.
    */
   destroyed() {
     this.sockets.unsubscribe("server_" + encodeURIComponent(this.getName()));
+    this.sockets.unsubscribe("JAVA_RUNTIMES");
   }
 
   /**
@@ -279,6 +319,30 @@ export default class ServerComponent extends Vue {
   set autostart(value: boolean) {
     this.server.autostart = value;
     this.sendMessage("set " + JSON.stringify({ autostart: value }));
+  }
+
+  /**
+   * Returns the selected {@link JavaRuntime} for the server.
+   */
+  get javaRuntime(): JavaRuntime | null {
+    for (const javaRuntime of this.javaRuntimes) {
+      if (javaRuntime.path === this.server.javaPath) return javaRuntime;
+    }
+    return null;
+  }
+
+  /**
+   * Sets the selected {@link JavaRuntime} for the server.
+   * @param value the selected java runtime to be sent to the server.
+   */
+  set javaRuntime(value: JavaRuntime | null) {
+    let javaRuntime: JavaRuntime | null;
+
+    if (value != null) javaRuntime = value;
+    else javaRuntime = getDefaultRuntime(this.javaRuntimes);
+
+    this.server.javaPath = javaRuntime.path;
+    this.sendMessage("set " + JSON.stringify({ javaRuntime: value }));
   }
 }
 </script>

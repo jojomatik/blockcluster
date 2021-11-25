@@ -46,6 +46,7 @@ export default class Server {
    * @param world the main world of the server.
    * @param jar the jar file of the server.
    * @param autostart whether the server should start with the backend.
+   * @param javaPath the path to the java runtime used to run the server.
    */
   constructor(
     name = "",
@@ -53,7 +54,8 @@ export default class Server {
     port = 0,
     world = "",
     jar: string | null = null,
-    autostart = false
+    autostart = false,
+    javaPath: string | null = null
   ) {
     this._name = name;
     this._status = status;
@@ -61,6 +63,7 @@ export default class Server {
     this._world = world;
     this._jar = jar;
     this._autostart = autostart;
+    this._javaPath = javaPath;
   }
 
   /**
@@ -208,6 +211,27 @@ export default class Server {
    */
   set autostart(value: boolean) {
     this._autostart = value;
+  }
+
+  /**
+   * The path to the java runtime.
+   * @private
+   */
+  private _javaPath: string | null;
+
+  /**
+   * Returns {@link #_javaPath}.
+   */
+  get javaPath(): string | null {
+    return this._javaPath;
+  }
+
+  /**
+   * Sets a new value for {@link #_javaPath}.
+   * @param value the new value.
+   */
+  set javaPath(value: string | null) {
+    this._javaPath = value;
   }
 
   /**

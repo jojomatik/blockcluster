@@ -300,6 +300,7 @@ export default class Server extends CommonServer {
     });
 
     this.proc.addListener("exit", async () => {
+      this.status = ServerStatus.Stopping;
       this.proc = null;
       await this.update();
       this.sendServerData();

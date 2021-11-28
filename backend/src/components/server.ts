@@ -311,21 +311,24 @@ export default class Server extends CommonServer {
         }
       });
     });
-
-    this.proc.addListener("exit", async () => {
-      this.status = ServerStatus.Stopping;
-      this.proc = null;
-      await this.update();
-      this.sendServerData();
-    });
   }
 
   /**
    * Stops the {@link Server}.
    */
-  public async stop() {
+  public async stop(): Promise<void> {
     this.status = ServerStatus.Stopping;
-    exec("kill " + this.proc.pid);
+    await this.update();
+    this.sendServerData();
+    return new Promise<void>((resolve) => {
+      this.proc.addListener("exit", async () => {
+        this.proc = null;
+        await this.update();
+        this.sendServerData();
+        resolve();
+      });
+      exec("kill " + this.proc.pid);
+    });
   }
 
   /**
@@ -333,9 +336,7 @@ export default class Server extends CommonServer {
    */
   public async restart() {
     await this.stop();
-    this.proc.addListener("exit", async () => {
-      await this.start();
-    });
+    await this.start();
   }
 
   /**
@@ -353,9 +354,7 @@ export default class Server extends CommonServer {
     } else {
       const currentStatus = this.status;
       if (currentStatus === ServerStatus.Started) await this.stop();
-      this.proc.addListener("exit", async () => {
-        await this.deleteWorld(false, currentStatus);
-      });
+      await this.deleteWorld(false, currentStatus);
     }
   }
 

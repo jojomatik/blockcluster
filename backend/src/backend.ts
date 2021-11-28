@@ -181,10 +181,14 @@ getServers().then((servers) => {
     }
   }, 10000);
 
-  process.on("SIGTERM", function () {
-    servers.forEach(async (server) => {
-      if (server.status == ServerStatus.Started) await server.stop();
-    });
+  process.on("SIGTERM", async function () {
+    await Promise.all(
+      servers.map((server) => {
+        if (server.status == ServerStatus.Started) return server.stop();
+        return;
+      })
+    );
+
     watchedFiles.forEach((file) => fs.unwatchFile(file));
     clearTimeout(timeout);
     io.close(() => {

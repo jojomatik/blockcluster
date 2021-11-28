@@ -17,7 +17,7 @@
     "semantic-release": "semantic-release"
   },
   "dependencies": {
-    "apexcharts": "^3.27.1",
+    "apexcharts": "^3.30.0",
     "core-js": "^3.15.2",
     "moment": "^2.29.1",
     "socket.io-client": "^4.1.2",

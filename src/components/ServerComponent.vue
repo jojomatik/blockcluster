@@ -232,16 +232,18 @@ export default class ServerComponent extends Vue {
           Object.assign(this.server, data["serverInfo"]);
       }
     );
-    this.sockets.subscribe(
-      "JAVA_RUNTIMES",
-      (data: Record<string, unknown>[]) => {
-        this.javaRuntimes = [];
-        data.forEach((elem: Record<string, unknown>) => {
-          this.javaRuntimes.push(Object.assign(new JavaRuntime(), elem));
-        });
-      }
-    );
-    this.$socket.emit("JAVA_RUNTIMES");
+    if (this.detailed) {
+      this.sockets.subscribe(
+        "JAVA_RUNTIMES",
+        (data: Record<string, unknown>[]) => {
+          this.javaRuntimes = [];
+          data.forEach((elem: Record<string, unknown>) => {
+            this.javaRuntimes.push(Object.assign(new JavaRuntime(), elem));
+          });
+        }
+      );
+      this.$socket.emit("JAVA_RUNTIMES");
+    }
   }
 
   /**
@@ -249,7 +251,7 @@ export default class ServerComponent extends Vue {
    */
   destroyed() {
     this.sockets.unsubscribe("server_" + encodeURIComponent(this.getName()));
-    this.sockets.unsubscribe("JAVA_RUNTIMES");
+    if (this.detailed) this.sockets.unsubscribe("JAVA_RUNTIMES");
   }
 
   /**

@@ -29,7 +29,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         @blur="flagsFocussed = false"
         @input="input"
       />
-      <v-btn dense class="mt-1" color="secondary" @click="sendFlags()">
+      <v-btn
+        dense
+        class="mt-1"
+        color="secondary"
+        :disabled="!flagsChanged"
+        @click="sendFlags()"
+      >
         Save
       </v-btn>
     </td>

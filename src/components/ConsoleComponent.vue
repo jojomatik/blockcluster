@@ -150,7 +150,7 @@ export default class ConsoleComponent extends Vue {
                   data["message"][i],
                   data["message"][i - 1]._timestamp
                 );
-              await this.messages.push(
+              this.messages.push(
                 Object.assign(new Message(), data["message"][i])
               );
             }
@@ -168,9 +168,7 @@ export default class ConsoleComponent extends Vue {
                 },
                 this.messages[len - 1].timestamp
               );
-            await this.messages.push(
-              Object.assign(new Message(), data["message"])
-            );
+            this.messages.push(Object.assign(new Message(), data["message"]));
           }
           this.scrollConsole();
         }
@@ -204,7 +202,7 @@ export default class ConsoleComponent extends Vue {
       Math.floor(lastTimestamp / (24 * 60 * 60 * 1000)) <
         Math.floor(message._timestamp / (24 * 60 * 60 * 1000))
     )
-      await this.messages.push(
+      this.messages.push(
         new Message(MessageType.DateChange, newDate.format("YYYY-MM-DD"))
       );
   }

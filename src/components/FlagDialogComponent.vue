@@ -20,7 +20,15 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
   <tr>
     <td>Flags</td>
     <td style="display: flex; flex-direction: row">
-      <v-text-field hide-details dense class="mt-2 pr-2" v-model="flagString" />
+      <v-text-field
+        hide-details
+        dense
+        class="mt-2 pr-2"
+        v-model="flagString"
+        @focus="flagsFocussed = true"
+        @blur="flagsFocussed = false"
+        @input="input"
+      />
       <v-btn dense class="mt-1" color="secondary" @click="sendFlags()">
         Save
       </v-btn>
@@ -61,28 +69,55 @@ export default class FlagDialogComponent extends Vue {
   private _flagString!: string;
 
   /**
+   * Whether the flags text field is focussed.
+   * @private
+   */
+  private flagsFocussed = false;
+
+  /**
+   * Whether the flags have been changed.
+   * @private
+   */
+  private flagsChanged = false;
+
+  /**
    * Sends the flags to the backend.
    */
   private sendFlags() {
+    this.flagsChanged = false;
     this.server.sendMessage(
       "set " + JSON.stringify({ flags: this._flagString?.split(" ") })
     );
   }
 
   /**
-   * Returns the flag string based on the flags of the server.
+   * Returns the flag string. If the flags have been changed in the frontend that new value is returned, otherwise they are based on the flags of the server.
    */
   get flagString(): string {
-    this.flagString = this.flags.join(" ");
+    if (!this.flagsFocussed && !this.flagsChanged) {
+      this._flagString = this.flags.join(" ");
+    }
     return this._flagString;
   }
 
   /**
    * Sets the flag string.
+   *
+   * Determines whether the flags have been changed in the frontend and stores that information in {@link flagsChanged}.
+   *
    * @param flags the flags to set.
    */
   set flagString(flags: string) {
     this._flagString = flags;
+    this.flagsChanged = this._flagString !== this.flags.join(" ");
+  }
+
+  /**
+   * Handles the input event of the text field by invoking {@link flagString}.
+   * @param content the content of the text field.
+   */
+  input(content: string): void {
+    this.flagString = content;
   }
 }
 </script>

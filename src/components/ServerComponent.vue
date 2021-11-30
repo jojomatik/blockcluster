@@ -72,25 +72,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         />
                       </td>
                     </tr>
-                    <tr>
-                      <td>Flags</td>
-                      <td style="display: flex; flex-direction: row">
-                        <v-text-field
-                          hide-details
-                          dense
-                          class="mt-2 pr-2"
-                          v-model="flagString"
-                        />
-                        <v-btn
-                          dense
-                          class="mt-1"
-                          color="secondary"
-                          @click="sendFlags()"
-                        >
-                          Save
-                        </v-btn>
-                      </td>
-                    </tr>
+                    <FlagDialogComponent
+                      :server="this"
+                      :flags="this.server.flags"
+                    />
                   </tbody>
                 </v-simple-table>
               </v-col>
@@ -175,12 +160,14 @@ import WorldDeleteDialogComponent from "@/components/WorldDeleteDialogComponent.
 import JavaRuntime, {
   getDefaultRuntime,
 } from "../../common/components/java_runtime";
+import FlagDialogComponent from "@/components/FlagDialogComponent.vue";
 
 /**
  * The representation of a {@link Server} in Vue.
  */
 @Component({
   components: {
+    FlagDialogComponent,
     WorldDeleteDialogComponent,
     ResourceChartComponent,
     StateChangeButtonComponent,
@@ -209,12 +196,6 @@ export default class ServerComponent extends Vue {
    * @private
    */
   private javaRuntimes: JavaRuntime[] = [];
-
-  /**
-   * The flags that are currently written in the flag input.
-   * @private
-   */
-  private _flagString!: string;
 
   constructor() {
     super();
@@ -263,15 +244,6 @@ export default class ServerComponent extends Vue {
   }
 
   /**
-   * Sends the flags to the backend.
-   */
-  private sendFlags() {
-    this.sendMessage(
-      "set " + JSON.stringify({ flags: this._flagString?.split(" ") })
-    );
-  }
-
-  /**
    * Sends the message to a channel named according to the {@link Server}'s name.
    * @param message the message to send.
    * @private
@@ -289,22 +261,6 @@ export default class ServerComponent extends Vue {
     return this.server.name !== ""
       ? this.server.name
       : this.$route.params["server"];
-  }
-
-  /**
-   * Returns the flag String based on the flags of the server.
-   */
-  get flagString(): string {
-    this.flagString = this.server.flags.join(" ");
-    return this._flagString;
-  }
-
-  /**
-   * Sets the flagString.
-   * @param flags the flags to set.
-   */
-  set flagString(flags: string) {
-    this._flagString = flags;
   }
 
   /**

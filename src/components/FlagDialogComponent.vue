@@ -23,7 +23,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
       <v-text-field
         hide-details
         dense
-        class="mt-2 pr-2"
+        class="flagInput mt-2 pr-2"
         v-model="flagString"
         @focus="flagsFocussed = true"
         @blur="flagsFocussed = false"
@@ -128,4 +128,8 @@ export default class FlagDialogComponent extends Vue {
 }
 </script>
 
-<style scoped></style>
+<style scoped lang="scss">
+.flagInput.v-input {
+  caret-color: auto !important;
+}
+</style>

@@ -170,7 +170,7 @@ export default class ConsoleComponent extends Vue {
               );
             this.messages.push(Object.assign(new Message(), data["message"]));
           }
-          this.scrollConsole();
+          Vue.nextTick(this.scrollConsole);
         }
       }
     );

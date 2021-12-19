@@ -16,7 +16,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
-import { StatusResponse } from "minecraft-server-util/dist/model/StatusResponse";
+import { JavaStatusResponse } from "minecraft-server-util/dist/types/JavaStatusResponse";
 import * as mc from "minecraft-server-util";
 
 import CommonServer, { ServerStatus } from "../../../common/components/server";
@@ -95,9 +95,9 @@ export default class Server extends CommonServer {
    *
    * @return a promise of the status response.
    */
-  async getServerInfo(): Promise<StatusResponse> {
+  async getServerInfo(): Promise<JavaStatusResponse> {
     return await mc
-      .status("localhost", { port: this.port, timeout: 300 })
+      .status("localhost", this.port, { timeout: 300 })
       .then((response) => {
         return response;
       })

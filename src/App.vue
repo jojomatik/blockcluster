@@ -39,8 +39,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </v-app-bar-title>
       </div>
 
-      <router-link to="/">Home</router-link> |
-      <router-link to="/about">About</router-link>
+      <v-tabs color="secondary--text" class="ml-4">
+        <v-tab to="/">Home</v-tab>
+        <v-tab to="/about">About</v-tab>
+      </v-tabs>
 
       <v-spacer></v-spacer>
       <v-switch
@@ -50,7 +52,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         @change="storeTheme"
       >
         <template v-slot:label>
-          <span class="secondary--text">Dark mode</span>
+          <span style="white-space: nowrap" class="secondary--text">
+            Dark mode
+          </span>
         </template>
       </v-switch>
     </v-app-bar>
@@ -141,14 +145,6 @@ export default class App extends Vue {
 </script>
 
 <style lang="scss" scoped>
-.v-application a {
-  margin: 10px;
-  color: var(--v-accent);
-  &.router-link-exact-active {
-    text-decoration: none;
-  }
-}
-
 .footer {
   font-size: 12px;
 }

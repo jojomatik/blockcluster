@@ -18,7 +18,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 <template>
   <v-app>
-    <v-app-bar app color="primary" class="secondary--text">
+    <v-app-bar app hide-on-scroll color="primary" class="secondary--text">
       <div class="d-flex align-center">
         <v-chip
           light

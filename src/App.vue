@@ -34,7 +34,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             width="40"
           />
         </v-chip>
-        <h2 style="letter-spacing: 1px">blockcluster</h2>
+        <v-app-bar-title style="letter-spacing: 1px">
+          <h3>blockcluster</h3>
+        </v-app-bar-title>
       </div>
 
       <router-link to="/">Home</router-link> |

@@ -283,7 +283,7 @@ export default class Server extends CommonServer {
       ? "umask 0000 && "
       : "";
     this.proc = spawn(
-      permissionPrefix + this.javaPath + "/bin/java",
+      permissionPrefix + '"' + this.javaPath + '/bin/java"',
       this.flags.concat(["-jar", this.getJarFile(), "nogui"]),
       {
         cwd: this.getPath(),

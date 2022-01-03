@@ -44,6 +44,7 @@ export default class Server {
    * @param status the status of the server.
    * @param port the port the server listens on.
    * @param world the main world of the server.
+   * @param favicon the favicon of the server.
    * @param jar the jar file of the server.
    * @param autostart whether the server should start with the backend.
    * @param javaPath the path to the java runtime used to run the server.
@@ -53,6 +54,7 @@ export default class Server {
     status: ServerStatus = ServerStatus.Unknown,
     port = 0,
     world = "",
+    favicon = "",
     jar: string | null = null,
     autostart = false,
     javaPath: string | null = null
@@ -61,6 +63,7 @@ export default class Server {
     this._status = status;
     this._port = port;
     this._world = world;
+    this._favicon = favicon;
     this._jar = jar;
     this._autostart = autostart;
     this._javaPath = javaPath;
@@ -148,6 +151,27 @@ export default class Server {
    */
   set world(value: string) {
     this._world = value;
+  }
+
+  /**
+   * The favicon of the {@link Server}.
+   * @private
+   */
+  private _favicon: string;
+
+  /**
+   * Returns {@link #favicon}.
+   */
+  get favicon(): string {
+    return this._favicon;
+  }
+
+  /**
+   * Sets a new value for {@link #favicon}.
+   * @param value the new value.
+   */
+  set favicon(value: string) {
+    this._favicon = value;
   }
 
   /**

@@ -22,6 +22,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
       <v-col cols="12">
         <v-card class="server">
           <v-card-title>
+            <img
+              class="mr-2"
+              style="height: 32px"
+              v-if="server.favicon"
+              v-bind:src="server.favicon"
+              :alt="'favicon of ' + server.name"
+            />
             {{ server.name }}
             <ServerStatusComponent :status="server.status" />
           </v-card-title>
@@ -120,6 +127,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     class="server"
   >
     <v-card-title>
+      <img
+        class="mr-2"
+        style="height: 32px"
+        v-if="server.favicon"
+        v-bind:src="server.favicon"
+        :alt="'favicon of ' + server.name"
+      />
       {{ server.name }}
       <ServerStatusComponent :status="server.status" />
     </v-card-title>

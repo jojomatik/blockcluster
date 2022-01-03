@@ -87,6 +87,10 @@ export default class Server extends CommonServer {
     } catch (e) {
       if (this.status != ServerStatus.Starting && this.proc == null)
         this.status = ServerStatus.Stopped;
+      if (this.proc?.exitCode > 0) {
+        this.status = ServerStatus.Stopped;
+        this.proc = null;
+      }
     }
   }
 
@@ -421,10 +425,22 @@ export default class Server extends CommonServer {
    */
   async measureUsage(measuringTime?: number) {
     if (this.proc != null) {
-      const usage = await pidusage(this.proc.pid);
-      this.resourceUsage.push(
-        new ResourceUsage(measuringTime, usage.cpu, usage.memory)
-      );
+      try {
+        const usage = await pidusage(this.proc.pid);
+        this.resourceUsage.push(
+          new ResourceUsage(measuringTime, usage.cpu, usage.memory)
+        );
+      } catch (e) {
+        this.resourceUsage.push(new ResourceUsage(measuringTime, 0, 0));
+        console.error(
+          "Couldn't retrieve resource usage for pid " +
+            this.proc.pid +
+            " on server " +
+            this.name +
+            ".",
+          e
+        );
+      }
     } else {
       this.resourceUsage.push(new ResourceUsage(measuringTime, 0, 0));
     }

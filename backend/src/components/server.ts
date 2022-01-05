@@ -82,9 +82,11 @@ export default class Server extends CommonServer {
   async updateStatus(): Promise<void> {
     try {
       const serverInfo = await this.getServerInfo();
-      this.favicon = serverInfo.favicon;
-      if (this.status != ServerStatus.Stopping && this.proc != null)
-        this.status = ServerStatus.Started;
+      if (this.proc != null) {
+        this.favicon = serverInfo.favicon;
+        if (this.status != ServerStatus.Stopping)
+          this.status = ServerStatus.Started;
+      }
     } catch (e) {
       if (this.status != ServerStatus.Starting && this.proc == null)
         this.status = ServerStatus.Stopped;

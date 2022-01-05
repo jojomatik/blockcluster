@@ -56,7 +56,7 @@ Open `http://[your ip]:8081` in your browser.
 ### Manual setup 
 Prerequisites:
 - Git
-- Node.js and npm
+- Node.js (v16+) and npm (v8+)
 - TypeScript installed globally (`npm install -g typescript`)
 - Java (to run the minecraft servers)
 
@@ -129,7 +129,7 @@ docker-compose up --force-recreate --build
 ### Building manually
 Prerequisites:
 - Git
-- Node.js and npm
+- Node.js (v16+) and npm (v8+)
 - TypeScript installed globally (`npm install -g typescript`)
 - Java (only to run the minecraft servers)
 

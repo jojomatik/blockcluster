@@ -32,6 +32,7 @@ dotenvExpand(dotenv.config({ path: "../.env.local" }));
 
 import { getVersion } from "../../common/version";
 import { getJavaRuntimes } from "./components/java_runtime";
+import getDependencyInfo from "./utils/dependency_info";
 
 const app = express();
 
@@ -50,6 +51,13 @@ const version = getVersion();
 app.get("/api/version", async (req, res) => {
   res.contentType("application/json");
   res.send({ version: version });
+  res.status(200).end();
+});
+
+// Handles queries to the dependencies API endpoint and returns the backend dependencies.
+app.get("/api/dependencies", async (req, res) => {
+  res.contentType("application/json");
+  res.send({ dependencies: getDependencyInfo() });
   res.status(200).end();
 });
 

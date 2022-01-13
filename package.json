@@ -29,8 +29,7 @@
     "vue-property-decorator": "^9.1.2",
     "vue-router": "^3.5.3",
     "vue-socket.io": "^3.0.10",
-    "vuetify": "^2.6.2",
-    "vuex": "^3.4.0"
+    "vuetify": "^2.6.2"
   },
   "devDependencies": {
     "@mdi/font": "^6.5.95",

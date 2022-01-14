@@ -21,6 +21,8 @@ ARG git_sha
 ARG git_ref
 RUN echo "VUE_APP_GIT_SHA=$git_sha" > ./.env
 RUN echo "VUE_APP_GIT_REF=$git_ref" >> ./.env
+# Copy license.
+COPY LICENSE ./
 # Build frontend.
 RUN npm run build
 # Copy backend src and compile.

@@ -4,7 +4,7 @@ services:
     volumes:
     - ./common:/usr/games/blockcluster/common
     - ./src:/usr/games/blockcluster/src
-    - ./backend:/usr/games/blockcluster/backend
+    - ./backend/dist:/usr/games/blockcluster/backend/dist
     - ./public:/usr/games/blockcluster/public
     command: npm run serve
     environment:

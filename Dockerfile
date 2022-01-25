@@ -54,10 +54,13 @@ FROM base AS base-production
 
 FROM base AS base-develop
 # Install concurrently.
-RUN npm install -g concurrently
+RUN npm install -g concurrently nodemon
 # Copy package.json and package-lock.json for frontend and install all dependencies.
 COPY package*.json ./
 RUN npm install
+# Copy package.json and package-lock.json for backend and install all dependencies.
+COPY backend/package*.json ./backend/
+RUN cd backend && npm install
 COPY .eslintrc.js babel.config.js tsconfig.json vue.config.js ./
 
 FROM base-${ENVIRONMENT}

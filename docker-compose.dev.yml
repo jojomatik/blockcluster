@@ -5,7 +5,6 @@ services:
     - ./common:/usr/games/blockcluster/common
     - ./src:/usr/games/blockcluster/src
     - ./backend:/usr/games/blockcluster/backend
-    - ./proxy:/usr/games/blockcluster/proxy
     - ./public:/usr/games/blockcluster/public
     command: npm run serve
     environment:

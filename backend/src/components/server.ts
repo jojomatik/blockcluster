@@ -35,6 +35,8 @@ import ServerConfig from "./server_config";
 import pidusage from "pidusage";
 import commandExists from "command-exists";
 import ResourceUsage from "../../../common/components/resource_usage";
+import Player from "../../../common/components/player";
+import { getFaceAsBase64 } from "pixelheads";
 
 /**
  * The server side implementation of {@link CommonServer} with additional methods that won't run on the client side.
@@ -84,6 +86,22 @@ export default class Server extends CommonServer {
       const serverInfo = await this.getServerInfo();
       if (this.proc != null) {
         this.favicon = serverInfo.favicon;
+        this.players = {
+          max: serverInfo.players.max,
+          online: serverInfo.players.online,
+          sample:
+            serverInfo.players.sample !== null
+              ? await Promise.all(
+                  serverInfo.players.sample.map(async (player) => {
+                    return new Player(
+                      player.id,
+                      player.name,
+                      await getFaceAsBase64(player.id)
+                    );
+                  })
+                )
+              : [],
+        };
         if (this.status != ServerStatus.Stopping)
           this.status = ServerStatus.Started;
       }
@@ -301,6 +319,27 @@ export default class Server extends CommonServer {
       const messages = data.toString().split("\n");
       messages.forEach(async (messageText: string) => {
         if (messageText !== "") {
+          // Retrieve player count and sample for join- and leave-messages.
+          const isJoinMessage =
+            /: [^ ]+\[\/\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3}:.\d{1,5}] logged in with entity id \d+ at \((?:\[.+])?\d+.\d+, .\d+.\d+, .\d+.\d+\)/.test(
+              messageText
+            );
+          const isLeaveMessage = /: [^ ]+ lost connection: .+/.test(
+            messageText
+          );
+          if (isJoinMessage || isLeaveMessage) {
+            // Wait 500ms before updating, as the player count is not refreshed immediately.
+            setTimeout(() => {
+              this.updateStatus().then(() => this.sendServerData());
+              // Wait another 4.5s/ 3.5s before updating, as the player sample is not refreshed immediately (removing a player from the sample seems to go faster).
+              setTimeout(
+                () => {
+                  this.updateStatus().then(() => this.sendServerData());
+                },
+                isJoinMessage ? 4500 : 3500
+              );
+            }, 500);
+          }
           await this.sendConsoleMessage(
             new Message(MessageType.Default, messageText)
           );

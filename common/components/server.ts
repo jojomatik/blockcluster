@@ -17,6 +17,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
 import ResourceUsage from "./resource_usage";
+import Player from "./player";
 
 /**
  * An enum that holds different states a {@link Server} can be in.
@@ -48,6 +49,7 @@ export default class Server {
    * @param jar the jar file of the server.
    * @param autostart whether the server should start with the backend.
    * @param javaPath the path to the java runtime used to run the server.
+   * @param players the players stats and a sample of players online.
    */
   constructor(
     name = "",
@@ -57,7 +59,12 @@ export default class Server {
     favicon = "",
     jar: string | null = null,
     autostart = false,
-    javaPath: string | null = null
+    javaPath: string | null = null,
+    players: playerStats = {
+      online: 0,
+      max: 0,
+      sample: [],
+    }
   ) {
     this._name = name;
     this._status = status;
@@ -67,6 +74,7 @@ export default class Server {
     this._jar = jar;
     this._autostart = autostart;
     this._javaPath = javaPath;
+    this._players = players;
   }
 
   /**
@@ -280,6 +288,27 @@ export default class Server {
   }
 
   /**
+   * The players stats and a sample of players online on the {@link Server}.
+   * @private
+   */
+  private _players: playerStats;
+
+  /**
+   * Returns {@link #players}.
+   */
+  get players(): playerStats {
+    return this._players;
+  }
+
+  /**
+   * Sets a new value for {@link #players}.
+   * @param value the new value.
+   */
+  set players(value: playerStats) {
+    this._players = value;
+  }
+
+  /**
    * Returns a server stripped of all additional properties.
    */
   strip(): Server {
@@ -334,3 +363,12 @@ export default class Server {
     });
   }
 }
+
+/**
+ * A type that contains the player stats of a server.
+ */
+type playerStats = {
+  online: number;
+  max: number;
+  sample: Player[];
+};

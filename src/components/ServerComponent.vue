@@ -41,6 +41,35 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                   </colgroup>
                   <tbody>
                     <tr>
+                      <td>Players</td>
+                      <td class="d-flex justify-start bottom">
+                        <span class="my-auto">
+                          {{ server.players.online }} /
+                          {{ server.players.max }}
+                        </span>
+
+                        <span
+                          class="my-auto ml-2"
+                          style="width: 32px; image-rendering: pixelated"
+                          v-for="player in server.players.sample"
+                          :key="player.uuid"
+                        >
+                          <v-tooltip bottom>
+                            <template v-slot:activator="{ on, attrs }">
+                              <v-img
+                                v-bind="attrs"
+                                v-on="on"
+                                :src="'data:image/png;base64,' + player.head"
+                                aspect-ratio="1"
+                                :alt="'Head of ' + player.name"
+                              ></v-img>
+                            </template>
+                            <span>{{ player.name }}</span>
+                          </v-tooltip>
+                        </span>
+                      </td>
+                    </tr>
+                    <tr>
                       <td>Port</td>
                       <td>{{ server.port }}</td>
                     </tr>
@@ -175,6 +204,7 @@ import JavaRuntime, {
   getDefaultRuntime,
 } from "../../common/components/java_runtime";
 import FlagDialogComponent from "@/components/FlagDialogComponent.vue";
+import Player from "../../common/components/player";
 
 /**
  * The representation of a {@link Server} in Vue.
@@ -189,7 +219,7 @@ import FlagDialogComponent from "@/components/FlagDialogComponent.vue";
     ServerStatusComponent,
   },
   data() {
-    return { ServerStatus };
+    return { ServerStatus, Player };
   },
 })
 export default class ServerComponent extends Vue {
@@ -225,6 +255,11 @@ export default class ServerComponent extends Vue {
       async (data: Record<string, unknown>) => {
         if (Object.prototype.hasOwnProperty.call(data, "serverInfo"))
           Object.assign(this.server, data["serverInfo"]);
+        this.server.players.sample = this.server.players.sample.map(
+          (player) => {
+            return Object.assign(new Player(), player);
+          }
+        );
       }
     );
     if (this.detailed) {

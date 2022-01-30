@@ -225,7 +225,6 @@ export default class ServerComponent extends Vue {
 
   constructor() {
     super();
-    this.update();
   }
 
   /**
@@ -256,6 +255,7 @@ export default class ServerComponent extends Vue {
       );
       this.$socket.emit("JAVA_RUNTIMES");
     }
+    if (this.detailed) this.update();
   }
 
   /**

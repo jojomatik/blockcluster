@@ -331,13 +331,10 @@ export default class Server extends CommonServer {
             // Wait 500ms before updating, as the player count is not refreshed immediately.
             setTimeout(() => {
               this.updateStatus().then(() => this.sendServerData());
-              // Wait another 4.5s/ 3.5s before updating, as the player sample is not refreshed immediately (removing a player from the sample seems to go faster).
-              setTimeout(
-                () => {
-                  this.updateStatus().then(() => this.sendServerData());
-                },
-                isJoinMessage ? 4500 : 3500
-              );
+              // Wait another 4.5s before updating, as the player sample is not refreshed immediately.
+              setTimeout(() => {
+                this.updateStatus().then(() => this.sendServerData());
+              }, 4500);
             }, 500);
           }
           await this.sendConsoleMessage(

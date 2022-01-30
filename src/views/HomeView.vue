@@ -51,6 +51,7 @@ import ServerComponent from "@/components/ServerComponent.vue"; // @ is an alias
 import Server from "../../common/components/server";
 import ResourceChartComponent from "@/components/ResourceChartComponent.vue";
 import ResourceUsage from "../../common/components/resource_usage";
+import Player from "../../common/components/player";
 
 @Component({
   components: {
@@ -78,7 +79,11 @@ export default class Home extends Vue {
     this.sockets.subscribe("MESSAGE", (data: Record<string, unknown>[]) => {
       this.servers = [];
       data.forEach((elem: Record<string, unknown>) => {
-        this.servers.push(Object.assign(new Server(), elem));
+        const server: Server = Object.assign(new Server(), elem);
+        server.players.sample = server.players.sample.map((player) => {
+          return Object.assign(new Player(), player);
+        });
+        this.servers.push(server);
       });
     });
   }

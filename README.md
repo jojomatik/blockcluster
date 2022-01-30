@@ -7,12 +7,13 @@ An in-browser manager for your minecraft servers.
 
 ## Features
 - Start and stop servers
-- View current status
+- View current status and online players
 - Show resource usage
 - View console log and send commands
 - Select different java runtimes (See also: ["Adding custom java runtimes"](#adding-custom-java-runtimes))
 - Change start flags
 - Start servers with backend
+- Show server favicon to differentiate servers easier
 
 ## Roadmap for future releases
 - Authentication

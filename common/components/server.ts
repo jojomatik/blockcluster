@@ -367,7 +367,7 @@ export default class Server {
 /**
  * A type that contains the player stats of a server.
  */
-type playerStats = {
+export type playerStats = {
   online: number;
   max: number;
   sample: Player[];

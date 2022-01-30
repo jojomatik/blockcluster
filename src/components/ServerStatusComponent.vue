@@ -28,7 +28,7 @@ import { Component, Prop, Vue } from "vue-property-decorator";
 import { ServerStatus } from "../../common/components/server";
 
 /**
- * The representation of a {@link Server} in Vue.
+ * The representation of a {@link Server} status in Vue.
  */
 @Component
 export default class ServerStatusComponent extends Vue {

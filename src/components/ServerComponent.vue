@@ -142,6 +142,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
       />
       {{ server.name }}
       <ServerStatusComponent :status="server.status" />
+      <v-chip v-if="server.status === ServerStatus.Started">
+        <PlayerStatsComponent :player-stats="server.players" :width="24" />
+      </v-chip>
     </v-card-title>
     <v-card-text>
       <v-row>

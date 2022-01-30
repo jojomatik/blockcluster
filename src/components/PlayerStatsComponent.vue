@@ -25,7 +25,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
     <span
       class="my-auto ml-2"
-      style="width: 32px; image-rendering: pixelated"
+      :style="'width: ' + width + 'px; image-rendering: pixelated'"
       v-for="player in playerStats.sample"
       :key="player.uuid"
     >
@@ -60,6 +60,12 @@ export default class PlayerStatsComponent extends Vue {
    * @private
    */
   @Prop() private playerStats!: playerStats;
+
+  /**
+   * The width (and height) of the player faces.
+   * @private
+   */
+  @Prop({ default: 32 }) private width!: number;
 }
 </script>
 

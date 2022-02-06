@@ -27,8 +27,8 @@ import path from "path";
 
 import dotenv from "dotenv";
 import dotenvExpand from "dotenv-expand";
-dotenvExpand(dotenv.config({ path: "../.env" }));
-dotenvExpand(dotenv.config({ path: "../.env.local" }));
+dotenvExpand.expand(dotenv.config({ path: "../.env" }));
+dotenvExpand.expand(dotenv.config({ path: "../.env.local" }));
 
 import { getVersion } from "../../common/version";
 import { getJavaRuntimes } from "./components/java_runtime";

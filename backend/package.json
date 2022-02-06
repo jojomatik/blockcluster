@@ -20,7 +20,7 @@
   "dependencies": {
     "command-exists": "^1.2.9",
     "dotenv": "^16.0.0",
-    "dotenv-expand": "^5.1.0",
+    "dotenv-expand": "^8.0.1",
     "express": "^4.17.2",
     "minecraft-server-util": "^5.2.9",
     "pidusage": "^3.0.0",

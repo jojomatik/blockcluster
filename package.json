@@ -36,7 +36,7 @@
     "@rushstack/eslint-patch": "^1.1.0",
     "@types/jest": "^27.4.0",
     "@types/uuid": "^8.3.4",
-    "@typescript-eslint/eslint-plugin": "^2.33.0",
+    "@typescript-eslint/eslint-plugin": "^5.10.2",
     "@typescript-eslint/parser": "^2.33.0",
     "@vue/cli-plugin-babel": "~4.5.15",
     "@vue/cli-plugin-eslint": "~4.5.15",

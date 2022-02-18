@@ -1,7 +1,7 @@
 name: Build and publish Docker image
 on:
   push:
-    branches: [master, beta]
+    branches: [main, beta]
   release:
     types:
       - published

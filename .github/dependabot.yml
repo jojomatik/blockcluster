@@ -3,12 +3,33 @@ updates:
   - package-ecosystem: "npm"
     directory: "/"
     schedule:
+      interval: "daily"
+    target-branch: "beta"
+    open-pull-requests-limit: 0
+    allow:
+      - dependency-type: "production"
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
       interval: "monthly"
     target-branch: "updates"
-    open-pull-requests-limit: 50
-      
+    open-pull-requests-limit: 0
+    allow:
+      - dependency-type: "development"
+
+  - package-ecosystem: "npm"
+    directory: "/backend"
+    schedule:
+      interval: "daily"
+    target-branch: "beta"
+    open-pull-requests-limit: 0
+    allow:
+      - dependency-type: "production"
   - package-ecosystem: "npm"
     directory: "/backend"
     schedule:
       interval: "monthly"
     target-branch: "updates"
+    open-pull-requests-limit: 0
+    allow:
+      - dependency-type: "development"

@@ -12,10 +12,47 @@ module.exports = {
                 ? "major"
                 : "minor",
           },
+          { type: "build", scope: "deps", release: "patch" },
+          { type: "lang", release: "minor" },
         ],
       },
     ],
-    "@semantic-release/release-notes-generator",
+    [
+      "@semantic-release/release-notes-generator",
+      {
+        preset: "conventionalcommits",
+        presetConfig: {
+          types: [
+            {
+              type: "feat",
+              section: "Features",
+              hidden: false,
+            },
+            {
+              type: "fix",
+              section: "Bug Fixes",
+              hidden: false,
+            },
+            {
+              type: "perf",
+              section: "Performance Improvements",
+              hidden: false,
+            },
+            {
+              type: "lang",
+              section: "Translation Updates",
+              hidden: false,
+            },
+            {
+              type: "build",
+              scope: "deps",
+              hidden: false,
+              section: "Dependency updates",
+            },
+          ],
+        },
+      },
+    ],
     "@semantic-release/github",
     [
       "@semantic-release/exec",

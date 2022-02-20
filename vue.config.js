@@ -20,6 +20,8 @@ module.exports = {
     plugins: [
       new LicenseCheckerWebpackPlugin({
         allow: "(Apache-2.0 OR BSD-2-Clause OR BSD-3-Clause OR MIT OR 0BSD)",
+        filter:
+          /(^.*[/\\]node_modules[/\\]((?:@[^/\\]+[/\\])?(?:[^@/\\][^/\\]*)))/,
         emitError: true,
         outputFilename: "ThirdPartyNotices.txt",
       }),

@@ -23,7 +23,7 @@ module.exports = {
         emitError: true,
         outputFilename: "ThirdPartyNotices.txt",
       }),
-      new CopyWebpackPlugin([{ from: "LICENSE" }]),
+      new CopyWebpackPlugin({ patterns: [{ from: "LICENSE" }] }),
     ],
   },
 };

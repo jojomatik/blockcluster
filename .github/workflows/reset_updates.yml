@@ -11,8 +11,6 @@ jobs:
       github.event.pull_request.head.ref == 'updates'
     name: Force push branch `beta` to `updates`
     runs-on: ubuntu-latest
-    needs:
-      - semantic-release
     steps:
       - name: Force push branch `beta` to `updates`
         uses: jojomatik/sync-branch@v1

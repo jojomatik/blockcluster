@@ -1,6 +1,6 @@
 {
   "name": "blockcluster-frontend",
-  "version": "0.10.9-beta.2",
+  "version": "0.10.9",
   "private": true,
   "author": {
     "name": "jojomatik",

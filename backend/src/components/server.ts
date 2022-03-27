@@ -334,7 +334,7 @@ export default class Server extends CommonServer {
         shell: true,
       }
     );
-    this.startPauseTimeout();
+    if (this.pauseOnIdle.enable) this.startPauseTimeout();
     this.proc.stdout.on("data", (data) => {
       const messages = data.toString().split("\n");
       messages.forEach(async (messageText: string) => {
@@ -452,7 +452,11 @@ export default class Server extends CommonServer {
         this.updateStatus().then(() => {
           this.sendServerData();
 
-          if (this.pauseOnIdle.enable && isLeaveMessage && this.players.online === 0) {
+          if (
+            this.pauseOnIdle.enable &&
+            isLeaveMessage &&
+            this.players.online === 0
+          ) {
             this.startPauseTimeout();
           }
 

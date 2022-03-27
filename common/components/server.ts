@@ -29,6 +29,7 @@ export enum ServerStatus {
   Starting,
   Started,
   Stopping,
+  Paused,
 }
 
 /**
@@ -51,6 +52,7 @@ export default class Server {
    *    favicon: the favicon of the server.
    *    jar: the jar file of the server.
    *    autostart: whether the server should start with the backend.
+   *    pauseOnIdle: whether the server pause on idle (i.e. with no players).
    *    javaPath: the path to the java runtime used to run the server.
    *    players: the players stats and a sample of players online.
    */
@@ -76,6 +78,7 @@ export default class Server {
     this._favicon = data._favicon || "";
     this._jar = data._jar || null;
     this._autostart = data._autostart || false;
+    this._pauseOnIdle = data._pauseOnIdle || { enable: false, timeout: 300 };
     this._javaPath = data._javaPath || null;
     this._players = data._players || {
       online: 0,
@@ -263,6 +266,27 @@ export default class Server {
   }
 
   /**
+   * Whether the server should pause if it is idling (i.e. no players are online) and which timeout is used.
+   * @private
+   */
+  private _pauseOnIdle: PauseOnIdleType;
+
+  /**
+   * Returns {@link #_pauseOnIdle}.
+   */
+  get pauseOnIdle(): PauseOnIdleType {
+    return this._pauseOnIdle;
+  }
+
+  /**
+   * Sets a new value for {@link #_pauseOnIdle}.
+   * @param value the new value.
+   */
+  set pauseOnIdle(value: PauseOnIdleType) {
+    this._pauseOnIdle = value;
+  }
+
+  /**
    * The path to the java runtime.
    * @private
    */
@@ -425,6 +449,11 @@ type ServerType = {
   _autostart?: boolean;
 
   /**
+   * The pause-on-idle-property of this {@link ServerType}
+   */
+  _pauseOnIdle?: PauseOnIdleType;
+
+  /**
    * The java path of this {@link ServerType}
    */
   _javaPath?: string;
@@ -438,4 +467,12 @@ type ServerType = {
    * The resource usage of this {@link ServerType}
    */
   _resourceUsage?: ResourceUsage[];
+};
+
+/**
+ * The type of the pause-on-idle property.
+ */
+export type PauseOnIdleType = {
+  enable: boolean;
+  timeout: number;
 };

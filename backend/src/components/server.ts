@@ -19,7 +19,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 import { JavaStatusResponse } from "minecraft-server-util/dist/types/JavaStatusResponse";
 import * as mc from "minecraft-server-util";
 
-import CommonServer, { ServerStatus } from "../../../common/components/server";
+import CommonServer, {
+  PauseOnIdleType,
+  ServerStatus,
+} from "../../../common/components/server";
 
 import { basePath, io } from "../backend";
 
@@ -37,6 +40,7 @@ import commandExists from "command-exists";
 import ResourceUsage from "../../../common/components/resource_usage";
 import Player from "../../../common/components/player";
 import { getFaceAsBase64 } from "pixelheads";
+import { Client, createServer } from "minecraft-protocol";
 
 /**
  * The server side implementation of {@link CommonServer} with additional methods that won't run on the client side.
@@ -67,6 +71,12 @@ export default class Server extends CommonServer {
   private timeout: NodeJS.Timeout | null;
 
   /**
+   * A timeout used to stop the server after a certain amount of inactivity.
+   * @private
+   */
+  private idleTimeout?: NodeJS.Timeout;
+
+  /**
    * Updates {@link #status} as well as the selected jar file.
    */
   async update(): Promise<void> {
@@ -76,6 +86,7 @@ export default class Server extends CommonServer {
     this.javaPath = this.getJavaPath();
     this.flags = await this.getFlags();
     this.autostart = this.config.autostart;
+    this.pauseOnIdle = this.config.pauseOnIdle;
   }
 
   /**
@@ -106,7 +117,11 @@ export default class Server extends CommonServer {
           this.status = ServerStatus.Started;
       }
     } catch (e) {
-      if (this.status != ServerStatus.Starting && this.proc == null)
+      if (
+        this.status != ServerStatus.Starting &&
+        this.status != ServerStatus.Paused &&
+        this.proc == null
+      )
         this.status = ServerStatus.Stopped;
       if (this.proc?.exitCode > 0) {
         this.status = ServerStatus.Stopped;
@@ -176,6 +191,10 @@ export default class Server extends CommonServer {
                 break;
               case "autostart":
                 this.autostart = data[key];
+                await this.writeConfig();
+                break;
+              case "pauseOnIdle":
+                this.pauseOnIdle = data[key];
                 await this.writeConfig();
                 break;
               case "javaRuntime":
@@ -315,6 +334,7 @@ export default class Server extends CommonServer {
         shell: true,
       }
     );
+    this.startPauseTimeout();
     this.proc.stdout.on("data", (data) => {
       const messages = data.toString().split("\n");
       messages.forEach(async (messageText: string) => {
@@ -367,6 +387,54 @@ export default class Server extends CommonServer {
   }
 
   /**
+   * Pauses this {@link Server} and waits for a connection by a client.
+   */
+  public async pause() {
+    await this.stop();
+
+    await this.waitForConnection();
+  }
+
+  /**
+   * Waits for a connection by a client and starts the server, if a client connects.
+   */
+  public async waitForConnection() {
+    this.status = ServerStatus.Paused;
+    this.sendServerData();
+    const wakeUpListener = createServer({
+      port: this.port,
+      "online-mode": this.properties.onlineMode,
+      motd:
+        "§7[§3blockcluster§7] ⏸ PAUSED ⏸ §7[§3Join to start§7]\n§r" +
+        this.properties.motd.replaceAll("\\u00A7", "§"),
+      maxPlayers: this.properties.maxPlayers,
+    });
+
+    wakeUpListener.on("listening", async () => {
+      await this.sendConsoleMessage(
+        new Message(
+          MessageType.Blockcluster,
+          "Server is paused and waiting to be woken up."
+        )
+      );
+    });
+
+    wakeUpListener.on("login", async (client: Client) => {
+      await this.sendConsoleMessage(
+        new Message(
+          MessageType.Blockcluster,
+          "Player " + client.username + " tried to login. Server is waking up."
+        )
+      );
+      client.end(
+        "§7[§3blockcluster§7]§r\nThe server is now waking up.\nPlease try again in a few seconds."
+      );
+      wakeUpListener.close();
+      await this.start();
+    });
+  }
+
+  /**
    * Handles a console {@link Message}, by calling all relevant methods based on the contents of the {@link Message}.
    * @param message the {@link Message} that should be handled.
    * @private
@@ -381,7 +449,20 @@ export default class Server extends CommonServer {
     if (isJoinMessage || isLeaveMessage) {
       // Wait 500ms before updating, as the player count is not refreshed immediately.
       setTimeout(() => {
-        this.updateStatus().then(() => this.sendServerData());
+        this.updateStatus().then(() => {
+          this.sendServerData();
+
+          if (this.pauseOnIdle.enable && isLeaveMessage && this.players.online === 0) {
+            this.startPauseTimeout();
+          }
+
+          if (isJoinMessage && this.idleTimeout) {
+            this.stopPauseTimeout();
+            this.broadcastMessage(
+              "The scheduled server stop has been cancelled, as there are players online again."
+            );
+          }
+        });
         // Wait another 4.5s before updating, as the player sample is not refreshed immediately.
         setTimeout(() => {
           this.updateStatus().then(() => this.sendServerData());
@@ -391,12 +472,60 @@ export default class Server extends CommonServer {
   }
 
   /**
+   * Starts {@link #idleTimeout} and stops the server after the defined time if it is not interrupted.
+   */
+  startPauseTimeout() {
+    const timeoutLength = this.pauseOnIdle.timeout;
+    this.idleTimeout = setTimeout(async () => {
+      if (this.pauseOnIdle.enable) {
+        this.broadcastMessage(
+          "This server will stop now, as no players are currently online."
+        );
+        await this.pause();
+      } else {
+        this.broadcastMessage(
+          "The scheduled server stop has been cancelled, as sleep-on-idle has been disabled."
+        );
+      }
+      this.idleTimeout = undefined;
+    }, timeoutLength * 1000);
+    this.broadcastMessage(
+      "This server will stop in " +
+        timeoutLength +
+        "s, as no players are currently online."
+    );
+  }
+
+  /**
+   * Stops the pause timeout.
+   */
+  stopPauseTimeout() {
+    clearInterval(this.idleTimeout);
+    this.idleTimeout = undefined;
+  }
+
+  /**
    * Writes a command to `stdin` of the current process.
    * @param command the command to send.
    * @private
    */
   private writeConsoleCommand(command: string) {
     this.proc.stdin.write(command + "\n");
+  }
+
+  /**
+   * Broadcasts a message on the server and sends a copy to the frontend.
+   * @param message the message to broadcast.
+   * @private
+   */
+  private broadcastMessage(message: string) {
+    this.sendConsoleMessage(
+      new Message(MessageType.Blockcluster, message)
+    ).then(() => {
+      this.writeConsoleCommand(
+        'tellraw @a "§7[§3blockcluster§7]§r ' + message + '"'
+      );
+    });
   }
 
   /**
@@ -457,6 +586,22 @@ export default class Server extends CommonServer {
   set autostart(value: boolean) {
     super.autostart = value;
     this.config.autostart = value;
+  }
+
+  /**
+   * Returns {@link #_pauseOnIdle}.
+   */
+  get pauseOnIdle(): PauseOnIdleType {
+    return this.config.pauseOnIdle;
+  }
+
+  /**
+   * Sets a new value for {@link #_pauseOnIdle}.
+   * @param value the new value.
+   */
+  set pauseOnIdle(value: PauseOnIdleType) {
+    super.pauseOnIdle = value;
+    this.config.pauseOnIdle = value;
   }
 
   /**

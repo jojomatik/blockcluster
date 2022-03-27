@@ -62,6 +62,8 @@ export default class ServerStatusComponent extends Vue {
       case ServerStatus.Starting:
       case ServerStatus.Stopping:
         return "yellow darken-2";
+      case ServerStatus.Paused:
+        return "secondary";
     }
   }
 }

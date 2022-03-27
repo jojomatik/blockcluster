@@ -22,10 +22,10 @@ import Vuetify from "vuetify/lib/framework";
 Vue.use(Vuetify);
 
 export default new Vuetify({
-  options: {
-    customProperties: true,
-  },
   theme: {
+    options: {
+      customProperties: true,
+    },
     themes: {
       light: {
         primary: "#E1E1E1",

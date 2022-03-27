@@ -42,7 +42,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                 {{ message.text }}
               </span>
               <span
-                style="color: teal; text-decoration: underline"
+                class="blockcluster-message"
+                style="text-decoration: underline"
                 v-else-if="message.type === MessageType.DateChange"
               >
                 {{ message.text }}
@@ -271,4 +272,8 @@ export default class ConsoleComponent extends Vue {
 }
 </script>
 
-<style scoped></style>
+<style scoped lang="scss">
+.blockcluster-message {
+  color: var(--v-accent-lighten2) !important;
+}
+</style>

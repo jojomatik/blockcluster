@@ -18,6 +18,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 import ResourceUsage from "./resource_usage";
 import Player from "./player";
+import { ServerProperties } from "./server_properties";
 
 /**
  * An enum that holds different states a {@link Server} can be in.
@@ -44,8 +45,9 @@ export default class Server {
    * @param data the data that shoudl be usd to create the {@link Server}:
    *    name: the name of the server.
    *    status: the status of the server.
-   *    port: the port the server listens on.
-   *    world: the main world of the server.
+   *    properties: the properties of the server:
+   *      port: the port the server listens on.
+   *      world: the main world of the server.
    *    favicon: the favicon of the server.
    *    jar: the jar file of the server.
    *    autostart: whether the server should start with the backend.
@@ -55,8 +57,22 @@ export default class Server {
   constructor(data: ServerType) {
     this._name = data._name || "";
     this._status = data._status || ServerStatus.Unknown;
-    this._port = data._port || 0;
-    this._world = data._world || "";
+    this._properties = data._properties || {
+      serverPort: 0,
+      levelName: "",
+      spawnProtection: 0,
+      whiteList: false,
+      hardcore: false,
+      allowNether: false,
+      viewDistance: 0,
+      onlineMode: false,
+      maxPlayers: 0,
+      difficulty: "peaceful",
+      motd: "",
+      levelSeed: "",
+      pvp: false,
+      gamemode: "survival",
+    };
     this._favicon = data._favicon || "";
     this._jar = data._jar || null;
     this._autostart = data._autostart || false;
@@ -112,45 +128,54 @@ export default class Server {
   }
 
   /**
-   * The port that the {@link Server} listens to.
+   * The properties of this {@link Server}.
    * @private
    */
-  private _port: number;
+  private _properties: ServerProperties;
 
   /**
-   * Returns {@link #port}.
+   * Returns {@link #_properties}.
    */
-  get port(): number {
-    return this._port;
+  get properties(): ServerProperties {
+    return this._properties;
   }
 
   /**
-   * Sets a new value for {@link #port}.
+   * Sets a new value for {@link #_properties}.
+   * @private
+   */
+  set properties(value: ServerProperties) {
+    this._properties = value;
+  }
+
+  /**
+   * Returns the port of this {@link Server}.
+   */
+  get port(): number {
+    return this.properties.serverPort;
+  }
+
+  /**
+   * Sets a new port for this {@link Server}.
    * @private
    */
   set port(value: number) {
-    this._port = value;
+    this.properties.serverPort = value;
   }
 
   /**
-   * The name of the world of the {@link Server}.
-   * @private
-   */
-  private _world: string;
-
-  /**
-   * Returns {@link #world}.
+   Returns the world of this {@link Server}.
    */
   get world(): string {
-    return this._world;
+    return this.properties.levelName;
   }
 
   /**
-   * Sets a new value for {@link #world}.
+   Sets a new world for this {@link Server}.
    * @param value the new value.
    */
   set world(value: string) {
-    this._world = value;
+    this.properties.levelName = value;
   }
 
   /**
@@ -380,14 +405,9 @@ type ServerType = {
   _status?: ServerStatus;
 
   /**
-   * The port of this {@link ServerType}
+   * The properties of this {@link ServerType}
    */
-  _port?: number;
-
-  /**
-   * The world of this {@link ServerType}
-   */
-  _world?: string;
+  _properties?: ServerProperties;
 
   /**
    * The favicon of this {@link ServerType}

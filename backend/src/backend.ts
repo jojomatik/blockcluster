@@ -33,6 +33,10 @@ dotenvExpand.expand(dotenv.config({ path: "../.env.local" }));
 import { getVersion } from "../../common/version";
 import { getJavaRuntimes } from "./components/java_runtime";
 import getDependencyInfo from "./utils/dependency_info";
+import {
+  ServerPropertiesFile,
+  getPropertiesFromFile,
+} from "../../common/components/server_properties";
 
 const app = express();
 
@@ -111,10 +115,15 @@ async function getServers(): Promise<Server[]> {
     const path = basePath + "/" + file;
     const isDir: boolean = fs.lstatSync(path).isDirectory();
     if (isDir && fs.readdirSync(path).includes(propertiesFile)) {
-      const properties = PropertiesReader(path + "/" + propertiesFile);
-      const port = Number.parseInt(properties.get("server-port") as string);
-      const world = properties.get("level-name") as string;
-      const server = new Server({ _name: file, _port: port, _world: world });
+      const properties = getPropertiesFromFile(
+        PropertiesReader(
+          path + "/" + propertiesFile
+        ).getAllProperties() as ServerPropertiesFile
+      );
+      const server = new Server({
+        _name: file,
+        _properties: properties,
+      });
       servers.push(server);
     }
   }

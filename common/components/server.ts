@@ -23,11 +23,11 @@ import Player from "./player";
  * An enum that holds different states a {@link Server} can be in.
  */
 export enum ServerStatus {
+  Unknown,
   Stopped,
   Starting,
   Started,
   Stopping,
-  Unknown,
 }
 
 /**
@@ -37,44 +37,36 @@ export default class Server {
   /**
    * An frozen instance of {@link Server} with default values.
    */
-  static emptyServer: Readonly<Server> = Object.freeze(new Server());
+  static emptyServer: Readonly<Server> = Object.freeze(new Server({}));
 
   /**
    * Creates an instance of {@link Server} based on its name, its current state and its port.
-   * @param name the name of the server.
-   * @param status the status of the server.
-   * @param port the port the server listens on.
-   * @param world the main world of the server.
-   * @param favicon the favicon of the server.
-   * @param jar the jar file of the server.
-   * @param autostart whether the server should start with the backend.
-   * @param javaPath the path to the java runtime used to run the server.
-   * @param players the players stats and a sample of players online.
+   * @param data the data that shoudl be usd to create the {@link Server}:
+   *    name: the name of the server.
+   *    status: the status of the server.
+   *    port: the port the server listens on.
+   *    world: the main world of the server.
+   *    favicon: the favicon of the server.
+   *    jar: the jar file of the server.
+   *    autostart: whether the server should start with the backend.
+   *    javaPath: the path to the java runtime used to run the server.
+   *    players: the players stats and a sample of players online.
    */
-  constructor(
-    name = "",
-    status: ServerStatus = ServerStatus.Unknown,
-    port = 0,
-    world = "",
-    favicon = "",
-    jar: string | null = null,
-    autostart = false,
-    javaPath: string | null = null,
-    players: playerStats = {
+  constructor(data: ServerType) {
+    this._name = data._name || "";
+    this._status = data._status || ServerStatus.Unknown;
+    this._port = data._port || 0;
+    this._world = data._world || "";
+    this._favicon = data._favicon || "";
+    this._jar = data._jar || null;
+    this._autostart = data._autostart || false;
+    this._javaPath = data._javaPath || null;
+    this._players = data._players || {
       online: 0,
       max: 0,
       sample: [],
-    }
-  ) {
-    this._name = name;
-    this._status = status;
-    this._port = port;
-    this._world = world;
-    this._favicon = favicon;
-    this._jar = jar;
-    this._autostart = autostart;
-    this._javaPath = javaPath;
-    this._players = players;
+    };
+    this._resourceUsage = data._resourceUsage || [];
   }
 
   /**
@@ -320,7 +312,7 @@ export default class Server {
       )
         stripped[key] = this[key];
     }
-    return Object.assign(new Server(), stripped);
+    return Object.assign(new Server({}), stripped);
   }
 
   /**
@@ -371,4 +363,59 @@ export type playerStats = {
   online: number;
   max: number;
   sample: Player[];
+};
+
+/**
+ * A type that contains the properties of a {@link Server}.
+ */
+type ServerType = {
+  /**
+   * The name of this {@link ServerType}
+   */
+  _name?: string;
+
+  /**
+   * The status of this {@link ServerType}
+   */
+  _status?: ServerStatus;
+
+  /**
+   * The port of this {@link ServerType}
+   */
+  _port?: number;
+
+  /**
+   * The world of this {@link ServerType}
+   */
+  _world?: string;
+
+  /**
+   * The favicon of this {@link ServerType}
+   */
+  _favicon?: string;
+
+  /**
+   * The jar of this {@link ServerType}
+   */
+  _jar?: string;
+
+  /**
+   * The autostart-property of this {@link ServerType}
+   */
+  _autostart?: boolean;
+
+  /**
+   * The java path of this {@link ServerType}
+   */
+  _javaPath?: string;
+
+  /**
+   * The player stats of this {@link ServerType}
+   */
+  _players?: playerStats;
+
+  /**
+   * The resource usage of this {@link ServerType}
+   */
+  _resourceUsage?: ResourceUsage[];
 };

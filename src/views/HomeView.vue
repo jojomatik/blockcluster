@@ -79,7 +79,7 @@ export default class Home extends Vue {
     this.sockets.subscribe("MESSAGE", (data: Record<string, unknown>[]) => {
       this.servers = [];
       data.forEach((elem: Record<string, unknown>) => {
-        const server: Server = Object.assign(new Server(), elem);
+        const server: Server = new Server(elem);
         server.players.sample = server.players.sample.map((player) => {
           return Object.assign(new Player(), player);
         });

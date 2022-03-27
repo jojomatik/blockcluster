@@ -22,6 +22,7 @@
     "dotenv": "^16.0.0",
     "dotenv-expand": "^8.0.3",
     "express": "^4.17.3",
+    "minecraft-protocol": "^1.30.0",
     "minecraft-server-util": "^5.2.9",
     "pidusage": "^3.0.0",
     "pixelheads": "^1.0.6",

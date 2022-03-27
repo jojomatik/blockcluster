@@ -18,6 +18,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 import { getDefaultRuntime } from "../../../common/components/java_runtime";
 import { getJavaRuntimes } from "./java_runtime";
+import { PauseOnIdleType } from "../../../common/components/server";
 
 /**
  * A class that represents the config file of a server.
@@ -34,6 +35,11 @@ export default class ServerConfig {
   public autostart: boolean;
 
   /**
+   * Whether the server should pause on idle (i.e. with no players) or not.
+   */
+  public pauseOnIdle: PauseOnIdleType;
+
+  /**
    * The path to the java runtime used to run the server.
    */
   public javaPath: string;
@@ -42,15 +48,21 @@ export default class ServerConfig {
    * Creates a new {@link ServerConfig}
    * @param flags the flags of the server, default = `[]`
    * @param autostart whether the server should start with the backend or not.
+   * @param pauseOnIdle whether the server should pause on idle (i.e. with no players) or not.
    * @param javaPath the path to the java runtime used to run the server.
    */
   constructor(
     flags: string[] = [],
     autostart = false,
+    pauseOnIdle = {
+      enable: false,
+      timeout: 300,
+    },
     javaPath: string = getDefaultRuntime(getJavaRuntimes()).path
   ) {
     this.flags = flags;
     this.autostart = autostart;
+    this.pauseOnIdle = pauseOnIdle;
     this.javaPath = javaPath;
   }
 }

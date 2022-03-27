@@ -66,6 +66,32 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                       </td>
                     </tr>
                     <tr>
+                      <td>Pause on idle</td>
+                      <td>
+                        <v-switch
+                          class="ma-auto mb-1"
+                          hide-details
+                          color="secondary"
+                          v-bind:value="pauseOnIdle.enable"
+                          @change="setPauseEnabled"
+                        />
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>Pause on idle timeout</td>
+                      <td>
+                        <v-text-field
+                          hide-details
+                          dense
+                          single-line
+                          type="number"
+                          v-bind:value="pauseOnIdle.timeout"
+                          @change="setPauseTimeout"
+                        >
+                        </v-text-field>
+                      </td>
+                    </tr>
+                    <tr>
                       <td>Java Runtime</td>
                       <td style="display: flex; flex-direction: row">
                         <v-select
@@ -174,7 +200,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 <script lang="ts">
 import { Component, Prop, Vue } from "vue-property-decorator";
 
-import Server, { ServerStatus } from "../../common/components/server";
+import Server, {
+  PauseOnIdleType,
+  ServerStatus,
+} from "../../common/components/server";
 import ServerStatusComponent from "@/components/ServerStatusComponent.vue";
 import ConsoleComponent from "@/components/ConsoleComponent.vue";
 import StateChangeButtonComponent from "@/components/StateChangeButtonComponent.vue";
@@ -308,6 +337,42 @@ export default class ServerComponent extends Vue {
   set autostart(value: boolean) {
     this.server.autostart = value;
     this.sendMessage("set " + JSON.stringify({ autostart: value }));
+  }
+
+  /**
+   * Returns the `pauseOnIdle` option of the server.
+   */
+  get pauseOnIdle(): PauseOnIdleType {
+    return this.server.pauseOnIdle;
+  }
+
+  /**
+   * Sets the `pauseOnIdle` option of the server.
+   * @param value the `pauseOnIdle` option to be sent to the server.
+   */
+  set pauseOnIdle(value: PauseOnIdleType) {
+    this.server.pauseOnIdle = value;
+    this.sendMessage("set " + JSON.stringify({ pauseOnIdle: value }));
+  }
+
+  /**
+   * Sets the `enabled` property of the `pauseOnIdle` option of the server.
+   * @param value the `enabled` property of the `pauseOnIdle` option to be sent to the server.
+   */
+  setPauseEnabled(value: boolean | null) {
+    const pauseOnIdle = this.pauseOnIdle;
+    pauseOnIdle.enable = value === true;
+    this.pauseOnIdle = pauseOnIdle;
+  }
+
+  /**
+   * Sets the `timeout` property of the `pauseOnIdle` option of the server.
+   * @param value the `timeout` property of the `pauseOnIdle` option to be sent to the server.
+   */
+  setPauseTimeout(value: string) {
+    const pauseOnIdle = this.pauseOnIdle;
+    pauseOnIdle.timeout = parseInt(value);
+    this.pauseOnIdle = pauseOnIdle;
   }
 
   /**

@@ -48,6 +48,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
               >
                 {{ message.text }}
               </span>
+              <span
+                class="blockcluster-message"
+                v-else-if="message.type === MessageType.Blockcluster"
+              >
+                {{ message.text }}
+              </span>
               <span v-else>{{ message.text }}</span>
             </v-col>
           </v-row>

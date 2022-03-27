@@ -319,27 +319,11 @@ export default class Server extends CommonServer {
       const messages = data.toString().split("\n");
       messages.forEach(async (messageText: string) => {
         if (messageText !== "") {
-          // Retrieve player count and sample for join- and leave-messages.
-          const isJoinMessage =
-            /: [^ ]+\[\/\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3}:.\d{1,5}] logged in with entity id \d+ at \((?:\[.+])?\d+.\d+, .\d+.\d+, .\d+.\d+\)/.test(
-              messageText
-            );
-          const isLeaveMessage = /: [^ ]+ lost connection: .+/.test(
-            messageText
-          );
-          if (isJoinMessage || isLeaveMessage) {
-            // Wait 500ms before updating, as the player count is not refreshed immediately.
-            setTimeout(() => {
-              this.updateStatus().then(() => this.sendServerData());
-              // Wait another 4.5s before updating, as the player sample is not refreshed immediately.
-              setTimeout(() => {
-                this.updateStatus().then(() => this.sendServerData());
-              }, 4500);
-            }, 500);
-          }
-          await this.sendConsoleMessage(
-            new Message(MessageType.Default, messageText)
-          );
+          const message = new Message(MessageType.Default, messageText);
+          // Handle message in backend.
+          await this.handleConsoleMessage(message);
+          // Send message to the frontend.
+          await this.sendConsoleMessage(message);
         }
       });
     });
@@ -380,6 +364,30 @@ export default class Server extends CommonServer {
   public async restart() {
     await this.stop();
     await this.start();
+  }
+
+  /**
+   * Handles a console {@link Message}, by calling all relevant methods based on the contents of the {@link Message}.
+   * @param message the {@link Message} that should be handled.
+   * @private
+   */
+  private async handleConsoleMessage(message: Message): Promise<void> {
+    // Retrieve player count and sample for join- and leave-messages.
+    const isJoinMessage =
+      /: [^ ]+\[\/\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3}:.\d{1,5}] logged in with entity id \d+ at \((?:\[.+])?\d+.\d+, .\d+.\d+, .\d+.\d+\)/.test(
+        message.text
+      );
+    const isLeaveMessage = /: [^ ]+ lost connection: .+/.test(message.text);
+    if (isJoinMessage || isLeaveMessage) {
+      // Wait 500ms before updating, as the player count is not refreshed immediately.
+      setTimeout(() => {
+        this.updateStatus().then(() => this.sendServerData());
+        // Wait another 4.5s before updating, as the player sample is not refreshed immediately.
+        setTimeout(() => {
+          this.updateStatus().then(() => this.sendServerData());
+        }, 4500);
+      }, 500);
+    }
   }
 
   /**

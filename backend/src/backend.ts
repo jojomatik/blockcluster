@@ -114,7 +114,7 @@ async function getServers(): Promise<Server[]> {
       const properties = PropertiesReader(path + "/" + propertiesFile);
       const port = Number.parseInt(properties.get("server-port") as string);
       const world = properties.get("level-name") as string;
-      const server = new Server(file, ServerStatus.Unknown, port, world);
+      const server = new Server({ _name: file, _port: port, _world: world });
       servers.push(server);
     }
   }

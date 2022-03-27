@@ -25,7 +25,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
 import ServerComponent from "@/components/ServerComponent.vue"; // @ is an alias to /src
-import Server, { ServerStatus } from "../../common/components/server";
+import Server from "../../common/components/server";
 
 /**
  * A {@link Vue}-View that shows one server.
@@ -43,6 +43,6 @@ export default class ServerView extends Vue {
    * The server shown in this {@ServerView}.
    * @private
    */
-  private server = new Server("", ServerStatus.Unknown, 0);
+  private server = new Server({});
 }
 </script>

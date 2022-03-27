@@ -159,7 +159,7 @@ export default class Server extends CommonServer {
             this.status = ServerStatus.Stopping;
             break;
         }
-        this.proc.stdin.write(commandArr[2] + "\n");
+        this.writeConsoleCommand(commandArr[2]);
         break;
       case "getMessages":
         await this.sendConsoleMessage(this.messages, false);
@@ -388,6 +388,15 @@ export default class Server extends CommonServer {
         }, 4500);
       }, 500);
     }
+  }
+
+  /**
+   * Writes a command to `stdin` of the current process.
+   * @param command the command to send.
+   * @private
+   */
+  private writeConsoleCommand(command: string) {
+    this.proc.stdin.write(command + "\n");
   }
 
   /**

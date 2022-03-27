@@ -29,7 +29,7 @@ export default class ServerConfig {
   public flags: string[];
 
   /**
-   * Whether or not the server should start with the backend.
+   * Whether the server should start with the backend or not.
    */
   public autostart: boolean;
 
@@ -41,7 +41,7 @@ export default class ServerConfig {
   /**
    * Creates a new {@link ServerConfig}
    * @param flags the flags of the server, default = `[]`
-   * @param autostart whether or not the server should start with the backend.
+   * @param autostart whether the server should start with the backend or not.
    * @param javaPath the path to the java runtime used to run the server.
    */
   constructor(

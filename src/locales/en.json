@@ -70,7 +70,7 @@
           },
           "text": "Delete World"
         },
-        "executable": "Executable",
+        "executable": "Server JAR-file",
         "favicon": {
           "alt": "favicon of {name}"
         },
@@ -94,9 +94,9 @@
           "memory": "memory"
         },
         "state_change": {
+          "restart": "Restart",
           "start": "Start",
-          "stop": "Stop",
-          "restart": "Restart"
+          "stop": "Stop"
         },
         "status": {
           "paused": "Paused",

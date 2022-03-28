@@ -1,1 +1,113 @@
-{}
+{
+  "gui": {
+    "appbar": {
+      "dark_mode": "Dunkelmodus",
+      "language_select": {
+        "de": "Deutsch",
+        "en": "Englisch"
+      },
+      "navigation": {
+        "about": {
+          "title": "Über"
+        },
+        "home": {
+          "title": "Startseite"
+        }
+      }
+    },
+    "footer": {
+      "notice": {
+        "license": "Der Quellcode von blockcluster ist unter der AGPL-3.0 Lizenz verfügbar.",
+        "link_description": "Betrachte den Quellcode und die Lizenz auf"
+      }
+    },
+    "views": {
+      "about": {
+        "description": "blockcluster - Ein Minecraft-Server-Manager für den Browser.",
+        "libraries": {
+          "backend": {
+            "description": "Die folgende Liste beinhaltet alle Bibliotheken, die im Backend von {name} produktiv verwendet werden.",
+            "title": "Bibliotheken im {name}-Backend"
+          },
+          "frontend": {
+            "description": "Die folgende Liste beinhaltet alle Bibliotheken, die im Frontend von {name} produktiv verwendet werden.",
+            "title": "Bibliotheken im {name}-Frontend"
+          }
+        },
+        "notice": {
+          "author": {
+            "by_author": "von {author}",
+            "not_specified": "Autor nicht angegeben"
+          },
+          "license": "Lizenz"
+        },
+        "title": "Über {name}"
+      },
+      "home": {
+        "resource_usage": {
+          "total": "Gesamtauslastung"
+        },
+        "server": {
+          "details": "Details"
+        },
+        "update_status": "Status aktualisieren"
+      },
+      "server": {
+        "autostart": "Autostart",
+        "console": {
+          "title": "Konsole"
+        },
+        "delete_world": {
+          "dialog": {
+            "cancel": "Abbrechen",
+            "confirm": "Welt löschen",
+            "description": "Diese Aktion wird den Server stoppen (falls gestartet), die Welt, die in %%file%% angegeben ist löschen und den Server danach neu starten.",
+            "errors": {
+              "no_match_name": "Eingabe entspricht nicht dem Server-Namen."
+            },
+            "prompt": "Gib %%name%% ein, um die Welt zu löschen:",
+            "question": "Bist du dir sicher, dass du die Welt löschen möchtest?"
+          },
+          "text": "Welt löschen"
+        },
+        "executable": "Server JAR-Datei",
+        "favicon": {
+          "alt": "Favicon von {name}"
+        },
+        "flags": {
+          "save": "Speichern"
+        },
+        "java_runtime": "Java Runtime",
+        "pause_on_idle": {
+          "timeout": "Auto-Pausieren Wartezeit",
+          "title": "Auto-Pausieren"
+        },
+        "players": {
+          "heads": {
+            "alt": "Kopf von {name}"
+          },
+          "title": "Spieler"
+        },
+        "port": "Port",
+        "resource_usage": {
+          "cpu": "Prozessor",
+          "memory": "Arbeitsspeicher"
+        },
+        "state_change": {
+          "restart": "Neu starten",
+          "start": "Starten",
+          "stop": "Stoppen"
+        },
+        "status": {
+          "paused": "Pausiert",
+          "started": "Gestartet",
+          "starting": "Startet",
+          "stopped": "Gestoppt",
+          "stopping": "Stoppt",
+          "unknown": "Unbekannt"
+        },
+        "update_status": "Status aktualisieren"
+      }
+    }
+  }
+}

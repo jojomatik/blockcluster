@@ -27,7 +27,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
               style="height: 32px"
               v-if="server.favicon"
               v-bind:src="server.favicon"
-              :alt="'favicon of ' + server.name"
+              :alt="$t('gui.views.server.favicon.alt', { name: server.name })"
             />
             {{ server.name }}
             <ServerStatusComponent :status="server.status" />
@@ -41,21 +41,25 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                   </colgroup>
                   <tbody>
                     <tr>
-                      <td>Players</td>
+                      <td>{{ $t("gui.views.server.players.title") }}</td>
                       <td>
                         <PlayerStatsComponent :player-stats="server.players" />
                       </td>
                     </tr>
                     <tr>
-                      <td>Port</td>
+                      <td>{{ $t("gui.views.server.port") }}</td>
                       <td>{{ server.port }}</td>
                     </tr>
                     <tr>
-                      <td>Executable</td>
+                      <td>
+                        {{ $t("gui.views.server.executable") }}
+                      </td>
                       <td>{{ server.jar }}</td>
                     </tr>
                     <tr>
-                      <td>Autostart</td>
+                      <td>
+                        {{ $t("gui.views.server.autostart") }}
+                      </td>
                       <td>
                         <v-switch
                           class="ma-auto mb-1"
@@ -66,7 +70,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                       </td>
                     </tr>
                     <tr>
-                      <td>Pause on idle</td>
+                      <td>
+                        {{ $t("gui.views.server.pause_on_idle.title") }}
+                      </td>
                       <td>
                         <v-switch
                           class="ma-auto mb-1"
@@ -78,7 +84,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                       </td>
                     </tr>
                     <tr>
-                      <td>Pause on idle timeout</td>
+                      <td>
+                        {{ $t("gui.views.server.pause_on_idle.timeout") }}
+                      </td>
                       <td>
                         <v-text-field
                           hide-details
@@ -92,7 +100,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                       </td>
                     </tr>
                     <tr>
-                      <td>Java Runtime</td>
+                      <td>
+                        {{ $t("gui.views.server.java_runtime") }}
+                      </td>
                       <td style="display: flex; flex-direction: row">
                         <v-select
                           hide-details
@@ -141,7 +151,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
               v-on:click="update"
             >
               <v-icon left light>mdi-reload</v-icon>
-              Update Status
+              {{ $t("gui.views.server.update_status") }}
             </v-btn>
             <WorldDeleteDialogComponent
               buttonClass="ml-auto"
@@ -164,7 +174,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         style="height: 32px"
         v-if="server.favicon"
         v-bind:src="server.favicon"
-        :alt="'favicon of ' + server.name"
+        :alt="$t('gui.views.server.favicon.alt', { name: server.name })"
       />
       {{ server.name }}
       <ServerStatusComponent :status="server.status" />
@@ -181,7 +191,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </colgroup>
             <tbody>
               <tr>
-                <td>Port</td>
+                <td>{{ $t("gui.views.server.port") }}</td>
                 <td>{{ server.port }}</td>
               </tr>
             </tbody>
@@ -191,7 +201,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     </v-card-text>
     <v-card-actions>
       <v-btn :to="'/server/' + encodeURIComponent(server.name)">
-        Details
+        {{ $t("gui.views.home.server.details") }}
       </v-btn>
     </v-card-actions>
   </v-card>

@@ -81,13 +81,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     }"
     :series="[
       {
-        name: 'cpu',
+        name: $t('gui.views.server.resource_usage.cpu'),
         data: resourceUsage.map((usage) => {
           return usage.cpu / 100;
         }),
       },
       {
-        name: 'memory',
+        name: $t('gui.views.server.resource_usage.memory'),
         data: resourceUsage.map((usage) => {
           return usage.memory / 1024 / 1024;
         }),

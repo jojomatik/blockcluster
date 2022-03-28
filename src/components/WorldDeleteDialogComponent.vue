@@ -32,17 +32,25 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         :disabled="isDisabled()"
       >
         <v-icon left light>mdi-delete</v-icon>
-        Delete World
+        {{ $t("gui.views.server.delete_world.text") }}
       </v-btn>
     </template>
     <v-card>
       <v-card-title>Delete World?</v-card-title>
       <v-card-text>
-        <p>Are you sure you want to delete the world?</p>
+        <p>{{ $t("gui.views.server.delete_world.dialog.question") }}</p>
         <p>
-          Type
+          {{
+            $t("gui.views.server.delete_world.dialog.prompt")
+              .toString()
+              .split("%%name%%")[0]
+          }}
           <span class="font-weight-bold">{{ this.server.getName() }}</span>
-          to delete this world:
+          {{
+            $t("gui.views.server.delete_world.dialog.prompt")
+              .toString()
+              .split("%%name%%")[1]
+          }}
         </p>
         <v-form v-model="isFormValid">
           <v-text-field
@@ -51,13 +59,23 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             :rules="[
               currentTextInput === this.server.getName()
                 ? true
-                : 'Input does\'t match server name.',
+                : $t(
+                    'gui.views.server.delete_world.dialog.errors.no_match_name'
+                  ),
             ]"
           ></v-text-field>
           <p class="font-weight-light" style="font-size: 12px">
-            This operation will stop the server (if started), delete the world
-            defined in <code>server.properties</code> and restart the server
-            afterwards.
+            {{
+              $t("gui.views.server.delete_world.dialog.description")
+                .toString()
+                .split("%%file%%")[0]
+            }}
+            <code>server.properties</code>
+            {{
+              $t("gui.views.server.delete_world.dialog.description")
+                .toString()
+                .split("%%file%%")[1]
+            }}
           </p>
         </v-form>
       </v-card-text>
@@ -69,7 +87,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
           :disabled="!isFormValid"
         >
           <v-icon left light>mdi-delete</v-icon>
-          Delete World
+          {{ $t("gui.views.server.delete_world.dialog.confirm") }}
         </v-btn>
         <v-btn
           class="server-card-button"
@@ -78,7 +96,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
           text
         >
           <v-icon left light>mdi-cancel</v-icon>
-          Cancel
+          {{ $t("gui.views.server.delete_world.dialog.cancel") }}
         </v-btn>
       </v-card-actions>
     </v-card>

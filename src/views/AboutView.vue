@@ -21,9 +21,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <v-row>
       <v-col cols="12">
         <v-card>
-          <v-card-title> About {{ projectName }} </v-card-title>
+          <v-card-title>
+            {{ $t("gui.views.about.title", { name: projectName }) }}
+          </v-card-title>
           <v-card-text>
-            blockcluster - An in-browser manager for your minecraft servers.
+            {{ $t("gui.views.about.description") }}
             <NoticeComponent
               v-if="!loading"
               class="mt-4"
@@ -37,11 +39,18 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
       <v-col>
         <v-card>
           <v-card-title>
-            Libraries used in the {{ projectName }}-backend
+            {{
+              $t("gui.views.about.libraries.backend.title", {
+                name: projectName,
+              })
+            }}
           </v-card-title>
           <v-card-text>
-            This is a list of all production libraries used in the backend of
-            {{ projectName }}.
+            {{
+              $t("gui.views.about.libraries.backend.description", {
+                name: projectName,
+              })
+            }}
             <div class="mt-4" v-if="!this.loading">
               <v-container fluid class="pa-0">
                 <v-row>
@@ -65,11 +74,18 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
       <v-col>
         <v-card>
           <v-card-title>
-            Libraries used in the {{ projectName }}-frontend
+            {{
+              $t("gui.views.about.libraries.frontend.title", {
+                name: projectName,
+              })
+            }}
           </v-card-title>
           <v-card-text>
-            This is a list of all production libraries used in the frontend of
-            {{ projectName }}.
+            {{
+              $t("gui.views.about.libraries.frontend.description", {
+                name: projectName,
+              })
+            }}
             <div class="mt-4" v-if="!this.loading">
               <v-container fluid class="pa-0">
                 <v-row>

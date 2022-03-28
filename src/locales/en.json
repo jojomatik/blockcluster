@@ -1,0 +1,113 @@
+{
+  "gui": {
+    "appbar": {
+      "dark_mode": "Dark mode",
+      "language_select": {
+        "de": "German",
+        "en": "English"
+      },
+      "navigation": {
+        "about": {
+          "title": "About"
+        },
+        "home": {
+          "title": "Home"
+        }
+      }
+    },
+    "footer": {
+      "notice": {
+        "license": "The source code of blockcluster is licensed under the AGPL-3.0 license.",
+        "link_description": "View the source code and license on"
+      }
+    },
+    "views": {
+      "about": {
+        "description": "blockcluster - An in-browser manager for your minecraft servers.",
+        "libraries": {
+          "backend": {
+            "description": "This is a list of all production libraries used in the backend of {name}.",
+            "title": "Libraries used in the {name}-backend"
+          },
+          "frontend": {
+            "description": "This is a list of all production libraries used in the frontend of {name}.",
+            "title": "Libraries used in the {name}-frontend"
+          }
+        },
+        "notice": {
+          "author": {
+            "by_author": "by {author}",
+            "not_specified": "author not specified"
+          },
+          "license": "License"
+        },
+        "title": "About {name}"
+      },
+      "home": {
+        "resource_usage": {
+          "total": "Total resource usage"
+        },
+        "server": {
+          "details": "Details"
+        },
+        "update_status": "Update status"
+      },
+      "server": {
+        "autostart": "Autostart",
+        "console": {
+          "title": "Console"
+        },
+        "delete_world": {
+          "dialog": {
+            "cancel": "Cancel",
+            "confirm": "Delete World",
+            "description": "This operation will stop the server (if started), delete the world defined in %%file%% and restart the server afterwards.",
+            "errors": {
+              "no_match_name": "Input doesn't match server name."
+            },
+            "prompt": "Type %%name%% to delete this world:",
+            "question": "Are you sure you want to delete the world?"
+          },
+          "text": "Delete World"
+        },
+        "executable": "Executable",
+        "favicon": {
+          "alt": "favicon of {name}"
+        },
+        "flags": {
+          "save": "Save"
+        },
+        "java_runtime": "Java Runtime",
+        "pause_on_idle": {
+          "timeout": "Pause on idle timeout",
+          "title": "Pause on idle"
+        },
+        "players": {
+          "heads": {
+            "alt": "Head of {name}"
+          },
+          "title": "Players"
+        },
+        "port": "Port",
+        "resource_usage": {
+          "cpu": "cpu",
+          "memory": "memory"
+        },
+        "state_change": {
+          "start": "Start",
+          "stop": "Stop",
+          "restart": "Restart"
+        },
+        "status": {
+          "paused": "Paused",
+          "started": "Started",
+          "starting": "Starting",
+          "stopped": "Stopped",
+          "stopping": "Stopping",
+          "unknown": "Unknown"
+        },
+        "update_status": "Update Status"
+      }
+    }
+  }
+}

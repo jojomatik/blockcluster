@@ -24,6 +24,7 @@ import VueSocketIO from "vue-socket.io";
 import vuetify from "./plugins/vuetify";
 import VueMeta from "vue-meta";
 import VueApexCharts from "vue-apexcharts";
+import i18n from "./i18n";
 
 Vue.config.productionTip = false;
 
@@ -41,5 +42,6 @@ Vue.use(VueApexCharts);
 new Vue({
   router,
   vuetify,
+  i18n,
   render: (h) => h(App),
 }).$mount("#app");

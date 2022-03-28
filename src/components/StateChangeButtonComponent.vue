@@ -25,7 +25,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     v-on:click="start"
   >
     <v-icon left light>mdi-play</v-icon>
-    Start
+    {{ $t("gui.views.server.state_change.start") }}
   </v-btn>
   <v-btn
     v-else-if="isToggle() && this.status === ServerStatus.Starting"
@@ -36,7 +36,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     v-on:click="start"
   >
     <v-icon left light>mdi-play</v-icon>
-    Start
+    {{ $t("gui.views.server.state_change.start") }}
   </v-btn>
   <v-btn
     v-else-if="isToggle() && this.status === ServerStatus.Started"
@@ -46,7 +46,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     v-on:click="stop"
   >
     <v-icon left light>mdi-stop</v-icon>
-    Stop
+    {{ $t("gui.views.server.state_change.stop") }}
   </v-btn>
   <v-btn
     v-else-if="isToggle()"
@@ -57,7 +57,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     v-on:click="stop"
   >
     <v-icon left light>mdi-stop</v-icon>
-    Stop
+    {{ $t("gui.views.server.state_change.stop") }}
   </v-btn>
   <v-btn
     v-else-if="!isToggle() && this.status === ServerStatus.Started"
@@ -67,7 +67,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     v-on:click="restart"
   >
     <v-icon left light>mdi-restart</v-icon>
-    Restart
+    {{ $t("gui.views.server.state_change.restart") }}
   </v-btn>
   <v-btn
     v-else
@@ -78,7 +78,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     v-on:click="restart"
   >
     <v-icon left light>mdi-restart</v-icon>
-    Restart
+    {{ $t("gui.views.server.state_change.restart") }}
   </v-btn>
 </template>
 

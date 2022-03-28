@@ -24,7 +24,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     style="display: flex; flex-direction: column"
     class="mt-4"
   >
-    <v-card-title>Console</v-card-title>
+    <v-card-title>{{ $t("gui.views.server.console.title") }}</v-card-title>
     <v-card-text
       style="
         display: flex;

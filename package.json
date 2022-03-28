@@ -14,6 +14,7 @@
     "start": "cd backend && node dist/backend/src/backend.js",
     "test:unit": "vue-cli-service test:unit",
     "lint": "vue-cli-service lint",
+    "i18n:report": "vue-cli-service i18n:report --src \"./src/**/*.?(js|vue)\" --locales \"./src/locales/**/*.json\"",
     "semantic-release": "semantic-release"
   },
   "dependencies": {
@@ -25,6 +26,7 @@
     "vue": "^2.6.14",
     "vue-apexcharts": "^1.6.2",
     "vue-class-component": "^7.2.3",
+    "vue-i18n": "^8.26.3",
     "vue-meta": "^2.4.0",
     "vue-property-decorator": "^9.1.2",
     "vue-router": "^3.5.3",

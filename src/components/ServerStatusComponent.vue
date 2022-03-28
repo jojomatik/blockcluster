@@ -44,7 +44,9 @@ export default class ServerStatusComponent extends Vue {
    * @private
    */
   private getStatus(): string {
-    return ServerStatus[this.status];
+    return this.$t(
+      "gui.views.server.status." + ServerStatus[this.status].toLowerCase()
+    ).toString();
   }
   /**
    * A function that returns a color for a {@link ServerStatus}.

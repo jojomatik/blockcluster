@@ -37,7 +37,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
       </h5>
     </v-card-title>
     <v-card-subtitle>
-      {{ notice.author ? "by " + notice.author : "author not specified" }}
+      {{
+        notice.author
+          ? $t("gui.views.about.notice.author.by_author", {
+              author: notice.author,
+            })
+          : $t("gui.views.about.notice.author.not_specified")
+      }}
     </v-card-subtitle>
     <v-card-text>
       <code
@@ -49,7 +55,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
       <v-expansion-panels v-else accordion flat>
         <v-expansion-panel>
           <v-expansion-panel-header class="px-0">
-            License
+            {{ $t("gui.views.about.notice.license") }}
           </v-expansion-panel-header>
           <v-expansion-panel-content>
             <code class="licenseText">{{ notice.notice }}</code>

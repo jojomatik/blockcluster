@@ -40,8 +40,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
       </div>
 
       <v-tabs color="secondary--text" class="ml-4">
-        <v-tab to="/">Home</v-tab>
-        <v-tab to="/about">About</v-tab>
+        <v-tab to="/">{{ $t("gui.appbar.navigation.home.title") }}</v-tab>
+        <v-tab to="/about">{{ $t("gui.appbar.navigation.about.title") }}</v-tab>
       </v-tabs>
 
       <v-spacer></v-spacer>
@@ -53,10 +53,42 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
       >
         <template v-slot:label>
           <span style="white-space: nowrap" class="secondary--text">
-            Dark mode
+            {{ $t("gui.appbar.dark_mode") }}
           </span>
         </template>
       </v-switch>
+      <v-select
+        :items="availableLanguages"
+        hide-details
+        v-model="$i18n.locale"
+        @change="storeLanguage"
+        dense
+        append-icon=""
+        style="width: 92px"
+        flat
+        solo
+        background-color="primary"
+        color="secondary"
+      >
+        <template v-slot:item="data">
+          <div class="d-flex align-center justify-start">
+            {{
+              $t("gui.appbar.language_select." + data.item, data.item) +
+              " (" +
+              data.item +
+              ")"
+            }}
+          </div>
+        </template>
+        <template v-slot:selection="data">
+          <div
+            class="d-flex align-center justify-start secondary--text font-weight-medium"
+          >
+            <v-icon class="mr-1" color="secondary">mdi-translate</v-icon>
+            {{ data.item.toUpperCase() }}
+          </div>
+        </template>
+      </v-select>
     </v-app-bar>
 
     <v-main>
@@ -69,13 +101,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </v-row>
         <v-row class="justify-center">
           <span>
-            The source code of blockcluster is licensed under the AGPL-3.0
-            license.
+            {{ $t("gui.footer.notice.license") }}
           </span>
         </v-row>
         <v-row class="justify-center">
           <span>
-            View the source code and license on
+            {{ $t("gui.footer.notice.link_description") }}
             <v-chip
               small
               :href="GIT_ROOT"
@@ -124,12 +155,19 @@ export default class App extends Vue {
   version = getVersion();
 
   /**
-   * Loads the selected theme from local storage.
+   * The available languages.
+   */
+  availableLanguages = this.$i18n.availableLocales;
+
+  /**
+   * Loads the selected theme and language from local storage.
    */
   mounted() {
     this.$nextTick(() => {
       this.$nextTick(() => {
         this.$vuetify.theme.dark = localStorage.getItem("dark") === "true";
+        const lang = localStorage.getItem("lang");
+        if (lang) this.$i18n.locale = lang;
       });
     });
   }
@@ -140,6 +178,14 @@ export default class App extends Vue {
    */
   private storeTheme() {
     localStorage.setItem("dark", this.$vuetify.theme.dark.toString());
+  }
+
+  /**
+   * Stores the selected language in local storage.
+   * @private
+   */
+  private storeLanguage() {
+    localStorage.setItem("lang", this.$i18n.locale);
   }
 }
 </script>

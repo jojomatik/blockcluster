@@ -36,7 +36,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             v-on="on"
             :src="'data:image/png;base64,' + player.head"
             aspect-ratio="1"
-            :alt="'Head of ' + player.name"
+            :alt="
+              $t('gui.views.server.players.heads.alt', { name: player.name })
+            "
           ></v-img>
         </template>
         <span>{{ player.name }}</span>

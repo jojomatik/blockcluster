@@ -21,7 +21,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <v-row>
       <v-col cols="12">
         <v-card>
-          <v-card-title>Total resource usage</v-card-title>
+          <v-card-title>
+            {{ $t("gui.views.home.resource_usage.total") }}
+          </v-card-title>
           <v-card-text>
             <ResourceChartComponent :resource-usage="getTotalUsage()">
             </ResourceChartComponent>
@@ -38,7 +40,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
       <v-col cols="12">
         <v-btn color="secondary" v-on:click="sendMessage">
           <v-icon left light>mdi-reload</v-icon>
-          Update Status
+          {{ $t("gui.views.home.update_status") }}
         </v-btn>
       </v-col>
     </v-row>

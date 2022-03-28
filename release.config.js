@@ -13,7 +13,7 @@ module.exports = {
                 : "minor",
           },
           { type: "build", scope: "deps", release: "patch" },
-          { type: "lang", release: "minor" },
+          { type: "lang", release: "patch" },
         ],
       },
     ],

@@ -36,7 +36,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         :disabled="!flagsChanged"
         @click="sendFlags()"
       >
-        Save
+        {{ $t("gui.views.server.flags.save") }}
       </v-btn>
     </td>
   </tr>

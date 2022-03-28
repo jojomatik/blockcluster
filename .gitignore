@@ -2,8 +2,10 @@
 node_modules
 dist
 
-src/**/*.js*
-tests/**/*.js*
+src/**/*.js
+src/**/*.js.*
+tests/**/*.js
+tests/**/*.js.*
 
 
 # local env files

@@ -139,11 +139,21 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
               :server="this"
               :status="server.status"
               type="toggle"
+              :disabled="
+                !this.javaRuntimes
+                  .map((runtime) => runtime.path)
+                  .includes(this.server.javaPath)
+              "
             />
             <StateChangeButtonComponent
               :server="this"
               :status="server.status"
               type="restart"
+              :disabled="
+                !this.javaRuntimes
+                  .map((runtime) => runtime.path)
+                  .includes(this.server.javaPath)
+              "
             />
             <v-btn
               class="server-card-button"

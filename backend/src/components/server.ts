@@ -41,6 +41,7 @@ import ResourceUsage from "../../../common/components/resource_usage";
 import Player from "../../../common/components/player";
 import { getFaceAsBase64 } from "pixelheads";
 import { Client, createServer } from "minecraft-protocol";
+import { getJavaRuntimes } from "./java_runtime";
 
 /**
  * The server side implementation of {@link CommonServer} with additional methods that won't run on the client side.
@@ -156,7 +157,11 @@ export default class Server extends CommonServer {
     const commandArr = command.split(/^([^ ]+) ?(.*)$/);
     switch (commandArr[1]) {
       case "start":
-        await this.start();
+        try {
+          await this.start();
+        } catch (e) {
+          console.log("Could not start server:", e);
+        }
         break;
       case "stop":
         await this.stop();
@@ -326,6 +331,25 @@ export default class Server extends CommonServer {
     const permissionPrefix = commandExists.sync("umask")
       ? "umask 0000 && "
       : "";
+
+    const javaExists = getJavaRuntimes()
+      .map((runtime) => runtime.path)
+      .includes(this.javaPath);
+
+    if (!javaExists) {
+      this.status = ServerStatus.Stopped;
+      const error = new Error(
+        "Java runtime " + this.javaPath + " does not exist."
+      );
+      await this.sendConsoleMessage(
+        new Message(
+          MessageType.Error,
+          "Could not start server: " + error.message
+        )
+      );
+      throw error;
+    }
+
     this.proc = spawn(
       permissionPrefix + '"' + this.javaPath + '/bin/java"',
       this.flags.concat(["-jar", this.getJarFile(), "nogui"]),
@@ -383,7 +407,11 @@ export default class Server extends CommonServer {
    */
   public async restart() {
     await this.stop();
-    await this.start();
+    try {
+      await this.start();
+    } catch (e) {
+      console.log("Could not restart server:", e);
+    }
   }
 
   /**
@@ -431,7 +459,11 @@ export default class Server extends CommonServer {
         "§7[§3blockcluster§7]§r\nThe server is now waking up.\nPlease try again in a few seconds."
       );
       wakeUpListener.close();
-      await this.start();
+      try {
+        await this.start();
+      } catch (e) {
+        console.log("Could not start server:", e);
+      }
     });
   }
 
@@ -544,7 +576,12 @@ export default class Server extends CommonServer {
       execSync("rm -r " + this.getPath() + "/" + this.world);
       execSync("rm -r " + this.getPath() + "/" + this.world + "_nether");
       execSync("rm -r " + this.getPath() + "/" + this.world + "_the_end");
-      if (previousStatus === ServerStatus.Started) await this.start();
+      if (previousStatus === ServerStatus.Started)
+        try {
+          await this.start();
+        } catch (e) {
+          console.log("Could not restart server:", e);
+        }
     } else {
       const currentStatus = this.status;
       if (currentStatus === ServerStatus.Started) await this.stop();

@@ -25,7 +25,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     "
     class="server-card-button"
     color="green"
-    :disabled="this.status !== ServerStatus.Stopped"
+    :disabled="disabled || this.status !== ServerStatus.Stopped"
     text
     v-on:click="start"
   >
@@ -36,7 +36,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     v-else-if="isToggle()"
     class="server-card-button"
     color="red"
-    :disabled="this.status !== ServerStatus.Started"
+    :disabled="disabled || this.status !== ServerStatus.Started"
     text
     v-on:click="stop"
   >
@@ -47,7 +47,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     v-else-if="!isToggle()"
     class="server-card-button"
     color="orange"
-    :disabled="this.status !== ServerStatus.Started"
+    :disabled="disabled || this.status !== ServerStatus.Started"
     text
     v-on:click="restart"
   >
@@ -88,6 +88,12 @@ export default class StateChangeButtonComponent extends Vue {
    * @private
    */
   @Prop() private type!: "toggle" | "restart";
+
+  /**
+   * Whether the button should be disabled.
+   * @private
+   */
+  @Prop({ default: false }) private disabled!: boolean;
 
   /**
    * Returns {@code true} if {@code this.type === "toggle"} (i.e. if the button should toggle the status/ start or stop the server) and {@code false} if the button should restart the server.

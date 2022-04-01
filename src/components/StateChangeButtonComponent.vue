@@ -18,41 +18,25 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 <template>
   <v-btn
-    v-if="isToggle() && this.status === ServerStatus.Stopped"
+    v-if="
+      isToggle() &&
+      (this.status === ServerStatus.Stopped ||
+        this.status === ServerStatus.Starting)
+    "
     class="server-card-button"
     color="green"
+    :disabled="this.status !== ServerStatus.Stopped"
     text
     v-on:click="start"
   >
     <v-icon left light>mdi-play</v-icon>
     {{ $t("gui.views.server.state_change.start") }}
-  </v-btn>
-  <v-btn
-    v-else-if="isToggle() && this.status === ServerStatus.Starting"
-    class="server-card-button"
-    color="green"
-    disabled
-    text
-    v-on:click="start"
-  >
-    <v-icon left light>mdi-play</v-icon>
-    {{ $t("gui.views.server.state_change.start") }}
-  </v-btn>
-  <v-btn
-    v-else-if="isToggle() && this.status === ServerStatus.Started"
-    class="server-card-button"
-    color="red"
-    text
-    v-on:click="stop"
-  >
-    <v-icon left light>mdi-stop</v-icon>
-    {{ $t("gui.views.server.state_change.stop") }}
   </v-btn>
   <v-btn
     v-else-if="isToggle()"
     class="server-card-button"
     color="red"
-    disabled
+    :disabled="this.status !== ServerStatus.Started"
     text
     v-on:click="stop"
   >
@@ -60,20 +44,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     {{ $t("gui.views.server.state_change.stop") }}
   </v-btn>
   <v-btn
-    v-else-if="!isToggle() && this.status === ServerStatus.Started"
+    v-else-if="!isToggle()"
     class="server-card-button"
     color="orange"
-    text
-    v-on:click="restart"
-  >
-    <v-icon left light>mdi-restart</v-icon>
-    {{ $t("gui.views.server.state_change.restart") }}
-  </v-btn>
-  <v-btn
-    v-else
-    class="server-card-button"
-    color="orange"
-    disabled
+    :disabled="this.status !== ServerStatus.Started"
     text
     v-on:click="restart"
   >

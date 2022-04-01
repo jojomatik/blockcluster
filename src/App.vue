@@ -71,7 +71,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         color="secondary"
       >
         <template v-slot:item="data">
-          <div class="d-flex align-center justify-start">
+          <div class="d-flex align-center justify-start text--primary">
             {{
               $t("gui.appbar.language_select." + data.item, data.item) +
               " (" +

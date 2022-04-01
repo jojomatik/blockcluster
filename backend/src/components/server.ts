@@ -408,6 +408,7 @@ export default class Server extends CommonServer {
         "§7[§3blockcluster§7] ⏸ PAUSED ⏸ §7[§3Join to start§7]\n§r" +
         this.properties.motd.replaceAll("\\u00A7", "§"),
       maxPlayers: this.properties.maxPlayers,
+      favicon: this.favicon,
     });
 
     wakeUpListener.on("listening", async () => {

@@ -154,6 +154,16 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
               "
               @restart="() => this.sendMessage('restart')"
             />
+            <PauseButtonComponent
+              :status="server.status"
+              :disabled="
+                !this.javaRuntimes
+                  .map((runtime) => runtime.path)
+                  .includes(this.server.javaPath)
+              "
+              @pause="() => this.sendMessage('pause')"
+              @unpause="() => this.sendMessage('start')"
+            />
             <v-btn
               class="server-card-button"
               color="secondary"
@@ -235,12 +245,14 @@ import Player from "../../common/components/player";
 import PlayerStatsComponent from "@/components/PlayerStatsComponent.vue";
 import ToggleButtonComponent from "@/components/buttons/ToggleButtonComponent.vue";
 import RestartButtonComponent from "@/components/buttons/RestartButtonComponent.vue";
+import PauseButtonComponent from "@/components/buttons/PauseButtonComponent.vue";
 
 /**
  * The representation of a {@link Server} in Vue.
  */
 @Component({
   components: {
+    PauseButtonComponent,
     RestartButtonComponent,
     ToggleButtonComponent,
     PlayerStatsComponent,

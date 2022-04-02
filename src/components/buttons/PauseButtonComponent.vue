@@ -18,31 +18,20 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 <template>
   <ButtonComponent
-    v-if="
-      this.status === ServerStatus.Stopped ||
-      this.status === ServerStatus.Starting
-    "
-    color="green"
-    icon="mdi-play"
-    :disabled="disabled || this.status !== ServerStatus.Stopped"
-    @click="start"
-  >
-    {{ $t("gui.views.server.state_change.start") }}
-  </ButtonComponent>
-  <ButtonComponent
-    v-else
-    color="red"
-    icon="mdi-stop"
+    color="accent"
+    :icon="this.status === ServerStatus.Paused ? 'mdi-play-pause' : 'mdi-pause'"
     :disabled="
       disabled ||
-      !(
-        this.status === ServerStatus.Started ||
-        this.status === ServerStatus.Paused
-      )
+      (this.status !== ServerStatus.Started &&
+        this.status !== ServerStatus.Paused)
     "
-    @click="stop"
+    @click="togglePause"
   >
-    {{ $t("gui.views.server.state_change.stop") }}
+    {{
+      this.status !== ServerStatus.Paused
+        ? $t("gui.views.server.state_change.pause")
+        : $t("gui.views.server.state_change.unpause")
+    }}
   </ButtonComponent>
 </template>
 
@@ -53,7 +42,7 @@ import { ServerStatus } from "../../../common/components/server";
 import ButtonComponent from "@/components/buttons/ButtonComponent.vue";
 
 /**
- * A button that toggles the current state (i.e. starts/ stops) of a server.
+ * A button that pauses and unpauses a server.
  */
 @Component({
   components: { ButtonComponent },
@@ -61,7 +50,7 @@ import ButtonComponent from "@/components/buttons/ButtonComponent.vue";
     return { ServerStatus };
   },
 })
-export default class ToggleButtonComponent extends Vue {
+export default class PauseButtonComponent extends Vue {
   /**
    * The status of the {@link ServerComponent}.
    * @private
@@ -75,20 +64,28 @@ export default class ToggleButtonComponent extends Vue {
   @Prop({ default: false }) disabled!: boolean;
 
   /**
-   * Emits an event `start`.
+   * Emits an event `pause` or `unpause` depending on the current state.
    * @private
    */
-  @Emit("start")
-  start(): void {
+  togglePause(): void {
+    this.status === ServerStatus.Started ? this.pause() : this.unpause();
+  }
+
+  /**
+   * Emits an event `pause`.
+   * @private
+   */
+  @Emit("pause")
+  pause(): void {
     return;
   }
 
   /**
-   * Emits an event `stop`.
+   * Emits an event `unpause`.
    * @private
    */
-  @Emit("stop")
-  stop(): void {
+  @Emit("unpause")
+  unpause(): void {
     return;
   }
 }

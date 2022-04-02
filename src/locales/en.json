@@ -95,9 +95,11 @@
           "memory": "memory"
         },
         "state_change": {
+          "pause": "Pause",
           "restart": "Restart",
           "start": "Start",
-          "stop": "Stop"
+          "stop": "Stop",
+          "unpause": "Unpause"
         },
         "status": {
           "paused": "Paused",

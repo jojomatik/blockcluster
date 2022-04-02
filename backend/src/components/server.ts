@@ -40,7 +40,7 @@ import commandExists from "command-exists";
 import ResourceUsage from "../../../common/components/resource_usage";
 import Player from "../../../common/components/player";
 import { getFaceAsBase64 } from "pixelheads";
-import { Client, createServer } from "minecraft-protocol";
+import { Client, createServer, Server as MCPServer } from "minecraft-protocol";
 import { getJavaRuntimes } from "./java_runtime";
 
 /**
@@ -76,6 +76,12 @@ export default class Server extends CommonServer {
    * @private
    */
   private idleTimeout?: NodeJS.Timeout;
+
+  /**
+   * A mock server used for listening for connecting clients to start the server.
+   * @private
+   */
+  private wakeUpListener?: MCPServer;
 
   /**
    * Updates {@link #status} as well as the selected jar file.
@@ -165,6 +171,9 @@ export default class Server extends CommonServer {
         break;
       case "stop":
         await this.stop();
+        break;
+      case "pause":
+        await this.pause();
         break;
       case "restart":
         await this.restart();
@@ -327,6 +336,10 @@ export default class Server extends CommonServer {
    * Starts the {@link Server}.
    */
   public async start() {
+    if (this.status === ServerStatus.Paused) {
+      this.wakeUpListener.close();
+    }
+
     this.status = ServerStatus.Starting;
     const permissionPrefix = commandExists.sync("umask")
       ? "umask 0000 && "
@@ -388,6 +401,19 @@ export default class Server extends CommonServer {
    * Stops the {@link Server}.
    */
   public async stop(): Promise<void> {
+    if (this.status == ServerStatus.Paused) {
+      this.wakeUpListener.close();
+      this.status = ServerStatus.Stopped;
+      await this.update();
+      this.sendServerData();
+      await this.sendConsoleMessage(
+        new Message(
+          MessageType.Blockcluster,
+          "Server has stopped listening for connections."
+        )
+      );
+      return;
+    }
     this.status = ServerStatus.Stopping;
     await this.update();
     this.sendServerData();
@@ -429,7 +455,7 @@ export default class Server extends CommonServer {
   public async waitForConnection() {
     this.status = ServerStatus.Paused;
     this.sendServerData();
-    const wakeUpListener = createServer({
+    this.wakeUpListener = createServer({
       port: this.port,
       "online-mode": this.properties.onlineMode,
       motd:
@@ -439,7 +465,7 @@ export default class Server extends CommonServer {
       favicon: this.favicon,
     });
 
-    wakeUpListener.on("listening", async () => {
+    this.wakeUpListener.on("listening", async () => {
       await this.sendConsoleMessage(
         new Message(
           MessageType.Blockcluster,
@@ -448,7 +474,7 @@ export default class Server extends CommonServer {
       );
     });
 
-    wakeUpListener.on("login", async (client: Client) => {
+    this.wakeUpListener.on("login", async (client: Client) => {
       await this.sendConsoleMessage(
         new Message(
           MessageType.Blockcluster,
@@ -458,7 +484,7 @@ export default class Server extends CommonServer {
       client.end(
         "§7[§3blockcluster§7]§r\nThe server is now waking up.\nPlease try again in a few seconds."
       );
-      wakeUpListener.close();
+      this.wakeUpListener.close();
       try {
         await this.start();
       } catch (e) {

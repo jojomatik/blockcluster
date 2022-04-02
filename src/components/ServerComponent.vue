@@ -135,25 +135,24 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <ConsoleComponent :server="this" :status="server.status" />
           </v-card-text>
           <v-card-actions class="px-4">
-            <StateChangeButtonComponent
-              :server="this"
+            <ToggleButtonComponent
               :status="server.status"
-              type="toggle"
               :disabled="
                 !this.javaRuntimes
                   .map((runtime) => runtime.path)
                   .includes(this.server.javaPath)
               "
+              @start="() => this.sendMessage('start')"
+              @stop="() => this.sendMessage('stop')"
             />
-            <StateChangeButtonComponent
-              :server="this"
+            <RestartButtonComponent
               :status="server.status"
-              type="restart"
               :disabled="
                 !this.javaRuntimes
                   .map((runtime) => runtime.path)
                   .includes(this.server.javaPath)
               "
+              @restart="() => this.sendMessage('restart')"
             />
             <v-btn
               class="server-card-button"
@@ -226,7 +225,6 @@ import Server, {
 } from "../../common/components/server";
 import ServerStatusComponent from "@/components/ServerStatusComponent.vue";
 import ConsoleComponent from "@/components/ConsoleComponent.vue";
-import StateChangeButtonComponent from "@/components/StateChangeButtonComponent.vue";
 import ResourceChartComponent from "@/components/ResourceChartComponent.vue";
 import WorldDeleteDialogComponent from "@/components/WorldDeleteDialogComponent.vue";
 import JavaRuntime, {
@@ -235,17 +233,20 @@ import JavaRuntime, {
 import FlagDialogComponent from "@/components/FlagDialogComponent.vue";
 import Player from "../../common/components/player";
 import PlayerStatsComponent from "@/components/PlayerStatsComponent.vue";
+import ToggleButtonComponent from "@/components/buttons/ToggleButtonComponent.vue";
+import RestartButtonComponent from "@/components/buttons/RestartButtonComponent.vue";
 
 /**
  * The representation of a {@link Server} in Vue.
  */
 @Component({
   components: {
+    RestartButtonComponent,
+    ToggleButtonComponent,
     PlayerStatsComponent,
     FlagDialogComponent,
     WorldDeleteDialogComponent,
     ResourceChartComponent,
-    StateChangeButtonComponent,
     ConsoleComponent,
     ServerStatusComponent,
   },

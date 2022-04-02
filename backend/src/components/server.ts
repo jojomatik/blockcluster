@@ -29,8 +29,8 @@ import { basePath, io } from "../backend";
 import {
   ChildProcessWithoutNullStreams,
   exec,
-  spawn,
   execSync,
+  spawn,
 } from "child_process";
 import fs from "fs";
 import Message, { MessageType } from "../../../common/components/message";

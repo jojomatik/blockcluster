@@ -68,6 +68,12 @@ export default class Home extends Vue {
   // noinspection JSMismatchedCollectionQueryUpdate
   private servers: Server[] = [];
 
+  /**
+   * The {@link ResourceUsage} of the blockcluster backend.
+   * @private
+   */
+  private systemUsage: ResourceUsage[] = [];
+
   constructor() {
     super();
     this.updateServers();
@@ -88,6 +94,16 @@ export default class Home extends Vue {
         this.servers.push(server);
       });
     });
+    this.sockets.subscribe(
+      "SYSTEM_USAGE",
+      (data: Record<string, unknown>[]) => {
+        this.systemUsage = [];
+        data.forEach((elem: Record<string, unknown>) => {
+          this.systemUsage.push(Object.assign(new ResourceUsage(), elem));
+        });
+      }
+    );
+    this.$socket.emit("SYSTEM_USAGE");
   }
 
   /**
@@ -117,13 +133,16 @@ export default class Home extends Vue {
    * Otherwise the cached version {@link totalUsage} is returned.
    */
   getTotalUsage(): ResourceUsage[] {
-    // Return cached usage, if no servers are available.
-    if (this.servers.length == 0) return this.totalUsage;
+    // Return cached usage, if lengths don't equal or the first timestamp doesn't equal. This means that not all servers have been updated yet.
+    const len = this.systemUsage.length;
 
-    // Return cached usage, if lengths dont equal or the first timestamp doesn't equal. This means that not all servers have been updated yet.
-    const len = this.servers[0].resourceUsage.length;
-    const time = this.servers[0].resourceUsage[0].time;
-    for (let i = 1; i < this.servers.length; i++) {
+    // Return empty cached usage if length is 0.
+    if (len == 0) return this.totalUsage;
+
+    // Return system usage, if no servers are available.
+    if (this.servers.length == 0) return this.systemUsage;
+    const time = this.systemUsage[0].time;
+    for (let i = 0; i < this.servers.length; i++) {
       if (
         this.servers[i].resourceUsage.length != len ||
         this.servers[i].resourceUsage[0].time != time
@@ -133,8 +152,8 @@ export default class Home extends Vue {
 
     const usages: ResourceUsage[] = [];
     for (let i = 0; i < len; i++) {
-      let cpu = 0;
-      let memory = 0;
+      let cpu = this.systemUsage[i].cpu;
+      let memory = this.systemUsage[i].memory;
       this.servers.forEach((server) => {
         cpu += server.resourceUsage[i].cpu;
         memory += server.resourceUsage[i].memory;

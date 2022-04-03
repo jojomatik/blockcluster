@@ -37,6 +37,8 @@ import {
   ServerPropertiesFile,
   getPropertiesFromFile,
 } from "../../common/components/server_properties";
+import pidusage from "pidusage";
+import ResourceUsage from "../../common/components/resource_usage";
 
 const app = express();
 
@@ -131,6 +133,31 @@ async function getServers(): Promise<Server[]> {
 }
 
 /**
+ * A list of date time and backend resource usage pairs.
+ */
+const systemUsage: ResourceUsage[] = [];
+
+/**
+ * Measures the current resource usage of the backend and adds it to the list.
+ * @param measuringTime if set this time is used as the time parameter of the data points.
+ */
+async function measureUsage(measuringTime?: number) {
+  try {
+    const usage = await pidusage(process.pid);
+    systemUsage.push(new ResourceUsage(measuringTime, usage.cpu, usage.memory));
+  } catch (e) {
+    systemUsage.push(new ResourceUsage(measuringTime, 0, 0));
+    console.error(
+      "Couldn't retrieve resource usage for the main pid " +
+        this.proc.pid +
+        ".",
+      e
+    );
+  }
+  if (systemUsage.length > 60) systemUsage.shift();
+}
+
+/**
  * The socket io instance.
  */
 export const io = new socketio.Server(backend, options);
@@ -156,6 +183,11 @@ getServers().then((servers) => {
       io.emit("JAVA_RUNTIMES", getJavaRuntimes());
     });
 
+    // Respond with the available system usage when a message is received on `SYSTEM_USAGE`.
+    socket.on("SYSTEM_USAGE", () => {
+      io.emit("SYSTEM_USAGE", systemUsage);
+    });
+
     // Listen to a channel per server
     for (const server of servers) {
       await socket.on(
@@ -170,6 +202,7 @@ getServers().then((servers) => {
   // Listen to a channel per server
   const time: number = Date.now();
   const watchedFiles: string[] = [];
+  measureUsage(time).then(() => io.emit("SYSTEM_USAGE", systemUsage));
   for (const server of servers) {
     const watchFilePath = basePath + "/" + server.name + "/start";
     watchedFiles.push(watchFilePath);
@@ -192,6 +225,8 @@ getServers().then((servers) => {
 
   const timeout = setInterval(async () => {
     const time: number = Date.now();
+    await measureUsage(time);
+    io.emit("SYSTEM_USAGE", systemUsage);
     for (const server of servers) {
       await server.measureUsage(time);
       server.sendServerData();

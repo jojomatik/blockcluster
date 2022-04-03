@@ -95,9 +95,11 @@
           "memory": "Arbeitsspeicher"
         },
         "state_change": {
+          "pause": "Pausieren",
           "restart": "Neu starten",
           "start": "Starten",
-          "stop": "Stoppen"
+          "stop": "Stoppen",
+          "unpause": "Fortsetzen"
         },
         "status": {
           "paused": "Pausiert",

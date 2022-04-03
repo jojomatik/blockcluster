@@ -26,12 +26,7 @@ import CommonServer, {
 
 import { basePath, io } from "../backend";
 
-import {
-  ChildProcessWithoutNullStreams,
-  exec,
-  execSync,
-  spawn,
-} from "child_process";
+import { ChildProcessWithoutNullStreams, execSync, spawn } from "child_process";
 import fs from "fs";
 import Message, { MessageType } from "../../../common/components/message";
 import ServerConfig from "./server_config";
@@ -424,7 +419,7 @@ export default class Server extends CommonServer {
         this.sendServerData();
         resolve();
       });
-      exec("kill " + this.proc.pid);
+      this.writeConsoleCommand("stop");
     });
   }
 

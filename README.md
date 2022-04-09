@@ -7,6 +7,7 @@ An in-browser manager for your minecraft servers.
 
 ## Features
 - Start and stop servers
+- Automatically pause empty servers and unpause as soon as a client connects
 - View current status and online players
 - Show resource usage
 - View console log and send commands

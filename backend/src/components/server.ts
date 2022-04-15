@@ -568,7 +568,20 @@ export default class Server extends CommonServer {
    * @private
    */
   private writeConsoleCommand(command: string) {
-    this.proc.stdin.write(command + "\n");
+    if (!this.proc)
+      console.log(
+        "Could not send command to server " +
+          this.name +
+          "! Process is " +
+          this.proc +
+          "."
+      );
+
+    try {
+      this.proc.stdin.write(command + "\n");
+    } catch (e) {
+      console.log("Could not send command to server " + this.name + "!", e);
+    }
   }
 
   /**

@@ -396,6 +396,7 @@ export default class Server extends CommonServer {
    * Stops the {@link Server}.
    */
   public async stop(): Promise<void> {
+    this.stopPauseTimeout();
     if (this.status == ServerStatus.Paused) {
       this.wakeUpListener.close();
       this.status = ServerStatus.Stopped;
@@ -439,7 +440,6 @@ export default class Server extends CommonServer {
    * Pauses this {@link Server} and waits for a connection by a client.
    */
   public async pause() {
-    this.stopPauseTimeout();
     await this.stop();
 
     await this.waitForConnection();

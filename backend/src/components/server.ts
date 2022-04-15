@@ -439,6 +439,7 @@ export default class Server extends CommonServer {
    * Pauses this {@link Server} and waits for a connection by a client.
    */
   public async pause() {
+    this.stopPauseTimeout();
     await this.stop();
 
     await this.waitForConnection();
@@ -544,8 +545,8 @@ export default class Server extends CommonServer {
         this.broadcastMessage(
           "The scheduled server stop has been cancelled, as sleep-on-idle has been disabled."
         );
+        this.stopPauseTimeout();
       }
-      this.idleTimeout = undefined;
     }, timeoutLength * 1000);
     this.broadcastMessage(
       "This server will stop in " +

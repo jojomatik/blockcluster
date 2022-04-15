@@ -19,7 +19,7 @@
   },
   "dependencies": {
     "apexcharts": "^3.35.0",
-    "core-js": "^3.21.1",
+    "core-js": "^3.22.0",
     "moment": "^2.29.2",
     "socket.io-client": "^4.4.1",
     "uuid": "^8.3.2",

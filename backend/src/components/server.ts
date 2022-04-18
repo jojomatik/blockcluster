@@ -459,6 +459,7 @@ export default class Server extends CommonServer {
         this.properties.motd.replaceAll("\\u00A7", "§"),
       maxPlayers: this.properties.maxPlayers,
       favicon: this.favicon,
+      version: false,
     });
 
     this.wakeUpListener.on("listening", async () => {

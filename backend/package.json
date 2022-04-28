@@ -25,7 +25,7 @@
     "minecraft-protocol": "^1.34.0",
     "minecraft-server-util": "^5.2.9",
     "pidusage": "^3.0.0",
-    "pixelheads": "^1.0.7",
+    "pixelheads": "^1.0.8",
     "properties-reader": "^2.2.0",
     "socket.io": "^4.4.1",
     "uuid": "^8.3.2"

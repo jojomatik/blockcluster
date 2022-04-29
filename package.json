@@ -21,7 +21,7 @@
     "apexcharts": "^3.35.0",
     "core-js": "^3.22.3",
     "moment": "^2.29.3",
-    "socket.io-client": "^4.4.1",
+    "socket.io-client": "^4.5.0",
     "uuid": "^8.3.2",
     "vue": "^2.6.14",
     "vue-apexcharts": "^1.6.2",

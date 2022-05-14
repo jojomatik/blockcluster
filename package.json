@@ -56,7 +56,7 @@
     "eslint-plugin-prettier": "^4.0.0",
     "eslint-plugin-vue": "^8.7.1",
     "license-checker-webpack-plugin": "^0.2.1",
-    "prettier": "^2.6.1",
+    "prettier": "^2.6.2",
     "sass": "~1.32.13",
     "sass-loader": "^10.0.0",
     "socket.io": "^4.4.1",

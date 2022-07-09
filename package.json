@@ -36,7 +36,7 @@
   "devDependencies": {
     "@mdi/font": "^6.6.96",
     "@rushstack/eslint-patch": "^1.1.3",
-    "@types/jest": "^27.4.1",
+    "@types/jest": "^28.1.4",
     "@types/uuid": "^8.3.4",
     "@typescript-eslint/eslint-plugin": "^5.23.0",
     "@typescript-eslint/parser": "^5.23.0",
@@ -60,8 +60,8 @@
     "sass": "~1.32.13",
     "sass-loader": "^10.0.0",
     "socket.io": "^4.5.0",
-    "typescript": "~4.6.4",
-    "vue-cli-plugin-vuetify": "~2.4.8",
+    "typescript": "~4.7.4",
+    "vue-cli-plugin-vuetify": "~2.5.1",
     "vue-template-compiler": "^2.6.14",
     "vuetify-loader": "^1.7.3"
   },

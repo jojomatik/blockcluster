@@ -31,7 +31,7 @@
     "vue-property-decorator": "^9.1.2",
     "vue-router": "^3.5.4",
     "vue-socket.io": "^3.0.10",
-    "vuetify": "^2.6.6"
+    "vuetify": "^2.6.7"
   },
   "devDependencies": {
     "@mdi/font": "^6.6.96",

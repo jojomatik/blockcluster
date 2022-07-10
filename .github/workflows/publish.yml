@@ -140,6 +140,7 @@ jobs:
           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('package-lock.json') }}
 
       - name: Cache npm cache
+        if: steps.cache.outputs.cache-hit != 'true'
         uses: actions/cache@v2
         env:
           cache-name: cache-npm-cache-frontend-v2

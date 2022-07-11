@@ -44,6 +44,7 @@ jobs:
       - name: Build frontend
         run: npm run build
       - name: Build storybook and publish to chromatic
+        if: ${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/beta' }}
         uses: chromaui/action@v1
         with:
           projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}

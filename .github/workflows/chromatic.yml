@@ -1,6 +1,7 @@
 name: Chromatic
 on:
-  push
+  push:
+    branches: ["*"]
   workflow_run:
     workflows: ["Dependabot PR Check"]
     types:

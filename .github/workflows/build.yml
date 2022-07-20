@@ -42,10 +42,6 @@ jobs:
         run: npm ci --prefer-offline --no-audit
       - name: Build frontend
         run: npm run build
-      - name: Build storybook and publish to chromatic
-        uses: chromaui/action@v1
-        with:
-          projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
   npm_build_backend:
     name: Build backend
     runs-on: ubuntu-latest

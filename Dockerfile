@@ -58,6 +58,11 @@ RUN npm install -g concurrently nodemon
 # Copy package.json and package-lock.json for frontend and install all dependencies.
 COPY package*.json ./
 RUN npm install
+
+# Create cache directory with the blockcluster user as the owner.
+RUN mkdir node_modules/.cache
+RUN chown 1080:1080 node_modules/.cache
+
 # Copy package.json and package-lock.json for backend and install all dependencies.
 COPY backend/package*.json ./backend/
 RUN cd backend && npm install

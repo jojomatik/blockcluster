@@ -16,8 +16,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
-import { JavaStatusResponse } from "minecraft-server-util/dist/types/JavaStatusResponse";
-import * as mc from "minecraft-server-util";
+import mc from "minecraft-protocol";
 
 import CommonServer, {
   PauseOnIdleType,
@@ -98,23 +97,27 @@ export default class Server extends CommonServer {
     try {
       const serverInfo = await this.getServerInfo();
       if (this.proc != null) {
-        this.favicon = serverInfo.favicon;
-        this.players = {
-          max: serverInfo.players.max,
-          online: serverInfo.players.online,
-          sample:
-            serverInfo.players.sample !== null
-              ? await Promise.all(
-                  serverInfo.players.sample.map(async (player) => {
-                    return new Player(
-                      player.id,
-                      player.name,
-                      await getFaceAsBase64(player.id)
-                    );
-                  })
-                )
-              : [],
-        };
+        if ("players" in serverInfo) {
+          // `serverInfo` is instance of `mc.NewPingResult`
+          this.favicon = serverInfo.favicon;
+          this.players = {
+            max: serverInfo.players.max,
+            online: serverInfo.players.online,
+            sample:
+              serverInfo.players.sample !== undefined
+                ? await Promise.all(
+                    serverInfo.players.sample.map(async (player) => {
+                      return new Player(
+                        player.id,
+                        player.name,
+                        await getFaceAsBase64(player.id)
+                      );
+                    })
+                  )
+                : [],
+          };
+        }
+
         if (this.status != ServerStatus.Stopping)
           this.status = ServerStatus.Started;
       }
@@ -137,9 +140,9 @@ export default class Server extends CommonServer {
    *
    * @return a promise of the status response.
    */
-  async getServerInfo(): Promise<JavaStatusResponse> {
+  async getServerInfo(): Promise<mc.OldPingResult | mc.NewPingResult> {
     return await mc
-      .status("localhost", this.port, { timeout: 300 })
+      .ping({ port: this.port })
       .then((response) => {
         return response;
       })

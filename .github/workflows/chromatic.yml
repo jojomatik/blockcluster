@@ -11,7 +11,7 @@ jobs:
   chromatic:
     name: Build storybook and publish to chromatic
     runs-on: ubuntu-latest
-    if: ${{ github.actor != 'dependabot[bot]' || (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success') }}
+    if: ${{ (github.event_name == 'push' && github.actor != 'dependabot[bot]') || (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success') }}
     steps:
       - uses: actions/checkout@v2
         with:

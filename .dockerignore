@@ -4,3 +4,4 @@ proxy/node_modules
 npm-debug.log
 backend/dist
 proxy/dist
+src/**/*.stories.ts

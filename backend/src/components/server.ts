@@ -128,7 +128,7 @@ export default class Server extends CommonServer {
         this.proc == null
       )
         this.status = ServerStatus.Stopped;
-      if (this.proc?.exitCode > 0) {
+      if (this.proc && this.proc.exitCode !== null) {
         this.status = ServerStatus.Stopped;
         this.proc = null;
       }

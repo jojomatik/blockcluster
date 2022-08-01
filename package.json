@@ -50,7 +50,7 @@
     "@storybook/manager-webpack4": "^6.5.9",
     "@storybook/testing-library": "^0.0.13",
     "@storybook/vue": "^6.5.9",
-    "@types/jest": "^28.1.4",
+    "@types/jest": "^28.1.6",
     "@types/uuid": "^8.3.4",
     "@typescript-eslint/eslint-plugin": "^5.23.0",
     "@typescript-eslint/parser": "^5.23.0",

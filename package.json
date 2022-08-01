@@ -52,7 +52,7 @@
     "@storybook/vue": "^6.5.9",
     "@types/jest": "^28.1.4",
     "@types/uuid": "^8.3.4",
-    "@typescript-eslint/eslint-plugin": "^5.23.0",
+    "@typescript-eslint/eslint-plugin": "^5.31.0",
     "@typescript-eslint/parser": "^5.23.0",
     "@vue/cli-plugin-babel": "~4.5.17",
     "@vue/cli-plugin-eslint": "~5.0.4",

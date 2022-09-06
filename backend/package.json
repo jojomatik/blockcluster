@@ -27,7 +27,7 @@
     "pixelheads": "^1.0.10",
     "properties-reader": "^2.2.0",
     "socket.io": "^4.5.1",
-    "uuid": "^8.3.2"
+    "uuid": "^9.0.0"
   },
   "bugs": {
     "url": "https://github.com/jojomatik/blockcluster/issues",

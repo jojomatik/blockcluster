@@ -34,7 +34,7 @@
     "vue-property-decorator": "^9.1.2",
     "vue-router": "^3.6.5",
     "vue-socket.io": "^3.0.10",
-    "vuetify": "^2.6.9"
+    "vuetify": "^2.6.12"
   },
   "devDependencies": {
     "@babel/core": "^7.18.6",

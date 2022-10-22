@@ -501,7 +501,7 @@ export default class Server extends CommonServer {
   private async handleConsoleMessage(message: Message): Promise<void> {
     // Retrieve player count and sample for join- and leave-messages.
     const isJoinMessage =
-      /: [^ ]+\[\/\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3}:.\d{1,5}] logged in with entity id \d+ at \((?:\[.+])?\d+.\d+, .\d+.\d+, .\d+.\d+\)/.test(
+      /: [^ ]+\[\/\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3}:.\d{1,5}] logged in with entity id \d+ at \((?:\[.+])?-?\d+.\d+, -?.\d+.\d+, -?.\d+.\d+\)/.test(
         message.text
       );
     const isLeaveMessage = /: [^ ]+ lost connection: .+/.test(message.text);

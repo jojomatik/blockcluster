@@ -15,7 +15,7 @@
     "@types/pidusage": "^2.0.2",
     "@types/properties-reader": "^2.1.1",
     "@types/uuid": "^8.3.4",
-    "nodemon": "^2.0.19"
+    "nodemon": "^2.0.20"
   },
   "dependencies": {
     "command-exists": "^1.2.9",

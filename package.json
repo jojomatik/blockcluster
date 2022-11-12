@@ -71,7 +71,7 @@
     "eslint": "^7.32.0",
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-prettier": "^4.0.0",
-    "eslint-plugin-storybook": "^0.6.0",
+    "eslint-plugin-storybook": "^0.6.7",
     "eslint-plugin-vue": "^8.7.1",
     "license-checker-webpack-plugin": "^0.2.1",
     "prettier": "^2.6.2",

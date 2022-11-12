@@ -37,7 +37,7 @@
     "vuetify": "^2.6.12"
   },
   "devDependencies": {
-    "@babel/core": "^7.18.6",
+    "@babel/core": "^7.20.2",
     "@mdi/font": "^7.0.96",
     "@rushstack/eslint-patch": "^1.2.0",
     "@semantic-release/exec": "^6.0.3",

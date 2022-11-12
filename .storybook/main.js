@@ -51,5 +51,6 @@ module.exports = {
   },
   core: {
     disableTelemetry: true,
+    builder: "@storybook/builder-webpack5",
   },
 };

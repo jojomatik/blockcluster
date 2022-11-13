@@ -18,6 +18,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 import Vue from "vue";
 import Vuetify from "vuetify/lib/framework";
+import "@mdi/font/css/materialdesignicons.css";
 
 Vue.use(Vuetify);
 
@@ -43,6 +44,9 @@ export const preset = {
         accent: "#039e9e",
       },
     },
+  },
+  icons: {
+    iconfont: "mdi",
   },
 };
 

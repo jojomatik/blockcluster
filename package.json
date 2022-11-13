@@ -21,6 +21,7 @@
     "chromatic": "npx chromatic"
   },
   "dependencies": {
+    "@mdi/font": "^7.0.96",
     "apexcharts": "^3.36.3",
     "core-js": "^3.26.0",
     "moment": "^2.29.4",
@@ -38,7 +39,6 @@
   },
   "devDependencies": {
     "@babel/core": "^7.20.2",
-    "@mdi/font": "^7.0.96",
     "@rushstack/eslint-patch": "^1.2.0",
     "@semantic-release/exec": "^6.0.3",
     "@semantic-release/git": "^10.0.1",

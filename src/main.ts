@@ -25,6 +25,7 @@ import vuetify from "./plugins/vuetify";
 import VueMeta from "vue-meta";
 import VueApexCharts from "vue-apexcharts";
 import i18n from "./i18n";
+import "@fontsource/roboto";
 
 Vue.config.productionTip = false;
 

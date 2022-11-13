@@ -6,6 +6,9 @@ updates:
       interval: "daily"
     target-branch: "beta"
     open-pull-requests-limit: 50
+    labels:
+      - "type:build"
+      - "scope:deps"
     allow:
       - dependency-type: "production"
   - package-ecosystem: "npm"
@@ -14,6 +17,9 @@ updates:
       interval: "monthly"
     target-branch: "updates"
     open-pull-requests-limit: 50
+    labels:
+      - "type:build"
+      - "scope:deps-dev"
     allow:
       - dependency-type: "development"
 
@@ -23,6 +29,10 @@ updates:
       interval: "daily"
     target-branch: "beta"
     open-pull-requests-limit: 50
+    labels:
+      - "type:build"
+      - "scope:deps"
+      - "scope:backend"
     allow:
       - dependency-type: "production"
   - package-ecosystem: "npm"
@@ -31,5 +41,9 @@ updates:
       interval: "monthly"
     target-branch: "updates"
     open-pull-requests-limit: 50
+    labels:
+      - "type:build"
+      - "scope:deps-dev"
+      - "scope:backend"
     allow:
       - dependency-type: "development"

@@ -19,13 +19,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 import Vue from "vue";
 import Vuetify from "vuetify/lib/framework";
 import "@mdi/font/css/materialdesignicons.css";
+import { UserVuetifyPreset } from "vuetify";
 
 Vue.use(Vuetify);
 
 /**
  * The preset used in the vuetify instance.
  */
-export const preset = {
+export const preset: Partial<UserVuetifyPreset> = {
   theme: {
     options: {
       customProperties: true,

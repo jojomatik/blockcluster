@@ -13,14 +13,14 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ (github.event_name == 'push' && github.actor != 'dependabot[bot]') || (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success') }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@v3
         with:
           node-version: '16'
       - name: Cache node modules
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         id: cache
         env:
           cache-name: cache-node-modules-frontend-v2
@@ -30,7 +30,7 @@ jobs:
 
       - name: Cache npm cache
         if: steps.cache.outputs.cache-hit != 'true'
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         env:
           cache-name: cache-npm-cache-frontend-v2
         with:

@@ -47,3 +47,15 @@ updates:
       - "scope:backend"
     allow:
       - dependency-type: "development"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    target-branch: "updates"
+    open-pull-requests-limit: 50
+    commit-message:
+      prefix: "build(deps-dev)"
+    labels:
+      - "type:build"
+      - "scope:deps-dev"

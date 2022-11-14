@@ -264,7 +264,7 @@ export default class ConsoleComponent extends Vue {
    * @private
    */
   private getMessages(): void {
-    this.server.sendMessage("getMessages");
+    this.server.sendMessage("getMessages", this.$route.params["server"]);
   }
 
   /**

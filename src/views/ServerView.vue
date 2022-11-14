@@ -25,7 +25,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
 import ServerComponent from "@/components/ServerComponent.vue"; // @ is an alias to /src
-import Server from "../../common/components/server";
+import Server from "@/lib/components/server";
 
 /**
  * A {@link Vue}-View that shows one server.

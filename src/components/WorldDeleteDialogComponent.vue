@@ -45,7 +45,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
               .toString()
               .split("%%name%%")[0]
           }}
-          <span class="font-weight-bold">{{ this.server.getName() }}</span>
+          <span class="font-weight-bold">{{ this.server.name }}</span>
           {{
             $t("gui.views.server.delete_world.dialog.prompt")
               .toString()
@@ -57,7 +57,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             dense
             v-model="currentTextInput"
             :rules="[
-              currentTextInput === this.server.getName()
+              currentTextInput === this.server.name
                 ? true
                 : $t(
                     'gui.views.server.delete_world.dialog.errors.no_match_name'
@@ -107,7 +107,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 import { Component, Prop, Vue } from "vue-property-decorator";
 
 import { ServerStatus } from "../../common/components/server";
-import ServerComponent from "@/components/ServerComponent.vue";
+import Server from "@/lib/components/server";
 
 /**
  * A button and dialog that allows the user to delete worlds.
@@ -119,10 +119,10 @@ import ServerComponent from "@/components/ServerComponent.vue";
 })
 export default class WorldDeleteDialogComponent extends Vue {
   /**
-   * The linked {@link ServerComponent}.
+   * The linked {@link Server}.
    * @private
    */
-  @Prop() private server!: ServerComponent;
+  @Prop() private server!: Server;
 
   /**
    * The status of the {@link ServerComponent}.

@@ -122,7 +122,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                       </td>
                     </tr>
                     <FlagDialogComponent
-                      :server="this"
+                      :server="server"
                       :flags="this.server.flags"
                     />
                   </tbody>
@@ -132,7 +132,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <ResourceChartComponent
               :resource-usage="this.server.resourceUsage"
             />
-            <ConsoleComponent :server="this" :status="server.status" />
+            <ConsoleComponent :server="server" :status="server.status" />
           </v-card-text>
           <v-card-actions class="px-4">
             <ToggleButtonComponent
@@ -142,8 +142,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                   .map((runtime) => runtime.path)
                   .includes(this.server.javaPath)
               "
-              @start="() => this.sendMessage('start')"
-              @stop="() => this.sendMessage('stop')"
+              @start="() => this.server.sendMessage('start')"
+              @stop="() => this.server.sendMessage('stop')"
             />
             <RestartButtonComponent
               :status="server.status"
@@ -152,7 +152,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                   .map((runtime) => runtime.path)
                   .includes(this.server.javaPath)
               "
-              @restart="() => this.sendMessage('restart')"
+              @restart="() => this.server.sendMessage('restart')"
             />
             <PauseButtonComponent
               :status="server.status"
@@ -161,8 +161,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                   .map((runtime) => runtime.path)
                   .includes(this.server.javaPath)
               "
-              @pause="() => this.sendMessage('pause')"
-              @unpause="() => this.sendMessage('start')"
+              @pause="() => this.server.sendMessage('pause')"
+              @unpause="() => this.server.sendMessage('start')"
             />
             <v-btn
               class="server-card-button"
@@ -174,7 +174,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             </v-btn>
             <WorldDeleteDialogComponent
               buttonClass="ml-auto"
-              :server="this"
+              :server="server"
               :status="server.status"
             />
           </v-card-actions>
@@ -229,10 +229,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 <script lang="ts">
 import { Component, Prop, Vue } from "vue-property-decorator";
 
-import Server, {
-  PauseOnIdleType,
-  ServerStatus,
-} from "../../common/components/server";
+import Server from "@/lib/components/server";
+import { PauseOnIdleType, ServerStatus } from "../../common/components/server";
 import ServerStatusComponent from "@/components/ServerStatusComponent.vue";
 import ConsoleComponent from "@/components/ConsoleComponent.vue";
 import ResourceChartComponent from "@/components/ResourceChartComponent.vue";
@@ -333,19 +331,7 @@ export default class ServerComponent extends Vue {
    * @private
    */
   private update(): void {
-    this.sendMessage("update");
-  }
-
-  /**
-   * Sends the message to a channel named according to the {@link Server}'s name.
-   * @param message the message to send.
-   * @private
-   */
-  sendMessage(message: string): void {
-    this.$socket.client.emit(
-      "server_" + encodeURIComponent(this.getName()),
-      message
-    );
+    this.server.sendMessage("update", this.getName());
   }
 
   /**
@@ -372,7 +358,7 @@ export default class ServerComponent extends Vue {
    */
   set autostart(value: boolean) {
     this.server.autostart = value;
-    this.sendMessage("set " + JSON.stringify({ autostart: value }));
+    this.server.sendMessage("set " + JSON.stringify({ autostart: value }));
   }
 
   /**
@@ -388,7 +374,7 @@ export default class ServerComponent extends Vue {
    */
   set pauseOnIdle(value: PauseOnIdleType) {
     this.server.pauseOnIdle = value;
-    this.sendMessage("set " + JSON.stringify({ pauseOnIdle: value }));
+    this.server.sendMessage("set " + JSON.stringify({ pauseOnIdle: value }));
   }
 
   /**
@@ -432,7 +418,7 @@ export default class ServerComponent extends Vue {
     else javaRuntime = getDefaultRuntime(this.javaRuntimes);
 
     this.server.javaPath = javaRuntime.path;
-    this.sendMessage("set " + JSON.stringify({ javaRuntime: value }));
+    this.server.sendMessage("set " + JSON.stringify({ javaRuntime: value }));
   }
 }
 </script>

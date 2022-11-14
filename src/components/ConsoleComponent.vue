@@ -84,26 +84,23 @@ import { Component, Prop, Vue } from "vue-property-decorator";
 
 import { ServerStatus } from "../../common/components/server";
 import Message, { MessageType } from "../../common/components/message";
-import ServerComponent from "@/components/ServerComponent.vue";
+import Server from "@/lib/components/server";
 import moment from "moment";
 
 /**
  * The representation of a {@link Server}'s console in Vue.
  */
 @Component({
-  components: {
-    ServerComponent,
-  },
   data() {
     return { ServerStatus, MessageType };
   },
 })
 export default class ConsoleComponent extends Vue {
   /**
-   * The linked {@link ServerComponent}.
+   * The linked {@link Server}.
    * @private
    */
-  @Prop() private server!: ServerComponent;
+  @Prop() private server!: Server;
 
   /**
    * The status of the {@link ServerComponent}.
@@ -145,7 +142,8 @@ export default class ConsoleComponent extends Vue {
    */
   mounted() {
     this.$socket.client.on(
-      "server_" + encodeURIComponent(this.server.getName()),
+      "server_" +
+        encodeURIComponent(this.server.name || this.$route.params["server"]),
       async (data: Record<string, unknown>) => {
         if (Object.prototype.hasOwnProperty.call(data, "message")) {
           const len = this.messages.length;
@@ -188,7 +186,8 @@ export default class ConsoleComponent extends Vue {
    */
   destroyed() {
     this.$socket.client.off(
-      "server_" + encodeURIComponent(this.server.getName())
+      "server_" +
+        encodeURIComponent(this.server.name || this.$route.params["server"])
     );
   }
 

@@ -15,33 +15,20 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
+import CommonServer from "../../../common/components/server";
+import { socketIO } from "@/main";
 
-import Vue from "vue";
-import App from "./App.vue";
-import router from "./router";
-import * as socketio from "socket.io-client";
-import VueSocketIOExt from "vue-socket.io-extended";
-import vuetify from "./plugins/vuetify";
-import VueMeta from "vue-meta";
-import VueApexCharts from "vue-apexcharts";
-import i18n from "./i18n";
-import "@fontsource/roboto";
-
-const socketIO = socketio.io();
-
-Vue.config.productionTip = false;
-
-Vue.use(VueSocketIOExt, socketIO);
-
-Vue.use(VueMeta);
-
-Vue.use(VueApexCharts);
-
-new Vue({
-  router,
-  vuetify,
-  i18n,
-  render: (h) => h(App),
-}).$mount("#app");
-
-export { socketIO };
+/**
+ * The client side implementation of {@link CommonServer} with additional methods that won't run on the client side.
+ */
+export default class Server extends CommonServer {
+  /**
+   * Sends the message to a channel named according to the {@link Server}'s name.
+   * @param message the message to send.
+   * @param name an override for the name of the server.
+   * @private
+   */
+  sendMessage(message: string, name?: string): void {
+    socketIO.emit("server_" + encodeURIComponent(name || this.name), message);
+  }
+}

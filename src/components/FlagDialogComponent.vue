@@ -45,22 +45,18 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 <script lang="ts">
 import { Component, Prop, Vue } from "vue-property-decorator";
 
-import ServerComponent from "@/components/ServerComponent.vue";
+import Server from "@/lib/components/server";
 
 /**
  * A {@link Component} that contains a dialog to set the java flags.
  */
-@Component({
-  components: {
-    ServerComponent,
-  },
-})
+@Component
 export default class FlagDialogComponent extends Vue {
   /**
-   * The linked {@link ServerComponent}.
+   * The linked {@link Server}.
    * @private
    */
-  @Prop() private server!: ServerComponent;
+  @Prop() private server!: Server;
 
   /**
    * The flags currently stored in the server.

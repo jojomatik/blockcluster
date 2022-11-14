@@ -293,7 +293,7 @@ export default class ServerComponent extends Vue {
    * Listens to a channel named according to the {@link Server}'s name for updated information.
    */
   mounted() {
-    this.sockets.subscribe(
+    this.$socket.client.on(
       "server_" + encodeURIComponent(this.getName()),
       async (data: Record<string, unknown>) => {
         if (Object.prototype.hasOwnProperty.call(data, "serverInfo"))
@@ -306,7 +306,7 @@ export default class ServerComponent extends Vue {
       }
     );
     if (this.detailed) {
-      this.sockets.subscribe(
+      this.$socket.client.on(
         "JAVA_RUNTIMES",
         (data: Record<string, unknown>[]) => {
           this.javaRuntimes = [];
@@ -315,7 +315,7 @@ export default class ServerComponent extends Vue {
           });
         }
       );
-      this.$socket.emit("JAVA_RUNTIMES");
+      this.$socket.client.emit("JAVA_RUNTIMES");
     }
     if (this.detailed) this.update();
   }
@@ -324,8 +324,8 @@ export default class ServerComponent extends Vue {
    * Unsubscribes the channels subscribed to in {@link #mounted}.
    */
   destroyed() {
-    this.sockets.unsubscribe("server_" + encodeURIComponent(this.getName()));
-    if (this.detailed) this.sockets.unsubscribe("JAVA_RUNTIMES");
+    this.$socket.client.off("server_" + encodeURIComponent(this.getName()));
+    if (this.detailed) this.$socket.client.off("JAVA_RUNTIMES");
   }
 
   /**
@@ -342,7 +342,10 @@ export default class ServerComponent extends Vue {
    * @private
    */
   sendMessage(message: string): void {
-    this.$socket.emit("server_" + encodeURIComponent(this.getName()), message);
+    this.$socket.client.emit(
+      "server_" + encodeURIComponent(this.getName()),
+      message
+    );
   }
 
   /**

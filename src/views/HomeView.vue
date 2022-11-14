@@ -80,11 +80,11 @@ export default class Home extends Vue {
   }
 
   sendMessage(): void {
-    this.$socket.emit("SEND_MESSAGE", JSON.stringify({ servers: [] }));
+    this.$socket.client.emit("SEND_MESSAGE", JSON.stringify({ servers: [] }));
   }
 
   mounted() {
-    this.sockets.subscribe("MESSAGE", (data: Record<string, unknown>[]) => {
+    this.$socket.client.on("MESSAGE", (data: Record<string, unknown>[]) => {
       this.servers = [];
       data.forEach((elem: Record<string, unknown>) => {
         const server: Server = new Server(elem);
@@ -94,7 +94,7 @@ export default class Home extends Vue {
         this.servers.push(server);
       });
     });
-    this.sockets.subscribe(
+    this.$socket.client.on(
       "SYSTEM_USAGE",
       (data: Record<string, unknown>[]) => {
         this.systemUsage = [];
@@ -103,14 +103,14 @@ export default class Home extends Vue {
         });
       }
     );
-    this.$socket.emit("SYSTEM_USAGE");
+    this.$socket.client.emit("SYSTEM_USAGE");
   }
 
   /**
    * Unsubscribes the channel subscribed to in {@link #mounted}.
    */
   destroyed() {
-    this.sockets.unsubscribe("MESSAGE");
+    this.$socket.client.off("MESSAGE");
   }
 
   updateServers() {

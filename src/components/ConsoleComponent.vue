@@ -144,7 +144,7 @@ export default class ConsoleComponent extends Vue {
    * Listens to a channel named according to the {@link Server}'s name for updated information.
    */
   mounted() {
-    this.sockets.subscribe(
+    this.$socket.client.on(
       "server_" + encodeURIComponent(this.server.getName()),
       async (data: Record<string, unknown>) => {
         if (Object.prototype.hasOwnProperty.call(data, "message")) {
@@ -187,7 +187,7 @@ export default class ConsoleComponent extends Vue {
    * Unsubscribes the channel subscribed to in {@link #mounted}.
    */
   destroyed() {
-    this.sockets.unsubscribe(
+    this.$socket.client.off(
       "server_" + encodeURIComponent(this.server.getName())
     );
   }

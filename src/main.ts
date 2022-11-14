@@ -20,7 +20,7 @@ import Vue from "vue";
 import App from "./App.vue";
 import router from "./router";
 import * as socketio from "socket.io-client";
-import VueSocketIO from "vue-socket.io";
+import VueSocketIOExt from "vue-socket.io-extended";
 import vuetify from "./plugins/vuetify";
 import VueMeta from "vue-meta";
 import VueApexCharts from "vue-apexcharts";
@@ -29,12 +29,7 @@ import "@fontsource/roboto";
 
 Vue.config.productionTip = false;
 
-Vue.use(
-  new VueSocketIO({
-    debug: process.env.NODE_ENV === "development",
-    connection: socketio.io(), //options object is Optional
-  })
-);
+Vue.use(VueSocketIOExt, socketio.io());
 
 Vue.use(VueMeta);
 

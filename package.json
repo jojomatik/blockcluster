@@ -51,7 +51,7 @@
     "@storybook/manager-webpack5": "^6.5.13",
     "@storybook/testing-library": "^0.0.13",
     "@storybook/vue": "^6.5.13",
-    "@types/jest": "^29.2.1",
+    "@types/jest": "^29.2.3",
     "@types/uuid": "^8.3.4",
     "@typescript-eslint/eslint-plugin": "^5.42.1",
     "@typescript-eslint/parser": "^5.42.1",

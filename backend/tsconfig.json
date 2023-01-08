@@ -15,7 +15,7 @@
       ]
     },
     "lib": [
-      "ES2021.String",
+      "esnext",
       "dom"
     ]
   },

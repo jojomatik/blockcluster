@@ -43,7 +43,7 @@
     "@rushstack/eslint-patch": "^1.2.0",
     "@semantic-release/exec": "^6.0.3",
     "@semantic-release/git": "^10.0.1",
-    "@storybook/addon-actions": "^6.5.13",
+    "@storybook/addon-actions": "^6.5.15",
     "@storybook/addon-essentials": "^6.5.13",
     "@storybook/addon-interactions": "^6.5.13",
     "@storybook/addon-links": "^6.5.13",

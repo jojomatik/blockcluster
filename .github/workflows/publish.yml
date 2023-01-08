@@ -46,6 +46,9 @@ jobs:
   npm_build_backend:
     name: Build backend
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./backend
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
@@ -72,13 +75,13 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-build-${{ env.cache-name }}-
 
-      - name: Copy package.json into root
-        run: mv backend/package*.json .
       - name: Install backend dependencies
         if: steps.cache.outputs.cache-hit != 'true'
         run: npm ci --prefer-offline --no-audit
+      - name: Link backend dependencies in `/common`
+        run: ln -s ../backend/node_modules ../common/node_modules
       - name: Build backend
-        run: cd backend && npm run build
+        run: npm run build
   push_to_registry:
     name: Push Docker image to Docker Hub
     runs-on: ubuntu-latest

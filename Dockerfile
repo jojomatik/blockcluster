@@ -1,8 +1,6 @@
 ARG ENVIRONMENT=production
 
 FROM node:16 AS builder
-# Install typescript.
-RUN npm install -g typescript
 # Set working directory.
 WORKDIR /usr/games/blockcluster
 # Copy package.json and package-lock.json for frontend and backend and install dependencies, before copying the rest. This is more efficient as only changes to these files require a new npm install.
@@ -27,7 +25,7 @@ COPY LICENSE ./
 RUN npm run build
 # Copy backend src and compile.
 COPY backend ./backend/
-RUN cd backend && tsc
+RUN cd backend && npm run build
 
 FROM eclipse-temurin:17-alpine AS jdk-17
 RUN /opt/java/openjdk/bin/jlink --output /opt/jre-17 --compress=2 --no-header-files --no-man-pages --module-path ../jmods --add-modules java.base,java.compiler,java.datatransfer,java.desktop,java.instrument,java.logging,java.management,java.management.rmi,java.naming,java.net.http,java.prefs,java.rmi,java.scripting,java.se,java.security.jgss,java.security.sasl,java.smartcardio,java.sql,java.sql.rowset,java.transaction.xa,java.xml,java.xml.crypto,jdk.crypto.cryptoki,jdk.crypto.ec,jdk.security.auth,jdk.unsupported,jdk.zipfs

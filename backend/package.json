@@ -7,7 +7,8 @@
     "email": "dev@jojomatik.de"
   },
   "scripts": {
-    "start": "nodemon dist/backend/src/backend.js"
+    "start": "nodemon dist/backend/src/backend.js",
+    "build": "tsc"
   },
   "devDependencies": {
     "@types/command-exists": "^1.2.0",
@@ -15,7 +16,8 @@
     "@types/pidusage": "^2.0.2",
     "@types/properties-reader": "^2.1.1",
     "@types/uuid": "^9.0.0",
-    "nodemon": "^2.0.20"
+    "nodemon": "^2.0.20",
+    "typescript": "^4.9.4"
   },
   "dependencies": {
     "command-exists": "^1.2.9",

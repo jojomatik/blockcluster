@@ -78,7 +78,7 @@ jobs:
         if: steps.cache.outputs.cache-hit != 'true'
         run: npm ci --prefer-offline --no-audit
       - name: Build backend
-        run: cd backend && tsc
+        run: cd backend && npm run build
   push_to_registry:
     name: Push Docker image to Docker Hub
     runs-on: ubuntu-latest

@@ -59,7 +59,6 @@ Open `http://[your ip]:8081` in your browser.
 Prerequisites:
 - Git
 - Node.js (v16+) and npm (v8+)
-- TypeScript installed globally (`npm install -g typescript`)
 - Java (to run the minecraft servers)
 
 1. First build the app using the instructions from ["Building manually"](#building-manually).
@@ -117,7 +116,7 @@ docker-compose up
 ```
 Open `http://[your ip]:8081` in your browser.
 
-**To enable hot reloads**, configure a file watcher for the TypeScript files in the `backend/src` directory to run `tsc` in the `backend` directory and run the following command:
+**To enable hot reloads**, configure a file watcher for the TypeScript files in the `backend/src` directory to run `npm run build` in the `backend` directory and run the following command:
 ```sh
 docker-compose -f docker-compose.yml -f docker-compose.dev.yml up
 ```
@@ -132,7 +131,6 @@ docker-compose up --force-recreate --build
 Prerequisites:
 - Git
 - Node.js (v16+) and npm (v8+)
-- TypeScript installed globally (`npm install -g typescript`)
 - Java (only to run the minecraft servers)
 
 Run the following commands:
@@ -151,7 +149,7 @@ npm run start
 Open `http://[your ip]:8081` in your browser.
 
 
-**To enable hot reloads**, configure a file watcher for the TypeScript files in the `backend/src` directory to run `tsc` in the `backend` directory and run the following command:
+**To enable hot reloads**, configure a file watcher for the TypeScript files in the `backend/src` directory to run `npm run build` in the `backend` directory and run the following command:
 ```sh
 npm run serve
 ```

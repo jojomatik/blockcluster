@@ -77,7 +77,7 @@ jobs:
         if: steps.cache.outputs.cache-hit != 'true'
         run: npm ci --prefer-offline --no-audit
       - name: Build backend
-        run: cd backend && tsc
+        run: cd backend && npm run build
   docker_build:
     name: Build docker image
     needs:

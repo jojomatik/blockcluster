@@ -10,7 +10,7 @@
     "install_all": "concurrently \"npm install\" \"cd backend && npm install\"",
     "serve": "concurrently \"vue-cli-service serve --port 8081\" \"cd backend && cross-env NODE_ENV=develop npm start\"",
     "build": "vue-cli-service build",
-    "build_all": "concurrently \"vue-cli-service build\" \"cd backend && tsc\"",
+    "build_all": "concurrently \"vue-cli-service build\" \"cd backend && npm run build\"",
     "start": "cd backend && node dist/backend/src/backend.js",
     "test:unit": "vue-cli-service test:unit",
     "lint": "vue-cli-service lint",

@@ -15,7 +15,8 @@
       ]
     },
     "lib": [
-      "ES2021.String"
+      "ES2021.String",
+      "dom"
     ]
   },
   "include": [

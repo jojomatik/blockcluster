@@ -42,9 +42,9 @@ COPY --from=jdk-17 /opt/jre-17 /opt/java-17
 COPY --from=jdk-11 /opt/jre-11 /opt/java-11
 RUN ln -s /opt/java-17 /opt/java
 RUN apk add --update nodejs npm
-COPY LICENSE README.md ./
 # Set working directory.
 WORKDIR /usr/games/blockcluster
+COPY LICENSE README.md ./
 # Create servers directory to prevent errors.
 RUN mkdir servers
 

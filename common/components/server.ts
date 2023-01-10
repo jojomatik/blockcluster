@@ -25,6 +25,7 @@ import { ServerProperties } from "./server_properties";
  */
 export enum ServerStatus {
   Unknown,
+  Queued,
   Stopped,
   Starting,
   Started,

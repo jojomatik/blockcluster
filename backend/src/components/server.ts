@@ -60,6 +60,15 @@ export default class Server extends CommonServer {
   private config: ServerConfig;
 
   /**
+   * An object to resolve or reject a promise if a safe start is performed.
+   * @private
+   */
+  private safeStartPromise?: {
+    resolve: (value: ServerStatus) => void;
+    reject: (reason?: string) => void;
+  };
+
+  /**
    * A timeout used while starting the server to check the status every second.
    * @private
    */
@@ -118,18 +127,30 @@ export default class Server extends CommonServer {
           };
         }
 
-        if (this.status != ServerStatus.Stopping)
+        if (this.status != ServerStatus.Stopping) {
           this.status = ServerStatus.Started;
+          if (this.safeStartPromise) {
+            this.safeStartPromise.resolve(this.status);
+            this.safeStartPromise = undefined;
+          }
+        }
       }
     } catch (e) {
       if (
         this.status != ServerStatus.Starting &&
+        this.status != ServerStatus.Queued &&
         this.status != ServerStatus.Paused &&
         this.proc == null
       )
         this.status = ServerStatus.Stopped;
       if (this.proc && this.proc.exitCode !== null) {
         this.status = ServerStatus.Stopped;
+        if (this.safeStartPromise) {
+          this.safeStartPromise.reject(
+            "Server stopped with exit code " + this.proc.exitCode + "."
+          );
+          this.safeStartPromise = undefined;
+        }
         this.proc = null;
       }
     }
@@ -332,8 +353,10 @@ export default class Server extends CommonServer {
 
   /**
    * Starts the {@link Server}.
+   *
+   * @param safe only resolve promise as soon as the server reaches {@link ServerStatus#Started}.
    */
-  public async start() {
+  public async start(safe = false) {
     if (this.status === ServerStatus.Paused) {
       this.wakeUpListener.close();
     }
@@ -393,6 +416,11 @@ export default class Server extends CommonServer {
         }
       });
     });
+
+    if (safe)
+      return new Promise((resolve, reject) => {
+        this.safeStartPromise = { resolve: resolve, reject: reject };
+      });
   }
 
   /**

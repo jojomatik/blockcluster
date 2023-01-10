@@ -162,7 +162,7 @@ async function measureUsage(measuringTime?: number) {
  */
 export const io = new socketio.Server(backend, options);
 
-getServers().then((servers) => {
+getServers().then(async (servers) => {
   io.on("connection", async (socket: socketio.Socket) => {
     console.log(socket.id);
     // Listen to general channel
@@ -213,14 +213,18 @@ getServers().then((servers) => {
         fs.unlinkSync(watchFilePath);
       }
     });
-    server.update().then(async () => {
-      if (server.autostart) {
-        await server.start();
-      }
-    });
+    await server.update();
+    if (server.autostart) server.status = ServerStatus.Queued;
     server.measureUsage(time).then(() => {
       server.sendServerData();
     });
+  }
+
+  // Start servers one after another
+  for (const server of servers) {
+    if (server.status === ServerStatus.Queued) {
+      await server.start(true);
+    }
   }
 
   const timeout = setInterval(async () => {

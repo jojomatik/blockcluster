@@ -27,18 +27,18 @@ import path from "path";
 
 import dotenv from "dotenv";
 import dotenvExpand from "dotenv-expand";
-dotenvExpand.expand(dotenv.config({ path: "../.env" }));
-dotenvExpand.expand(dotenv.config({ path: "../.env.local" }));
-
 import { getVersion } from "../../common/version";
 import { getJavaRuntimes } from "./components/java_runtime";
 import getDependencyInfo from "./utils/dependency_info";
 import {
-  ServerPropertiesFile,
   getPropertiesFromFile,
+  ServerPropertiesFile,
 } from "../../common/components/server_properties";
 import pidusage from "pidusage";
 import ResourceUsage from "../../common/components/resource_usage";
+
+dotenvExpand.expand(dotenv.config({ path: "../.env" }));
+dotenvExpand.expand(dotenv.config({ path: "../.env.local" }));
 
 const app = express();
 

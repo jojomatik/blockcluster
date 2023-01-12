@@ -96,6 +96,7 @@
         },
         "status": {
           "paused": "Pausé",
+          "queued": "En attente",
           "started": "Lancé",
           "starting": "Lançant",
           "stopped": "Arrêté",

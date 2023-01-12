@@ -220,12 +220,9 @@ getServers().then(async (servers) => {
     });
   }
 
-  // Start servers one after another
-  for (const server of servers) {
-    if (server.status === ServerStatus.Queued) {
-      await server.start(true);
-    }
-  }
+  startServers(
+    servers.filter((server) => server.status === ServerStatus.Queued)
+  );
 
   const timeout = setInterval(async () => {
     const time: number = Date.now();
@@ -255,3 +252,18 @@ getServers().then(async (servers) => {
     });
   });
 });
+
+/**
+ * Starts all provided asynchronously servers in the background.
+ *
+ * @param servers the servers to start.
+ * @param sequentially whether to wait until one server is in {@link ServerStatus#Started} before starting the next one.
+ */
+function startServers(servers: Server[], sequentially = true): void {
+  (async () => {
+    // Start servers one after another
+    for (const server of servers) {
+      await server.start(sequentially);
+    }
+  })();
+}

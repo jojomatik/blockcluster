@@ -103,6 +103,7 @@
         },
         "status": {
           "paused": "Pausiert",
+          "queued": "Wartet",
           "started": "Gestartet",
           "starting": "Startet",
           "stopped": "Gestoppt",

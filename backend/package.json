@@ -27,7 +27,7 @@
     "express": "^4.18.2",
     "minecraft-protocol": "^1.40.2",
     "pidusage": "^3.0.2",
-    "pixelheads": "^1.0.16",
+    "pixelheads": "^1.0.17",
     "properties-reader": "^2.2.0",
     "socket.io": "^4.5.4",
     "uuid": "^9.0.0"

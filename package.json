@@ -48,7 +48,7 @@
     "@storybook/addon-interactions": "^6.5.15",
     "@storybook/addon-links": "^6.5.15",
     "@storybook/builder-webpack5": "^6.5.15",
-    "@storybook/manager-webpack5": "^6.5.15",
+    "@storybook/manager-webpack5": "^6.5.16",
     "@storybook/testing-library": "^0.0.13",
     "@storybook/vue": "^6.5.15",
     "@types/jest": "^29.4.0",

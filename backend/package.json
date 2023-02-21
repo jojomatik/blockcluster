@@ -29,7 +29,7 @@
     "pidusage": "^3.0.2",
     "pixelheads": "^1.0.18",
     "properties-reader": "^2.2.0",
-    "socket.io": "^4.5.4",
+    "socket.io": "^4.6.1",
     "uuid": "^9.0.0"
   },
   "bugs": {

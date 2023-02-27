@@ -24,7 +24,7 @@
     "@fontsource/roboto": "^4.5.8",
     "@mdi/font": "^7.1.96",
     "apexcharts": "^3.36.3",
-    "core-js": "^3.27.2",
+    "core-js": "^3.29.0",
     "moment": "^2.29.4",
     "socket.io-client": "^4.5.4",
     "uuid": "^9.0.0",

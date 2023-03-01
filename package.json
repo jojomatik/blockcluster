@@ -59,7 +59,7 @@
     "@vue/cli-plugin-router": "~5.0.8",
     "@vue/cli-plugin-typescript": "~5.0.8",
     "@vue/cli-service": "~5.0.8",
-    "@vue/eslint-config-prettier": "^7.0.0",
+    "@vue/eslint-config-prettier": "^7.1.0",
     "@vue/eslint-config-typescript": "^10.0.0",
     "chromatic": "^6.15.0",
     "concurrently": "^7.6.0",

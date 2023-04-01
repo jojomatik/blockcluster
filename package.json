@@ -61,7 +61,7 @@
     "@vue/cli-service": "~5.0.8",
     "@vue/eslint-config-prettier": "^7.0.0",
     "@vue/eslint-config-typescript": "^10.0.0",
-    "chromatic": "^6.15.0",
+    "chromatic": "^6.17.2",
     "concurrently": "^7.6.0",
     "conventional-changelog-conventionalcommits": "^5.0.0",
     "cross-env": "^7.0.3",

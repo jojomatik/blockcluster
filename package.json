@@ -71,7 +71,7 @@
     "eslint-plugin-storybook": "^0.6.10",
     "eslint-plugin-vue": "^8.7.1",
     "license-checker-webpack-plugin": "^0.2.1",
-    "prettier": "^2.8.3",
+    "prettier": "^2.8.8",
     "sass": "~1.32.13",
     "sass-loader": "^10.0.0",
     "semantic-release": "^20.1.0",

@@ -46,7 +46,7 @@
     "@storybook/addon-essentials": "^6.5.15",
     "@storybook/addon-interactions": "^6.5.15",
     "@storybook/addon-links": "^6.5.15",
-    "@storybook/builder-webpack5": "^6.5.15",
+    "@storybook/builder-webpack5": "^7.0.7",
     "@storybook/manager-webpack5": "^6.5.15",
     "@storybook/testing-library": "^0.0.13",
     "@storybook/vue": "^6.5.15",

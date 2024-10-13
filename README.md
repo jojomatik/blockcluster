@@ -68,7 +68,7 @@ Prerequisites:
 3. Run `npm run start` and open `http://[your ip]:8081` in your browser.
 
 ### Adding custom java runtimes
-By default, the docker image based on [`docker-compose.yml`](docker-compose.yml) and the [`Dockerfile`](Dockerfile) includes java 11 and java 17. Those are the most relevant LTS java version for running minecraft servers (see [#150](https://github.com/jojomatik/blockcluster/issues/150) for more details).
+By default, the docker image based on [`docker-compose.yml`](docker-compose.yml) and the [`Dockerfile`](Dockerfile) includes java 11, java 17 and java 21. Those are the most relevant LTS java version for running minecraft servers (see [#150](https://github.com/jojomatik/blockcluster/issues/150) for more details).
 
 #### Windows
 All java runtimes in the `PATH` environment variable will be discovered and presented as an option in the frontend.

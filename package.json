@@ -29,7 +29,7 @@
     "socket.io-client": "4.5.4",
     "uuid": "^9.0.0",
     "vue": "^2.7.14",
-    "vue-apexcharts": "^1.6.2",
+    "vue-apexcharts": "^1.7.1",
     "vue-class-component": "^7.2.3",
     "vue-i18n": "^8.28.2",
     "vue-meta": "^2.4.0",

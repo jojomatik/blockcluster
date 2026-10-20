@@ -17,7 +17,7 @@ jobs:
         with:
           node-version: '16'
       - name: Cache node modules
-        uses: actions/cache@v3
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
         id: cache
         env:
           cache-name: cache-node-modules-frontend-v2
@@ -27,7 +27,7 @@ jobs:
 
       - name: Cache npm cache
         if: steps.cache.outputs.cache-hit != 'true'
-        uses: actions/cache@v3
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
         env:
           cache-name: cache-npm-cache-frontend-v2
         with:
@@ -54,7 +54,7 @@ jobs:
         with:
           node-version: '16'
       - name: Cache node modules
-        uses: actions/cache@v3
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
         id: cache
         env:
           cache-name: cache-node-modules-backend-v2
@@ -64,7 +64,7 @@ jobs:
 
       - name: Cache npm cache
         if: steps.cache.outputs.cache-hit != 'true'
-        uses: actions/cache@v3
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
         env:
           cache-name: cache-npm-cache-backend-v2
         with:

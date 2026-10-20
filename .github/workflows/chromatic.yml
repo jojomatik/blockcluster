@@ -18,7 +18,7 @@ jobs:
           fetch-depth: 0
       - uses: actions/setup-node@v3
         with:
-          node-version: '16'
+          node-version: '18'
       - name: Cache node modules
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
         id: cache

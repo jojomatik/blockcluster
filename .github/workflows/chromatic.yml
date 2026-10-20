@@ -44,6 +44,6 @@ jobs:
         if: steps.cache.outputs.cache-hit != 'true'
         run: npm ci --prefer-offline --no-audit
       - name: Build storybook and publish to chromatic
-        uses: chromaui/action@v1
+        uses: chromaui/action@e50abd573c8a789526f165fec06137a7c21d7299 # v18
         with:
           projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}

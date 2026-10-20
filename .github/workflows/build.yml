@@ -42,6 +42,8 @@ jobs:
         run: npm ci --prefer-offline --no-audit
       - name: Build frontend
         run: npm run build
+      - name: Lint
+        run: npm run lint
   npm_build_backend:
     name: Build backend
     runs-on: ubuntu-latest

@@ -2,6 +2,7 @@ import type { Meta } from "@storybook/vue";
 import ButtonComponent from "@/components/buttons/ButtonComponent.vue";
 
 export default {
+  title: "Components/ButtonComponent",
   component: ButtonComponent,
   render: (args, { argTypes }) => ({
     props: Object.keys(argTypes),

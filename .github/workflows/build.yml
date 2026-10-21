@@ -99,7 +99,6 @@ jobs:
         with:
           push: false
           load: true
-          tags: blockcluster:smoke
           cache-from: type=gha
           cache-to: type=gha,mode=max
       - name: Smoke test Docker image

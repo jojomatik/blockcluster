@@ -7,22 +7,52 @@ inputs:
 runs:
   using: composite
   steps:
-    - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
+    - name: Set up Node.js
+      uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
       with:
         node-version: "24"
+        cache: npm
+        cache-dependency-path: tests/smoke/package-lock.json
     - name: Install smoke test dependencies
       shell: bash
-      run: |
-        npm ci --prefix tests/smoke --no-audit --no-fund
-        cd tests/smoke
-        npx playwright install --with-deps chromium
-    - name: Check container homepage
+      run: npm ci --prefix tests/smoke --no-audit --no-fund
+    - name: Install Chromium system dependencies
+      shell: bash
+      working-directory: tests/smoke
+      run: npx playwright install-deps chromium
+    - name: Install Chromium headless shell
+      shell: bash
+      working-directory: tests/smoke
+      env:
+        # Avoid the FFmpeg mirror whose DNS lookup fails before falling back here.
+        PLAYWRIGHT_DOWNLOAD_HOST: https://cdn.playwright.dev
+      run: npx playwright install --only-shell chromium
+    - name: Start container
+      id: container
       shell: bash
       env:
         IMAGE: ${{ inputs.image }}
+      run: docker run -d --name blockcluster-smoke -p 127.0.0.1:8081:8081 "$IMAGE"
+    - name: Wait for backend
+      shell: bash
       run: |
-        set -euo pipefail
-        trap 'docker logs blockcluster-smoke || true; docker rm -f blockcluster-smoke || true' EXIT
-        docker run -d --name blockcluster-smoke -p 127.0.0.1:8081:8081 "$IMAGE"
-        curl --fail --silent --show-error --retry 30 --retry-delay 2 --retry-all-errors --max-time 3 http://127.0.0.1:8081/ > /dev/null
-        npm --prefix tests/smoke test
+        # Keep startup connection errors quiet; report the final error on timeout.
+        for attempt in {1..30}; do
+          if curl --fail --silent --show-error --max-time 3 http://127.0.0.1:8081/api/version > /dev/null 2> "$RUNNER_TEMP/blockcluster-readiness.log"; then
+            exit 0
+          fi
+          sleep 2
+        done
+        cat "$RUNNER_TEMP/blockcluster-readiness.log" >&2
+        exit 1
+    - name: Check backend and homepage
+      shell: bash
+      run: npm --prefix tests/smoke test
+    - name: Show container logs
+      if: ${{ always() && steps.container.outcome != 'skipped' }}
+      shell: bash
+      run: docker logs blockcluster-smoke
+    - name: Remove container
+      if: ${{ always() && steps.container.outcome != 'skipped' }}
+      shell: bash
+      run: docker rm -f blockcluster-smoke

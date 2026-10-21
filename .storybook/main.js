@@ -2,7 +2,7 @@ const path = require("path");
 
 module.exports = {
   stories: [
-    "../src/**/*.stories.mdx",
+    "../src/**/*.mdx",
     {
       directory: "../src/components/buttons",
       titlePrefix: "Components",
@@ -33,20 +33,10 @@ module.exports = {
       include: path.resolve(__dirname, "../"),
     });
 
-    config.module.rules.push({
-      resolve: {
-        alias: {
-          "@": path.resolve(__dirname, "../src"),
-          vue: "vue/dist/vue.js",
-        },
-      },
-    });
-
-    config.module.rules.push({
-      test: /\.ts$/,
-      loader: "ts-loader",
-      options: { appendTsSuffixTo: [/\.vue$/] },
-    });
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      "@": path.resolve(__dirname, "../src"),
+    };
     return config;
   },
   core: {

@@ -1,0 +1,28 @@
+name: Smoke test Docker image
+description: Check that the built container renders the homepage without errors
+inputs:
+  image:
+    description: Local Docker image ID to test
+    required: true
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
+      with:
+        node-version: "24"
+    - name: Install smoke test dependencies
+      shell: bash
+      run: |
+        npm ci --prefix tests/smoke --no-audit --no-fund
+        cd tests/smoke
+        npx playwright install --with-deps chromium
+    - name: Check container homepage
+      shell: bash
+      env:
+        IMAGE: ${{ inputs.image }}
+      run: |
+        set -euo pipefail
+        trap 'docker logs blockcluster-smoke || true; docker rm -f blockcluster-smoke || true' EXIT
+        docker run -d --name blockcluster-smoke -p 127.0.0.1:8081:8081 "$IMAGE"
+        curl --fail --silent --show-error --retry 30 --retry-delay 2 --retry-all-errors --max-time 3 http://127.0.0.1:8081/ > /dev/null
+        npm --prefix tests/smoke test

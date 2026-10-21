@@ -1,0 +1,10 @@
+{
+  "name": "blockcluster-smoke-tests",
+  "private": true,
+  "scripts": {
+    "test": "playwright test homepage.spec.cjs --workers=1 --reporter=line"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.64.1"
+  }
+}

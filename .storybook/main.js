@@ -2,7 +2,7 @@ const path = require("path");
 
 module.exports = {
   stories: [
-    "../src/**/*.mdx",
+    "../src/**/*.stories.mdx",
     {
       directory: "../src/components/buttons",
       titlePrefix: "Components",

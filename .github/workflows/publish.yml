@@ -89,6 +89,7 @@ jobs:
       - npm_build_frontend
       - npm_build_backend
     steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - name: Docker meta
         id: docker_meta
         uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6
@@ -108,15 +109,21 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_TOKEN }}
       - name: Build and push
+        id: build
         uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7
         with:
           push: true
+          load: true
           tags: ${{ steps.docker_meta.outputs.tags }}
           cache-from: type=gha,scope=blockcluster
           cache-to: type=gha,scope=blockcluster,mode=max
           build-args: |
             git_sha=${{github.sha}}
             git_ref=${{github.ref}}
+      - name: Smoke test Docker image
+        uses: ./.github/actions/smoke-test
+        with:
+          image: ${{ steps.build.outputs.imageid }}
   semantic-release:
     if: ${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/beta' }}
     name: Create a semantic release

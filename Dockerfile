@@ -1,6 +1,6 @@
 ARG ENVIRONMENT=production
 
-FROM node:18.20.8@sha256:c6ae79e38498325db67193d391e6ec1d224d96c693a8a4d943498556716d3783 AS builder
+FROM node:24.22.0@sha256:925de64a85319052d6971ae81ef2417da956e8a3a2c4a0fac732327970f017f5 AS builder
 # Set working directory.
 WORKDIR /usr/games/blockcluster
 # Copy package.json and package-lock.json for frontend and backend and install dependencies, before copying the rest. This is more efficient as only changes to these files require a new npm install.

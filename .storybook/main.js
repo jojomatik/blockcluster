@@ -20,7 +20,7 @@ module.exports = {
     "@storybook/addon-essentials",
     "@storybook/addon-interactions",
   ],
-  framework: "@storybook/vue",
+  framework: "@storybook/vue-webpack5",
   typescript: {
     check: false,
     checkOptions: {},
@@ -33,24 +33,13 @@ module.exports = {
       include: path.resolve(__dirname, "../"),
     });
 
-    config.module.rules.push({
-      resolve: {
-        alias: {
-          "@": path.resolve(__dirname, "../src"),
-          vue: "vue/dist/vue.js",
-        },
-      },
-    });
-
-    config.module.rules.push({
-      test: /\.ts$/,
-      loader: "ts-loader",
-      options: { appendTsSuffixTo: [/\.vue$/] },
-    });
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      "@": path.resolve(__dirname, "../src"),
+    };
     return config;
   },
   core: {
     disableTelemetry: true,
-    builder: "@storybook/builder-webpack5",
   },
 };

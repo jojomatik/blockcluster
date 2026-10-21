@@ -20,7 +20,7 @@ module.exports = {
     "@storybook/addon-essentials",
     "@storybook/addon-interactions",
   ],
-  framework: "@storybook/vue",
+  framework: "@storybook/vue-webpack5",
   typescript: {
     check: false,
     checkOptions: {},
@@ -51,6 +51,5 @@ module.exports = {
   },
   core: {
     disableTelemetry: true,
-    builder: "@storybook/builder-webpack5",
   },
 };

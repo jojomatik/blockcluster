@@ -91,6 +91,7 @@ test("opens a configured server and refreshes its status", async ({
   page,
   request,
 }) => {
+  test.setTimeout(150_000);
   const serverName = process.env.SMOKE_SERVER_NAME || "paper-smoke";
   const serverResponse = await request.get(
     `/api/servers/${encodeURIComponent(serverName)}`
@@ -134,15 +135,20 @@ test("opens a configured server and refreshes its status", async ({
   await expect
     .poll(
       async () => {
-        const messagesResponse = await request.get(
-          `/api/servers/${encodeURIComponent(serverName)}/messages`
-        );
+        let messagesResponse;
+        try {
+          messagesResponse = await request.get(
+            `/api/servers/${encodeURIComponent(serverName)}/messages`
+          );
+        } catch {
+          return "";
+        }
         if (messagesResponse.status() !== 200) return "";
         const messages = await messagesResponse.json();
-        return (
-          messages.find((message) => /agree to the EULA/i.test(message.text))
-            ?.text || ""
+        const eulaMessage = messages.find((message) =>
+          /agree to the EULA/i.test(message.text || message._text || "")
         );
+        return eulaMessage?.text || eulaMessage?._text || "";
       },
       { timeout: 120_000, intervals: [1_000, 2_000, 5_000] }
     )

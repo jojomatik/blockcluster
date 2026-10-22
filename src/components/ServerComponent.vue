@@ -142,8 +142,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                   .map((runtime) => runtime.path)
                   .includes(this.server.javaPath)
               "
-              @start="() => this.server.sendMessage('start')"
-              @stop="() => this.server.sendMessage('stop')"
+              @start="handleAction('start')"
+              @stop="handleAction('stop')"
             />
             <RestartButtonComponent
               :status="server.status"
@@ -152,7 +152,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                   .map((runtime) => runtime.path)
                   .includes(this.server.javaPath)
               "
-              @restart="() => this.server.sendMessage('restart')"
+              @restart="handleAction('restart')"
             />
             <PauseButtonComponent
               :status="server.status"
@@ -161,8 +161,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                   .map((runtime) => runtime.path)
                   .includes(this.server.javaPath)
               "
-              @pause="() => this.server.sendMessage('pause')"
-              @unpause="() => this.server.sendMessage('start')"
+              @pause="handleAction('pause')"
+              @unpause="handleAction('start')"
             />
             <v-btn
               class="server-card-button"
@@ -290,7 +290,7 @@ export default class ServerComponent extends Vue {
   /**
    * Listens to a channel named according to the {@link Server}'s name for updated information.
    */
-  mounted() {
+  async mounted() {
     this.$socket.client.on(
       "server_" + encodeURIComponent(this.getName()),
       async (data: Record<string, unknown>) => {
@@ -304,18 +304,13 @@ export default class ServerComponent extends Vue {
       }
     );
     if (this.detailed) {
-      this.$socket.client.on(
-        "JAVA_RUNTIMES",
-        (data: Record<string, unknown>[]) => {
-          this.javaRuntimes = [];
-          data.forEach((elem: Record<string, unknown>) => {
-            this.javaRuntimes.push(Object.assign(new JavaRuntime(), elem));
-          });
-        }
+      const response = await fetch("/api/java-runtimes");
+      const data: Record<string, unknown>[] = await response.json();
+      this.javaRuntimes = data.map((elem) =>
+        Object.assign(new JavaRuntime(), elem)
       );
-      this.$socket.client.emit("JAVA_RUNTIMES");
     }
-    if (this.detailed) this.update();
+    if (this.detailed) await this.update();
   }
 
   /**
@@ -323,15 +318,39 @@ export default class ServerComponent extends Vue {
    */
   destroyed() {
     this.$socket.client.off("server_" + encodeURIComponent(this.getName()));
-    if (this.detailed) this.$socket.client.off("JAVA_RUNTIMES");
   }
 
   /**
-   * Sends a message `update` to the corresponding channel. The backend is expected to return the current status.
+   * Fetches the current server snapshot from the REST API.
    * @private
    */
-  private update(): void {
-    this.server.sendMessage("update", this.getName());
+  private async update(): Promise<void> {
+    try {
+      const data = await this.server.fetchInfo(
+        encodeURIComponent(this.getName())
+      );
+      Object.assign(this.server, data);
+      this.server.players.sample = this.server.players.sample.map((player) =>
+        Object.assign(new Player(), player)
+      );
+    } catch (error) {
+      console.error("Could not update server information:", error);
+    }
+  }
+
+  private saveConfig(config: Record<string, unknown>, rollback: () => void) {
+    void this.server.updateConfig(config).catch((error: unknown) => {
+      rollback();
+      console.error("Could not update server configuration:", error);
+    });
+  }
+
+  private handleAction(action: string): void {
+    void this.server
+      .sendAction(action)
+      .catch((error: unknown) =>
+        console.error(`Could not ${action} server:`, error)
+      );
   }
 
   /**
@@ -357,8 +376,11 @@ export default class ServerComponent extends Vue {
    * @param value the autostart option to be sent to the server.
    */
   set autostart(value: boolean) {
+    const previousValue = this.server.autostart;
     this.server.autostart = value;
-    this.server.sendMessage("set " + JSON.stringify({ autostart: value }));
+    this.saveConfig({ autostart: value }, () => {
+      this.server.autostart = previousValue;
+    });
   }
 
   /**
@@ -373,8 +395,11 @@ export default class ServerComponent extends Vue {
    * @param value the `pauseOnIdle` option to be sent to the server.
    */
   set pauseOnIdle(value: PauseOnIdleType) {
+    const previousValue = { ...this.server.pauseOnIdle };
     this.server.pauseOnIdle = value;
-    this.server.sendMessage("set " + JSON.stringify({ pauseOnIdle: value }));
+    this.saveConfig({ pauseOnIdle: value }, () => {
+      this.server.pauseOnIdle = previousValue;
+    });
   }
 
   /**
@@ -382,7 +407,7 @@ export default class ServerComponent extends Vue {
    * @param value the `enabled` property of the `pauseOnIdle` option to be sent to the server.
    */
   setPauseEnabled(value: boolean | null) {
-    const pauseOnIdle = this.pauseOnIdle;
+    const pauseOnIdle = { ...this.pauseOnIdle };
     pauseOnIdle.enable = value === true;
     this.pauseOnIdle = pauseOnIdle;
   }
@@ -392,7 +417,7 @@ export default class ServerComponent extends Vue {
    * @param value the `timeout` property of the `pauseOnIdle` option to be sent to the server.
    */
   setPauseTimeout(value: string) {
-    const pauseOnIdle = this.pauseOnIdle;
+    const pauseOnIdle = { ...this.pauseOnIdle };
     pauseOnIdle.timeout = parseInt(value);
     this.pauseOnIdle = pauseOnIdle;
   }
@@ -417,8 +442,11 @@ export default class ServerComponent extends Vue {
     if (value != null) javaRuntime = value;
     else javaRuntime = getDefaultRuntime(this.javaRuntimes);
 
+    const previousValue = this.server.javaPath;
     this.server.javaPath = javaRuntime.path;
-    this.server.sendMessage("set " + JSON.stringify({ javaRuntime: value }));
+    this.saveConfig({ javaPath: javaRuntime.path }, () => {
+      this.server.javaPath = previousValue;
+    });
   }
 }
 </script>

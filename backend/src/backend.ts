@@ -53,19 +53,149 @@ const options = {
  */
 const version = getVersion();
 
+let servers: Server[] = [];
+const systemUsage: ResourceUsage[] = [];
+
+app.use(express.json());
+
+const asyncHandler = (
+  handler: (
+    req: express.Request,
+    res: express.Response
+  ) => Promise<void>
+): express.RequestHandler => (req, res, next) => {
+  void handler(req, res).catch(next);
+};
+
 // Handles queries to the version API endpoint and returns the version.
-app.get("/api/version", async (req, res) => {
+app.get("/api/version", (req, res) => {
   res.contentType("application/json");
   res.send({ version: version });
   res.status(200).end();
 });
 
 // Handles queries to the dependencies API endpoint and returns the backend dependencies.
-app.get("/api/dependencies", async (req, res) => {
+app.get("/api/dependencies", (req, res) => {
   res.contentType("application/json");
   res.send({ dependencies: getDependencyInfo() });
   res.status(200).end();
 });
+
+app.get("/api/servers", async (req, res) => {
+  await Promise.all(servers.map((server) => server.updateStatus()));
+  res.json(Server.strip(servers));
+});
+
+app.get(
+  "/api/servers/:name",
+  asyncHandler(async (req, res) => {
+    const server = servers.find((entry) => entry.name === req.params.name);
+    if (!server) {
+      res.status(404).json({ error: "Server not found" });
+      return;
+    }
+
+    await server.update();
+    res.json(Server.strip([server])[0]);
+  })
+);
+
+app.get("/api/servers/:name/messages", (req, res) => {
+  const server = servers.find((entry) => entry.name === req.params.name);
+  if (!server) {
+    res.status(404).json({ error: "Server not found" });
+    return;
+  }
+
+  res.json(server.getRecentMessages());
+});
+
+app.get("/api/java-runtimes", (req, res) => {
+  res.json(getJavaRuntimes());
+});
+
+app.get("/api/system-usage", (req, res) => {
+  res.json(systemUsage);
+});
+
+app.post("/api/servers/:name/actions", (req, res) => {
+  const server = servers.find((entry) => entry.name === req.params.name);
+  const actions = ["start", "stop", "pause", "restart", "deleteWorld"];
+  if (!server) {
+    res.status(404).json({ error: "Server not found" });
+    return;
+  }
+  if (!actions.includes(req.body?.action)) {
+    res.status(400).json({ error: "Invalid server action" });
+    return;
+  }
+
+  const runAction = async () => {
+    switch (req.body.action) {
+      case "start":
+        try {
+          await server.start();
+        } catch (error) {
+          console.log("Could not start server:", error);
+        }
+        break;
+      case "stop":
+        await server.stop();
+        break;
+      case "pause":
+        await server.pause();
+        break;
+      case "restart":
+        await server.restart();
+        break;
+      case "deleteWorld":
+        await server.deleteWorld();
+        break;
+    }
+    await server.update();
+    server.sendServerData();
+  };
+
+  void runAction().catch(console.error);
+  res.status(202).end();
+});
+
+app.post("/api/servers/:name/commands", (req, res) => {
+  const server = servers.find((entry) => entry.name === req.params.name);
+  if (!server) {
+    res.status(404).json({ error: "Server not found" });
+    return;
+  }
+  if (typeof req.body?.command !== "string") {
+    res.status(400).json({ error: "Command must be a string" });
+    return;
+  }
+
+  void server.executeCommand(req.body.command).catch(console.error);
+  res.status(202).end();
+});
+
+app.patch(
+  "/api/servers/:name/config",
+  asyncHandler(async (req, res) => {
+    const server = servers.find((entry) => entry.name === req.params.name);
+    if (!server) {
+      res.status(404).json({ error: "Server not found" });
+      return;
+    }
+    if (
+      req.body === null ||
+      typeof req.body !== "object" ||
+      Array.isArray(req.body)
+    ) {
+      res.status(400).json({ error: "Configuration must be an object" });
+      return;
+    }
+
+    await server.updateConfig(req.body);
+    res.status(204).end();
+  })
+);
 
 app.use(express.static(path.join(__dirname, "../../../../dist")));
 
@@ -133,11 +263,6 @@ async function getServers(): Promise<Server[]> {
 }
 
 /**
- * A list of date time and backend resource usage pairs.
- */
-const systemUsage: ResourceUsage[] = [];
-
-/**
  * Measures the current resource usage of the backend and adds it to the list.
  * @param measuringTime if set this time is used as the time parameter of the data points.
  */
@@ -162,42 +287,8 @@ async function measureUsage(measuringTime?: number) {
  */
 export const io = new socketio.Server(backend, options);
 
-getServers().then(async (servers) => {
-  io.on("connection", async (socket: socketio.Socket) => {
-    console.log(socket.id);
-    // Listen to general channel
-    await socket.on("SEND_MESSAGE", async (data: string) => {
-      const elem = JSON.parse(data);
-      if (
-        "servers" in elem &&
-        Array.isArray(elem["servers"]) &&
-        elem["servers"].length === 0
-      ) {
-        await Promise.all(servers.map((server) => server.updateStatus()));
-        io.emit("MESSAGE", Server.strip(servers));
-      }
-    });
-
-    // Respond with the available java runtimes when a message is received on `JAVA_RUNTIMES`.
-    socket.on("JAVA_RUNTIMES", () => {
-      io.emit("JAVA_RUNTIMES", getJavaRuntimes());
-    });
-
-    // Respond with the available system usage when a message is received on `SYSTEM_USAGE`.
-    socket.on("SYSTEM_USAGE", () => {
-      io.emit("SYSTEM_USAGE", systemUsage);
-    });
-
-    // Listen to a channel per server
-    for (const server of servers) {
-      await socket.on(
-        "server_" + encodeURIComponent(server.name),
-        async (data: string) => {
-          await server.handleMessage(data);
-        }
-      );
-    }
-  });
+getServers().then(async (loadedServers) => {
+  servers = loadedServers;
 
   // Listen to a channel per server
   const time: number = Date.now();

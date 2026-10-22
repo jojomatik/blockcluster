@@ -172,73 +172,26 @@ export default class Server extends CommonServer {
       });
   }
 
-  /**
-   * Handles an incoming message from the client.
-   *
-   * @param command the message from the client.
-   */
-  async handleMessage(command: string): Promise<void> {
-    // Split command at first space
-    const commandArr = command.split(/^([^ ]+) ?(.*)$/);
-    switch (commandArr[1]) {
-      case "start":
-        try {
-          await this.start();
-        } catch (e) {
-          console.log("Could not start server:", e);
-        }
-        break;
-      case "stop":
-        await this.stop();
-        break;
-      case "pause":
-        await this.pause();
-        break;
-      case "restart":
-        await this.restart();
-        break;
-      case "deleteWorld":
-        await this.deleteWorld();
-        break;
-      case "command":
-        switch (commandArr[2]) {
-          case "stop":
-          case "restart":
-            this.status = ServerStatus.Stopping;
-            break;
-        }
-        this.writeConsoleCommand(commandArr[2]);
-        break;
-      case "getMessages":
-        await this.sendConsoleMessage(this.messages, false);
-        break;
-      case "set":
-        // eslint-disable-next-line no-case-declarations
-        const data = JSON.parse(commandArr[2]);
-        for (const key in data) {
-          if (Object.prototype.hasOwnProperty.call(data, key)) {
-            switch (key) {
-              case "flags":
-                this.flags = data[key];
-                await this.writeConfig();
-                break;
-              case "autostart":
-                this.autostart = data[key];
-                await this.writeConfig();
-                break;
-              case "pauseOnIdle":
-                this.pauseOnIdle = data[key];
-                await this.writeConfig();
-                break;
-              case "javaRuntime":
-                this.javaPath = data[key];
-                await this.writeConfig();
-                break;
-            }
-          }
-        }
-        break;
+  getRecentMessages(): Message[] {
+    return this.messages.slice();
+  }
+
+  async executeCommand(command: string): Promise<void> {
+    if (command === "stop" || command === "restart") {
+      this.status = ServerStatus.Stopping;
     }
+    this.writeConsoleCommand(command);
+    await this.update();
+    this.sendServerData();
+  }
+
+  async updateConfig(data: Partial<ServerConfig>): Promise<void> {
+    if (data.flags !== undefined) this.flags = data.flags;
+    if (data.autostart !== undefined) this.autostart = data.autostart;
+    if (data.pauseOnIdle !== undefined) this.pauseOnIdle = data.pauseOnIdle;
+    if (data.javaPath !== undefined) this.javaPath = data.javaPath;
+
+    await this.writeConfig();
     await this.update();
     this.sendServerData();
   }
@@ -636,9 +589,8 @@ export default class Server extends CommonServer {
    * Deletes the world defined in {@code server.properties} and stops and starts the server again if it was started.
    * @param gracefully whether the current {@link ServerStatus} should be checked and the server stopped in case it is currently running.
    * @param previousStatus the {@link ServerStatus} the server should return to after deleting the world.
-   * @private
    */
-  private async deleteWorld(gracefully = true, previousStatus = this.status) {
+  public async deleteWorld(gracefully = true, previousStatus = this.status) {
     if (this.status === ServerStatus.Stopped || gracefully === false) {
       execSync("rm -r " + this.getPath() + "/" + this.world);
       execSync("rm -r " + this.getPath() + "/" + this.world + "_nether");

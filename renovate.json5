@@ -35,6 +35,12 @@
       "automergeStrategy": "rebase",
       "minimumReleaseAge": "7 days",
     },
+    {
+      "matchUpdateTypes": ["digest"],
+      "automerge": true,
+      "automergeStrategy": "rebase",
+      "minimumReleaseAge": "7 days",
+    },
   ],
   "lockFileMaintenance": {
     "enabled": true,

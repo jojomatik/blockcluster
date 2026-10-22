@@ -31,7 +31,8 @@ export default function getDependencyInfo() {
   );
 
   // Retrieve all packages.
-  const packages: { dev: true }[] = packageLockJson["packages"];
+  const packages: Record<string, { dev?: boolean; optional?: boolean }> =
+    packageLockJson["packages"];
 
   const dependencies: Notice[] = [];
 
@@ -40,6 +41,11 @@ export default function getDependencyInfo() {
     const currentPackage = packages[path];
     // Ignore dev-dependencies.
     if (!path || currentPackage["dev"] === true) continue;
+
+    // npm omits optional packages that are unsupported on the current platform
+    // or fail to install, even though they remain in the lockfile.
+    if (currentPackage.optional && !fs.existsSync(path + "/package.json"))
+      continue;
 
     // Retrieve title from path.
     const title = path.replace("node_modules/", "");

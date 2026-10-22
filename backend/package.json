@@ -16,7 +16,7 @@
     "@types/node": "^24.0.0",
     "@types/pidusage": "^2.0.2",
     "@types/properties-reader": "^2.1.1",
-    "@types/uuid": "^9.0.0",
+    "@types/uuid": "^11.0.0",
     "nodemon": "^2.0.20",
     "typescript": "^5.0.0"
   },

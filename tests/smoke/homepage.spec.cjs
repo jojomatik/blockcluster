@@ -95,9 +95,6 @@ test("opens a configured server and refreshes its status", async ({
   const serverResponse = await request.get(
     `/api/servers/${encodeURIComponent(serverName)}`
   );
-  if (serverResponse.status() === 404 && !process.env.SMOKE_SERVER_NAME) {
-    test.skip(true, "Set SMOKE_SERVER_NAME to a configured server to test it.");
-  }
   expect(serverResponse.status()).toBe(200);
   const server = await serverResponse.json();
   expect(server._jar).toMatch(/\.jar$/);
@@ -128,6 +125,28 @@ test("opens a configured server and refreshes its status", async ({
   await expect(page.getByText(serverName, { exact: false })).toBeVisible();
   await expect(page.getByText(server._jar, { exact: true })).toBeVisible();
   await expect(page.getByText("Console", { exact: true })).toBeVisible();
+
+  const startResponse = await request.post(
+    `/api/servers/${encodeURIComponent(serverName)}/actions`,
+    { data: { action: "start" } }
+  );
+  expect(startResponse.status()).toBe(202);
+  await expect
+    .poll(
+      async () => {
+        const messagesResponse = await request.get(
+          `/api/servers/${encodeURIComponent(serverName)}/messages`
+        );
+        if (messagesResponse.status() !== 200) return "";
+        const messages = await messagesResponse.json();
+        return (
+          messages.find((message) => /agree to the EULA/i.test(message.text))
+            ?.text || ""
+        );
+      },
+      { timeout: 120_000, intervals: [1_000, 2_000, 5_000] }
+    )
+    .toMatch(/EULA/i);
 
   const refreshResponsePromise = page.waitForResponse(
     (response) =>

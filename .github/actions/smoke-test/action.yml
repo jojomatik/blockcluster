@@ -27,12 +27,44 @@ runs:
         # Avoid the FFmpeg mirror whose DNS lookup fails before falling back here.
         PLAYWRIGHT_DOWNLOAD_HOST: https://cdn.playwright.dev
       run: npx playwright install --only-shell chromium
+    - name: Prepare Paper server fixture
+      shell: bash
+      run: |
+        server_dir="$RUNNER_TEMP/blockcluster-smoke-servers/paper-smoke"
+        mkdir -p "$server_dir"
+        project=$(curl -fsSL -H 'User-Agent: blockcluster-smoke-test' https://fill.papermc.io/v3/projects/paper)
+        version=$(printf '%s' "$project" | jq -r '[.versions[] | .[] | select(test("-") | not)] | sort_by(split(".") | map(tonumber)) | last')
+        builds=$(curl -fsSL -H 'User-Agent: blockcluster-smoke-test' "https://fill.papermc.io/v3/projects/paper/versions/$version/builds")
+        jar_name=$(printf '%s' "$builds" | jq -r 'max_by(.time) | .downloads["server:default"].name')
+        jar_url=$(printf '%s' "$builds" | jq -r 'max_by(.time) | .downloads["server:default"].url')
+        curl -fsSL -H 'User-Agent: blockcluster-smoke-test' "$jar_url" -o "$server_dir/$jar_name"
+        printf '%s\n' \
+          'level-seed=' \
+          'gamemode=survival' \
+          'level-name=world' \
+          'motd=Blockcluster smoke test' \
+          'pvp=true' \
+          'difficulty=easy' \
+          'max-players=1' \
+          'online-mode=false' \
+          'view-distance=4' \
+          'allow-nether=false' \
+          'server-port=25565' \
+          'hardcore=false' \
+          'white-list=false' \
+          'spawn-protection=0' > "$server_dir/server.properties"
+        chmod -R a+rwX "$RUNNER_TEMP/blockcluster-smoke-servers"
     - name: Start container
       id: container
       shell: bash
       env:
         IMAGE: ${{ inputs.image }}
-      run: docker run -d --name blockcluster-smoke -p 127.0.0.1:8081:8081 "$IMAGE"
+      run: >-
+        docker run -d --name blockcluster-smoke
+        -p 127.0.0.1:8081:8081
+        -v "$RUNNER_TEMP/blockcluster-smoke-servers:/usr/games/blockcluster/servers"
+        -e SERVER_PATH=servers
+        "$IMAGE"
     - name: Wait for backend
       shell: bash
       run: |

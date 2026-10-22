@@ -86,3 +86,55 @@ test("the container serves the about page with dependency notices", async ({
   await expect(frontend.getByRole("heading", { name: /^vue\s/ })).toBeVisible();
   expect(errors).toEqual([]);
 });
+
+test("opens a configured server and refreshes its status", async ({
+  page,
+  request,
+}) => {
+  const serverName = process.env.SMOKE_SERVER_NAME || "paper-smoke";
+  const serverResponse = await request.get(
+    `/api/servers/${encodeURIComponent(serverName)}`
+  );
+  if (serverResponse.status() === 404 && !process.env.SMOKE_SERVER_NAME) {
+    test.skip(true, "Set SMOKE_SERVER_NAME to a configured server to test it.");
+  }
+  expect(serverResponse.status()).toBe(200);
+  const server = await serverResponse.json();
+  expect(server._jar).toMatch(/\.jar$/);
+
+  const errors = [];
+  page.on("pageerror", (error) => errors.push(error.message));
+  page.on("console", (message) => {
+    if (message.type() === "error") errors.push(message.text());
+  });
+  page.on("requestfailed", (failedRequest) =>
+    errors.push(`${failedRequest.url()}: ${failedRequest.failure().errorText}`)
+  );
+
+  const homeResponse = await page.goto("/");
+  expect(homeResponse.status()).toBe(200);
+  const serverCard = page.locator(".server").filter({ hasText: serverName });
+  await expect(serverCard).toBeVisible();
+
+  const detailPath = `/api/servers/${encodeURIComponent(serverName)}`;
+  const detailResponsePromise = page.waitForResponse(
+    (response) =>
+      new URL(response.url()).pathname === detailPath &&
+      response.request().method() === "GET"
+  );
+  await serverCard.getByRole("link", { name: "Details" }).click();
+  expect((await detailResponsePromise).status()).toBe(200);
+
+  await expect(page.getByText(serverName, { exact: false })).toBeVisible();
+  await expect(page.getByText(server._jar, { exact: true })).toBeVisible();
+  await expect(page.getByText("Console", { exact: true })).toBeVisible();
+
+  const refreshResponsePromise = page.waitForResponse(
+    (response) =>
+      new URL(response.url()).pathname === detailPath &&
+      response.request().method() === "GET"
+  );
+  await page.getByRole("button", { name: "Update Status" }).click();
+  expect((await refreshResponsePromise).status()).toBe(200);
+  expect(errors).toEqual([]);
+});

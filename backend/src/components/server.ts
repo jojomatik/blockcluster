@@ -172,6 +172,10 @@ export default class Server extends CommonServer {
       });
   }
 
+  getRecentMessages(): Message[] {
+    return this.messages.slice();
+  }
+
   /**
    * Handles an incoming message from the client.
    *
@@ -208,9 +212,6 @@ export default class Server extends CommonServer {
             break;
         }
         this.writeConsoleCommand(commandArr[2]);
-        break;
-      case "getMessages":
-        await this.sendConsoleMessage(this.messages, false);
         break;
       case "set":
         // eslint-disable-next-line no-case-declarations

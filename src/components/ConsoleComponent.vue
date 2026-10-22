@@ -134,7 +134,6 @@ export default class ConsoleComponent extends Vue {
 
   constructor() {
     super();
-    this.getMessages();
   }
 
   /**
@@ -146,39 +145,25 @@ export default class ConsoleComponent extends Vue {
         encodeURIComponent(this.server.name || this.$route.params["server"]),
       async (data: Record<string, unknown>) => {
         if (Object.prototype.hasOwnProperty.call(data, "message")) {
-          const len = this.messages.length;
-          if (Array.isArray(data["message"]))
-            for (let i = len; i < len + data["message"].length; i++) {
-              if (i == 0) await this.addDatetimeMessage(data["message"][i]);
-              else
-                await this.addDatetimeMessage(
-                  data["message"][i],
-                  data["message"][i - 1]._timestamp
-                );
-              this.messages.push(
-                Object.assign(new Message(), data["message"][i])
-              );
-            }
-          else {
-            if (len == 0)
-              await this.addDatetimeMessage(
-                data["message"] as {
-                  _timestamp: number;
-                }
-              );
-            else
-              await this.addDatetimeMessage(
-                data["message"] as {
-                  _timestamp: number;
-                },
-                this.messages[len - 1].timestamp
-              );
-            this.messages.push(Object.assign(new Message(), data["message"]));
+          const messages = Array.isArray(data["message"])
+            ? data["message"]
+            : [data["message"]];
+          for (const message of messages) {
+            const messageData = message as {
+              _timestamp: number;
+              _uuid: string;
+            };
+            if (this.messages.some((entry) => entry.uuid === messageData._uuid))
+              continue;
+            const lastMessage = this.messages[this.messages.length - 1];
+            await this.addDatetimeMessage(messageData, lastMessage?.timestamp);
+            this.messages.push(Object.assign(new Message(), message));
           }
-          Vue.nextTick(this.scrollConsole);
         }
+        Vue.nextTick(this.scrollConsole);
       }
     );
+    void this.getMessages();
   }
 
   /**
@@ -260,11 +245,26 @@ export default class ConsoleComponent extends Vue {
   }
 
   /**
-   * Sends a message `getMessages` to the corresponding channel. The backend is expected to return the latest 50 messages.
+   * Fetches the latest 50 messages from the REST API.
    * @private
    */
-  private getMessages(): void {
-    this.server.sendMessage("getMessages", this.$route.params["server"]);
+  private async getMessages(): Promise<void> {
+    const serverName = encodeURIComponent(
+      this.server.name || this.$route.params["server"]
+    );
+    const data = (await this.server.fetchMessages(serverName)) as Record<
+      string,
+      unknown
+    >[];
+    for (const message of data) {
+      const messageData = message as { _timestamp: number; _uuid: string };
+      if (this.messages.some((entry) => entry.uuid === messageData._uuid))
+        continue;
+      const lastMessage = this.messages[this.messages.length - 1];
+      await this.addDatetimeMessage(messageData, lastMessage?.timestamp);
+      this.messages.push(Object.assign(new Message(), message));
+    }
+    Vue.nextTick(this.scrollConsole);
   }
 
   /**
@@ -272,7 +272,7 @@ export default class ConsoleComponent extends Vue {
    * @private
    */
   private sendCommand() {
-    this.server.sendMessage("command " + this.command);
+    void this.server.sendCommand(this.command);
   }
 }
 </script>

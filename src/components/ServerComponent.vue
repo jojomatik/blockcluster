@@ -142,8 +142,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                   .map((runtime) => runtime.path)
                   .includes(this.server.javaPath)
               "
-              @start="() => this.server.sendMessage('start')"
-              @stop="() => this.server.sendMessage('stop')"
+              @start="() => this.server.sendAction('start')"
+              @stop="() => this.server.sendAction('stop')"
             />
             <RestartButtonComponent
               :status="server.status"
@@ -152,7 +152,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                   .map((runtime) => runtime.path)
                   .includes(this.server.javaPath)
               "
-              @restart="() => this.server.sendMessage('restart')"
+              @restart="() => this.server.sendAction('restart')"
             />
             <PauseButtonComponent
               :status="server.status"
@@ -161,8 +161,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                   .map((runtime) => runtime.path)
                   .includes(this.server.javaPath)
               "
-              @pause="() => this.server.sendMessage('pause')"
-              @unpause="() => this.server.sendMessage('start')"
+              @pause="() => this.server.sendAction('pause')"
+              @unpause="() => this.server.sendAction('start')"
             />
             <v-btn
               class="server-card-button"
@@ -304,16 +304,14 @@ export default class ServerComponent extends Vue {
       }
     );
     if (this.detailed) {
-      this.$socket.client.on(
-        "JAVA_RUNTIMES",
-        (data: Record<string, unknown>[]) => {
+      fetch("/api/java-runtimes")
+        .then((response) => response.json())
+        .then((data: Record<string, unknown>[]) => {
           this.javaRuntimes = [];
           data.forEach((elem: Record<string, unknown>) => {
             this.javaRuntimes.push(Object.assign(new JavaRuntime(), elem));
           });
-        }
-      );
-      this.$socket.client.emit("JAVA_RUNTIMES");
+        });
     }
     if (this.detailed) this.update();
   }
@@ -323,15 +321,20 @@ export default class ServerComponent extends Vue {
    */
   destroyed() {
     this.$socket.client.off("server_" + encodeURIComponent(this.getName()));
-    if (this.detailed) this.$socket.client.off("JAVA_RUNTIMES");
   }
 
   /**
-   * Sends a message `update` to the corresponding channel. The backend is expected to return the current status.
+   * Fetches the current server snapshot from the REST API.
    * @private
    */
-  private update(): void {
-    this.server.sendMessage("update", this.getName());
+  private async update(): Promise<void> {
+    const data = await this.server.fetchInfo(
+      encodeURIComponent(this.getName())
+    );
+    Object.assign(this.server, data);
+    this.server.players.sample = this.server.players.sample.map((player) =>
+      Object.assign(new Player(), player)
+    );
   }
 
   /**
@@ -358,7 +361,7 @@ export default class ServerComponent extends Vue {
    */
   set autostart(value: boolean) {
     this.server.autostart = value;
-    this.server.sendMessage("set " + JSON.stringify({ autostart: value }));
+    void this.server.updateConfig({ autostart: value });
   }
 
   /**
@@ -374,7 +377,7 @@ export default class ServerComponent extends Vue {
    */
   set pauseOnIdle(value: PauseOnIdleType) {
     this.server.pauseOnIdle = value;
-    this.server.sendMessage("set " + JSON.stringify({ pauseOnIdle: value }));
+    void this.server.updateConfig({ pauseOnIdle: value });
   }
 
   /**
@@ -418,7 +421,7 @@ export default class ServerComponent extends Vue {
     else javaRuntime = getDefaultRuntime(this.javaRuntimes);
 
     this.server.javaPath = javaRuntime.path;
-    this.server.sendMessage("set " + JSON.stringify({ javaRuntime: value }));
+    void this.server.updateConfig({ javaRuntime: value });
   }
 }
 </script>

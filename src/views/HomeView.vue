@@ -38,7 +38,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     </v-row>
     <v-row>
       <v-col cols="12">
-        <v-btn color="secondary" v-on:click="sendMessage">
+        <v-btn color="secondary" v-on:click="updateServers">
           <v-icon left light>mdi-reload</v-icon>
           {{ $t("gui.views.home.update_status") }}
         </v-btn>
@@ -76,24 +76,9 @@ export default class Home extends Vue {
 
   constructor() {
     super();
-    this.updateServers();
-  }
-
-  sendMessage(): void {
-    this.$socket.client.emit("SEND_MESSAGE", JSON.stringify({ servers: [] }));
   }
 
   mounted() {
-    this.$socket.client.on("MESSAGE", (data: Record<string, unknown>[]) => {
-      this.servers = [];
-      data.forEach((elem: Record<string, unknown>) => {
-        const server: Server = new Server(elem);
-        server.players.sample = server.players.sample.map((player) => {
-          return Object.assign(new Player(), player);
-        });
-        this.servers.push(server);
-      });
-    });
     this.$socket.client.on(
       "SYSTEM_USAGE",
       (data: Record<string, unknown>[]) => {
@@ -103,18 +88,35 @@ export default class Home extends Vue {
         });
       }
     );
-    this.$socket.client.emit("SYSTEM_USAGE");
+    void this.updateServers();
+    fetch("/api/system-usage")
+      .then((response) => response.json())
+      .then((data: Record<string, unknown>[]) => {
+        this.systemUsage = data.map((elem) =>
+          Object.assign(new ResourceUsage(), elem)
+        );
+      });
   }
 
   /**
    * Unsubscribes the channel subscribed to in {@link #mounted}.
    */
   destroyed() {
-    this.$socket.client.off("MESSAGE");
+    this.$socket.client.off("SYSTEM_USAGE");
   }
 
   updateServers() {
-    this.sendMessage();
+    return fetch("/api/servers")
+      .then((response) => response.json())
+      .then((data: Record<string, unknown>[]) => {
+        this.servers = data.map((elem) => {
+          const server = new Server(elem);
+          server.players.sample = server.players.sample.map((player) =>
+            Object.assign(new Player(), player)
+          );
+          return server;
+        });
+      });
   }
 
   /**

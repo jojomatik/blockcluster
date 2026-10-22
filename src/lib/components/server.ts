@@ -16,19 +16,55 @@ You should have received a copy of the GNU Affero General Public License
 along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 import CommonServer from "../../../common/components/server";
-import { socketIO } from "@/main";
 
 /**
  * The client side implementation of {@link CommonServer} with additional methods that won't run on the client side.
  */
 export default class Server extends CommonServer {
-  /**
-   * Sends the message to a channel named according to the {@link Server}'s name.
-   * @param message the message to send.
-   * @param name an override for the name of the server.
-   * @private
-   */
-  sendMessage(message: string, name?: string): void {
-    socketIO.emit("server_" + encodeURIComponent(name || this.name), message);
+  private async request(url: string, init?: RequestInit): Promise<Response> {
+    const response = await fetch(url, init);
+    if (!response.ok) {
+      throw new Error(
+        `Request failed (${response.status} ${response.statusText})`
+      );
+    }
+    return response;
+  }
+
+  sendAction(action: string, encodedName = encodeURIComponent(this.name)) {
+    return this.request(`/api/servers/${encodedName}/actions`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action }),
+    });
+  }
+
+  sendCommand(command: string, encodedName = encodeURIComponent(this.name)) {
+    return this.request(`/api/servers/${encodedName}/commands`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ command }),
+    });
+  }
+
+  updateConfig(
+    config: Record<string, unknown>,
+    encodedName = encodeURIComponent(this.name)
+  ) {
+    return this.request(`/api/servers/${encodedName}/config`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(config),
+    });
+  }
+
+  async fetchInfo(encodedName = encodeURIComponent(this.name)) {
+    const response = await this.request(`/api/servers/${encodedName}`);
+    return response.json();
+  }
+
+  async fetchMessages(encodedName = encodeURIComponent(this.name)) {
+    const response = await this.request(`/api/servers/${encodedName}/messages`);
+    return response.json();
   }
 }

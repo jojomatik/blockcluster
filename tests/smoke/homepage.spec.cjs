@@ -39,3 +39,50 @@ test("the container serves the working homepage", async ({ page }) => {
   ).toHaveAttribute("d", /[0-9]/, { timeout: 15_000 });
   expect(errors).toEqual([]);
 });
+
+test("the backend answers the dependencies API", async ({ request }) => {
+  const response = await request.get("/api/dependencies");
+  expect(response.status()).toBe(200);
+  expect(response.headers()["content-type"]).toContain("application/json");
+  expect(await response.json()).toEqual({
+    dependencies: expect.arrayContaining([
+      expect.objectContaining({
+        name: "express",
+        version: expect.stringMatching(/\S/),
+        notice: expect.stringMatching(/\S/),
+      }),
+    ]),
+  });
+});
+
+test("the container serves the about page with dependency notices", async ({
+  page,
+}) => {
+  const errors = [];
+  page.on("pageerror", (error) => errors.push(error.message));
+  page.on("response", (response) => {
+    if (response.status() >= 400) {
+      errors.push(`${response.status()} ${response.url()}`);
+    }
+  });
+
+  const response = await page.goto("/about");
+  expect(response.status()).toBe(200);
+  await expect(
+    page.getByText("About blockcluster", { exact: true })
+  ).toBeVisible();
+  // Wait for notices, since the section titles render before the data loads.
+  const backend = page.locator(".v-card").filter({
+    has: page.getByText("Libraries used in the blockcluster-backend", {
+      exact: true,
+    }),
+  });
+  const frontend = page.locator(".v-card").filter({
+    has: page.getByText("Libraries used in the blockcluster-frontend", {
+      exact: true,
+    }),
+  });
+  await expect(backend.getByRole("heading", { name: /^express\s/ })).toBeVisible();
+  await expect(frontend.getByRole("heading", { name: /^vue\s/ })).toBeVisible();
+  expect(errors).toEqual([]);
+});

@@ -41,6 +41,12 @@
       "automergeStrategy": "rebase",
       "minimumReleaseAge": "7 days",
     },
+    {
+      "matchDatasources": ["docker"],
+      "matchPackageNames": ["alpine"],
+      "separateMultipleMinor": true,
+      "automerge": false,
+    },
   ],
   "lockFileMaintenance": {
     "enabled": true,

@@ -2,15 +2,16 @@
   "name": "blockcluster-frontend",
   "version": "0.14.0-beta.9",
   "private": true,
+  "packageManager": "yarn@4.18.1",
   "author": {
     "name": "jojomatik",
     "email": "dev@jojomatik.de"
   },
   "scripts": {
-    "install_all": "concurrently \"npm install\" \"cd backend && npm install\"",
-    "serve": "concurrently \"vue-cli-service serve --port 8081\" \"cd backend && cross-env NODE_ENV=develop npm start\"",
+    "install_all": "concurrently \"corepack yarn install\" \"cd backend && corepack yarn install\"",
+    "serve": "concurrently \"vue-cli-service serve --port 8081\" \"cd backend && cross-env NODE_ENV=develop corepack yarn start\"",
     "build": "vue-cli-service build",
-    "build_all": "concurrently \"vue-cli-service build\" \"cd backend && npm run build\"",
+    "build_all": "concurrently \"vue-cli-service build\" \"cd backend && corepack yarn build\"",
     "start": "cd backend && node dist/backend/src/backend.js",
     "test:unit": "vue-cli-service test:unit",
     "lint": "vue-cli-service lint",
@@ -18,7 +19,7 @@
     "semantic-release": "semantic-release",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
-    "chromatic": "npx chromatic"
+    "chromatic": "chromatic"
   },
   "dependencies": {
     "@fontsource/roboto": "^4.5.8",

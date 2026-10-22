@@ -58,13 +58,13 @@ module.exports = {
       "@semantic-release/exec",
       {
         prepareCmd:
-          "npm version ${nextRelease.version} --allow-same-version --no-git-tag-version && cd backend && npm version ${nextRelease.version} --allow-same-version --no-git-tag-version",
+          "corepack yarn version ${nextRelease.version} --immediate && cd backend && corepack yarn version ${nextRelease.version} --immediate",
       },
     ],
     [
       "@semantic-release/git",
       {
-        assets: [["**/package*.json", "!node_modules/**"]],
+        assets: [["**/package.json", "!node_modules/**"]],
         message: "release: ${nextRelease.version}",
       },
     ],

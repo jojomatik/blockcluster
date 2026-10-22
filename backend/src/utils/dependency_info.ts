@@ -17,81 +17,119 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
 import fs from "fs";
+import path from "path";
 import Notice from "../../../common/components/software_notice";
 
 /**
  * Returns the dependency info for all backend dependencies.
  */
 export default function getDependencyInfo() {
-  // Parse `package-lock.json` as JSON.
-  const packageLockJson = JSON.parse(
-    fs.readFileSync("package-lock.json", {
-      encoding: "utf8",
-    })
+  type PackageInfo = {
+    author?: { name: string } | string;
+    repository?: { url: string } | string;
+    version: string;
+    license?: string;
+    dependencies?: Record<string, string>;
+    optionalDependencies?: Record<string, string>;
+  };
+
+  const projectDirectory = process.cwd();
+  const nodeModulesDirectory = path.join(projectDirectory, "node_modules");
+  const packageJson: PackageInfo = JSON.parse(
+    fs.readFileSync(path.join(projectDirectory, "package.json"), "utf8")
   );
-
-  // Retrieve all packages.
-  const packages: Record<string, { dev?: boolean; optional?: boolean }> =
-    packageLockJson["packages"];
-
   const dependencies: Notice[] = [];
+  const visitedPackages = new Set<string>();
 
-  // Loop through all packages.
-  for (const path in packages) {
-    const currentPackage = packages[path];
-    // Ignore dev-dependencies.
-    if (!path || currentPackage["dev"] === true) continue;
+  function resolvePackage(
+    name: string,
+    fromDirectory: string
+  ): { directory: string; info: PackageInfo } | undefined {
+    let directory = fromDirectory;
+    const packagePath = name.split("/");
 
-    // npm omits optional packages that are unsupported on the current platform
-    // or fail to install, even though they remain in the lockfile.
-    if (currentPackage.optional && !fs.existsSync(path + "/package.json"))
-      continue;
+    while (true) {
+      const candidateDirectory = path.join(
+        directory,
+        "node_modules",
+        ...packagePath
+      );
+      const packageJsonPath = path.join(candidateDirectory, "package.json");
 
-    // Retrieve title from path.
-    const title = path.replace("node_modules/", "");
+      if (fs.existsSync(packageJsonPath)) {
+        return {
+          directory: candidateDirectory,
+          info: JSON.parse(fs.readFileSync(packageJsonPath, "utf8")),
+        };
+      }
 
-    // Get package information from `package.json` in respective folder in `node_modules`.
-    const currentPackageInfo: {
-      author: { name: string } | string;
-      repository: { url: string } | string;
-      version: string;
-      license: string;
-    } = JSON.parse(
-      fs.readFileSync(path + "/package.json", { encoding: "utf8" })
-    );
+      if (directory === projectDirectory) return undefined;
+      directory = path.dirname(directory);
+    }
+  }
 
-    const authorObject = currentPackageInfo["author"];
-    // Get name of author, if available. Otherwise get author object as string.
-    const author: string =
-      authorObject && (authorObject as { name: string })["name"]
-        ? (authorObject as { name: string })["name"]
-        : (authorObject as string);
-    const repositoryObject = currentPackageInfo["repository"];
-    // Get url of repository, if available. Otherwise get repository object as string.
+  function addDependency(
+    name: string,
+    fromDirectory: string,
+    optional: boolean
+  ): void {
+    const resolvedPackage = resolvePackage(name, fromDirectory);
+    if (!resolvedPackage) {
+      if (optional) return;
+      throw new Error(`Could not resolve production dependency "${name}"`);
+    }
+
+    const { directory, info } = resolvedPackage;
+    if (visitedPackages.has(directory)) return;
+    visitedPackages.add(directory);
+
+    const title = path
+      .relative(nodeModulesDirectory, directory)
+      .split(path.sep)
+      .join("/");
+    const author =
+      typeof info.author === "object" ? info.author?.name : info.author;
     const repository =
-      repositoryObject && (repositoryObject as { url: string })["url"]
-        ? (repositoryObject as { url: string })["url"]
-        : (repositoryObject as string);
-    const version = currentPackageInfo["version"];
+      typeof info.repository === "object"
+        ? info.repository?.url
+        : info.repository;
 
-    // Find license.
     let licenseText;
-    for (const file of fs.readdirSync(path)) {
+    for (const file of fs.readdirSync(directory)) {
       if (
         file.toLowerCase().startsWith("license") ||
         file.toLowerCase().startsWith("licence")
       ) {
-        licenseText = fs.readFileSync(path + "/" + file, { encoding: "utf8" });
-        // Remove padding with 4 spaces.
+        licenseText = fs.readFileSync(path.join(directory, file), "utf8");
         licenseText = licenseText.replace(/ {4}/g, "");
         break;
       }
     }
-    if (!licenseText) licenseText = currentPackageInfo["license"];
+    if (!licenseText) licenseText = info.license;
 
     dependencies.push(
-      new Notice(title, version, author, repository, licenseText)
+      new Notice(
+        title,
+        info.version,
+        author ?? "",
+        repository ?? "",
+        licenseText ?? ""
+      )
     );
+
+    for (const dependency of Object.keys(info.dependencies ?? {})) {
+      addDependency(dependency, directory, false);
+    }
+    for (const dependency of Object.keys(info.optionalDependencies ?? {})) {
+      addDependency(dependency, directory, true);
+    }
+  }
+
+  for (const dependency of Object.keys(packageJson.dependencies ?? {})) {
+    addDependency(dependency, projectDirectory, false);
+  }
+  for (const dependency of Object.keys(packageJson.optionalDependencies ?? {})) {
+    addDependency(dependency, projectDirectory, true);
   }
 
   return dependencies;

@@ -2,6 +2,7 @@
   "name": "blockcluster-backend",
   "version": "0.14.0-beta.9",
   "private": true,
+  "packageManager": "yarn@4.18.1",
   "author": {
     "name": "jojomatik",
     "email": "dev@jojomatik.de"

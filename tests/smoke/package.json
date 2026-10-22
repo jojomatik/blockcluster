@@ -1,6 +1,7 @@
 {
   "name": "blockcluster-smoke-tests",
   "private": true,
+  "packageManager": "yarn@4.18.1",
   "scripts": {
     "test": "playwright test homepage.spec.cjs --workers=1 --reporter=line"
   },

@@ -58,14 +58,14 @@ Open `http://[your ip]:8081` in your browser.
 ### Manual setup 
 Prerequisites:
 - Git
-- Node.js (v16+) and npm (v8+)
+- Node.js (v20+) and Yarn 4 (via Corepack)
 - Java (to run the minecraft servers)
 
 1. First build the app using the instructions from ["Building manually"](#building-manually).
 2. Either
    - create the `servers/` subdirectory and move your servers into it or
    - set the environment variable `SERVER_PATH` to the relative or absolute path of your servers.
-3. Run `npm run start` and open `http://[your ip]:8081` in your browser.
+3. Run `yarn start` and open `http://[your ip]:8081` in your browser.
 
 ### Adding custom java runtimes
 By default, the docker image based on [`docker-compose.yml`](docker-compose.yml) and the [`Dockerfile`](Dockerfile) includes java 11, java 17, java 21 and java 25, with java 25 as the default. Those are the most relevant LTS java version for running minecraft servers (see [#150](https://github.com/jojomatik/blockcluster/issues/150) for more details).
@@ -116,7 +116,7 @@ docker-compose up
 ```
 Open `http://[your ip]:8081` in your browser.
 
-**To enable hot reloads**, configure a file watcher for the TypeScript files in the `backend/src` directory to run `npm run build` in the `backend` directory and run the following command:
+**To enable hot reloads**, configure a file watcher for the TypeScript files in the `backend/src` directory to run `yarn build` in the `backend` directory and run the following command:
 ```sh
 docker-compose -f docker-compose.yml -f docker-compose.dev.yml up
 ```
@@ -130,28 +130,29 @@ docker-compose up --force-recreate --build
 ### Building manually
 Prerequisites:
 - Git
-- Node.js (v16+) and npm (v8+)
+- Node.js (v20+) and Yarn 4 (via Corepack)
 - Java (only to run the minecraft servers)
 
 Run the following commands:
 ```sh
 git clone https://github.com/jojomatik/blockcluster
 cd blockcluster
-npm install
-cd backend && npm install
+corepack enable
+yarn install
+cd backend && yarn install
 ```
 
 **To build for production**, run the following commands:
 ```sh
-npm run build_all
-npm run start
+yarn build_all
+yarn start
 ```
 Open `http://[your ip]:8081` in your browser.
 
 
-**To enable hot reloads**, configure a file watcher for the TypeScript files in the `backend/src` directory to run `npm run build` in the `backend` directory and run the following command:
+**To enable hot reloads**, configure a file watcher for the TypeScript files in the `backend/src` directory to run `yarn build` in the `backend` directory and run the following command:
 ```sh
-npm run serve
+yarn serve
 ```
 Open `http://[your ip]:8081` in your browser.
 

@@ -47,6 +47,19 @@
       "separateMultipleMinor": true,
       "automerge": false,
     },
+    {
+      "matchDatasources": ["docker"],
+      "matchPackageNames": ["eclipse-temurin"],
+      // Recognize Java release/build tags, including updates from rolling major tags.
+      "versioning": "regex:^(?<major>\\d+)(\\.(?<minor>\\d+))?(\\.(?<patch>\\d+))?([._+](?<build>\\d+))?(-(?<compatibility>.*))?$",
+      "groupName": null,
+    },
+    {
+      "matchDatasources": ["docker"],
+      "matchPackageNames": ["eclipse-temurin"],
+      "matchUpdateTypes": ["major"],
+      "enabled": false,
+    },
   ],
   "lockFileMaintenance": {
     "enabled": true,

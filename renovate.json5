@@ -6,18 +6,27 @@
     "mergeConfidence:all-badges",
     ":semanticCommitTypeAll(build)",
   ],
-  "labels": ["type:build", "scope:deps"],
+  "labels": ["type:build"],
   "separateMultipleMajor": true,
   "packageRules": [
     {
       "matchDepTypes": ["devDependencies", "dev-dependencies", "dev"],
-      "semanticCommitScope": "deps-dev",
-      "labels": ["type:build", "scope:deps-dev"],
+      // Runtime dependencies take precedence across all updates in the branch.
+      "semanticCommitScope": "{{#if (includes depTypes 'dependencies')}}deps{{else}}deps-dev{{/if}}",
+      "addLabels": ["scope:deps-dev"],
     },
     {
       "matchManagers": ["github-actions"],
       "semanticCommitScope": "deps-dev",
-      "labels": ["type:build", "scope:deps-dev"],
+      "addLabels": ["scope:deps-dev"],
+    },
+    {
+      "matchDepTypes": ["dependencies"],
+      "addLabels": ["scope:deps"],
+    },
+    {
+      "matchDatasources": ["docker"],
+      "addLabels": ["scope:deps"],
     },
     {
       "matchUpdateTypes": ["minor", "patch"],

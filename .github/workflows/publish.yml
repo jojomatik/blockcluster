@@ -105,6 +105,9 @@ jobs:
   push_to_registry:
     name: Push Docker image to Docker Hub
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
     needs:
       - npm_build_frontend
       - npm_build_backend
@@ -144,6 +147,13 @@ jobs:
         uses: ./.github/actions/smoke-test
         with:
           image: ${{ steps.build.outputs.imageid }}
+      - name: Upload smoke test coverage to Codecov
+        if: ${{ always() && hashFiles('tests/smoke/coverage/lcov.info') != '' }}
+        uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7
+        with:
+          files: tests/smoke/coverage/lcov.info
+          flags: smoke
+          use_oidc: true
   semantic-release:
     if: ${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/beta' }}
     name: Create a semantic release

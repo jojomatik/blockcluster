@@ -1,9 +1,11 @@
-const { test, expect } = require("@playwright/test");
+const { test, expect, writeCoverage } = require("./coverage.cjs");
 
 test.use({
   baseURL: "http://127.0.0.1:8081/",
   locale: "en-US",
 });
+
+test.afterAll(writeCoverage);
 
 test("the backend answers the version API", async ({ request }) => {
   const response = await request.get("/api/version");

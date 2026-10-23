@@ -109,6 +109,9 @@ jobs:
       - npm_build_frontend
       - npm_build_backend
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - name: Set up Docker Buildx
@@ -125,3 +128,10 @@ jobs:
         uses: ./.github/actions/smoke-test
         with:
           image: ${{ steps.build.outputs.imageid }}
+      - name: Upload smoke test coverage to Codecov
+        if: ${{ always() && hashFiles('tests/smoke/coverage/lcov.info') != '' }}
+        uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7
+        with:
+          files: tests/smoke/coverage/lcov.info
+          flags: smoke
+          use_oidc: true

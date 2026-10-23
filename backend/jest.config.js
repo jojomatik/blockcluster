@@ -1,12 +1,23 @@
 module.exports = {
-  preset: "ts-jest",
-  testEnvironment: "node",
+  rootDir: "..",
+  testEnvironment:
+    "<rootDir>/backend/node_modules/jest-environment-node/build/index.js",
   collectCoverage: true,
-  coverageDirectory: "<rootDir>/coverage",
+  collectCoverageFrom: [
+    "backend/src/**/*.{js,ts,tsx}",
+    "common/**/*.{js,ts,tsx}",
+    "!backend/src/**/*.d.ts",
+    "!common/**/*.d.ts",
+    "!common/**/tests/**",
+  ],
+  coverageDirectory: "<rootDir>/backend/coverage",
   coverageProvider: "v8",
-  roots: ["<rootDir>/tests", "<rootDir>/../common/tests"],
+  roots: ["<rootDir>/backend/src", "<rootDir>/backend/tests", "<rootDir>/common"],
   testMatch: ["**/*.spec.ts"],
   transform: {
-    "^.+\\.tsx?$": ["ts-jest", { tsconfig: "<rootDir>/tsconfig.jest.json" }],
+    "^.+\\.tsx?$": [
+      "<rootDir>/backend/node_modules/ts-jest",
+      { tsconfig: "<rootDir>/backend/tsconfig.jest.json" },
+    ],
   },
 };

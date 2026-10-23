@@ -1,7 +1,7 @@
 const { test, expect } = require("@playwright/test");
 
 test.use({
-  baseURL: process.env.SMOKE_TEST_URL || "http://127.0.0.1:8081/",
+  baseURL: "http://127.0.0.1:8081/",
   locale: "en-US",
 });
 

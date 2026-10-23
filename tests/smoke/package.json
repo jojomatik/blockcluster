@@ -2,7 +2,9 @@
   "name": "blockcluster-smoke-tests",
   "private": true,
   "scripts": {
-    "test": "playwright test homepage.spec.cjs --workers=1 --reporter=line"
+    "test": "playwright test homepage.spec.cjs --workers=1 --reporter=line",
+    "install:chromium": "PLAYWRIGHT_DOWNLOAD_HOST=https://cdn.playwright.dev playwright install --only-shell chromium",
+    "test:local": "bash -c 'set -e; image=blockcluster-smoke; container=blockcluster-smoke-local-$$-$RANDOM; docker build -t \"$image\" ../..; readiness_log=$(mktemp); cleanup() { docker logs \"$container\" || true; docker rm -f \"$container\" || true; rm -f \"$readiness_log\"; }; trap cleanup EXIT; docker run -d --name \"$container\" -p 127.0.0.1:8081:8081 \"$image\"; for attempt in {1..30}; do if curl --fail --silent --show-error --max-time 3 http://127.0.0.1:8081/api/version >/dev/null 2>\"$readiness_log\"; then break; fi; if [ \"$attempt\" -eq 30 ]; then cat \"$readiness_log\" >&2; exit 1; fi; sleep 2; done; npm test'"
   },
   "devDependencies": {
     "@playwright/test": "1.64.1"

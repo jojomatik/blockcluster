@@ -44,6 +44,8 @@ jobs:
         run: npm run build
       - name: Lint
         run: npm run lint
+      - name: Test
+        run: npm run test:unit
   npm_build_backend:
     name: Build backend
     runs-on: ubuntu-latest
@@ -83,6 +85,8 @@ jobs:
         run: ln -s ../backend/node_modules ../common/node_modules
       - name: Build backend
         run: npm run build
+      - name: Test backend
+        run: npm run test:unit
   docker_build:
     name: Build docker image
     needs:

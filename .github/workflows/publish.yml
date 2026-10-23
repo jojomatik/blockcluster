@@ -43,6 +43,8 @@ jobs:
         run: npm ci --prefer-offline --no-audit
       - name: Build frontend
         run: npm run build
+      - name: Test
+        run: npm run test:unit
   npm_build_backend:
     name: Build backend
     runs-on: ubuntu-latest
@@ -82,6 +84,8 @@ jobs:
         run: ln -s ../backend/node_modules ../common/node_modules
       - name: Build backend
         run: npm run build
+      - name: Test backend
+        run: npm run test:unit
   push_to_registry:
     name: Push Docker image to Docker Hub
     runs-on: ubuntu-latest

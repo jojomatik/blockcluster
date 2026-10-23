@@ -148,12 +148,21 @@ npm run start
 ```
 Open `http://[your ip]:8081` in your browser.
 
-
 **To enable hot reloads**, configure a file watcher for the TypeScript files in the `backend/src` directory to run `npm run build` in the `backend` directory and run the following command:
 ```sh
 npm run serve
 ```
 Open `http://[your ip]:8081` in your browser.
+
+### Running unit tests
+Run the frontend unit tests with Jest:
+```sh
+npm run test:unit
+```
+Run the backend unit tests with Jest:
+```sh
+npm run test:unit --prefix backend
+```
 
 ## Licensing
 This project is licensed under the GNU Affero General Public License v3.0 (AGPL 3.0) or later. See also [`LICENSE`](LICENSE).

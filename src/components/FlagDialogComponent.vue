@@ -85,11 +85,14 @@ export default class FlagDialogComponent extends Vue {
   /**
    * Sends the flags to the backend.
    */
-  private sendFlags() {
+  private sendFlags(): void {
     this.flagsChanged = false;
-    this.server.sendMessage(
-      "set " + JSON.stringify({ flags: this._flagString?.split(" ") })
-    );
+    void this.server
+      .updateConfig({ flags: this._flagString?.split(" ") })
+      .catch((error: unknown) => {
+        this.flagsChanged = true;
+        console.error("Could not update server flags:", error);
+      });
   }
 
   /**

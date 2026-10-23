@@ -164,12 +164,16 @@ export default class WorldDeleteDialogComponent extends Vue {
   }
 
   /**
-   * Sends a message `deleteWorld` to the corresponding channel. The backend is expected to start the server and return the current status.
+   * Requests world deletion through the REST API.
    * @private
    */
-  private deleteWorld(): void {
-    this.closeDialog();
-    this.server.sendMessage("deleteWorld");
+  private async deleteWorld(): Promise<void> {
+    try {
+      await this.server.sendAction("deleteWorld");
+      this.closeDialog();
+    } catch (error) {
+      console.error("Could not delete server world:", error);
+    }
   }
 
   /**

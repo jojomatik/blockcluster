@@ -6,18 +6,27 @@
     "mergeConfidence:all-badges",
     ":semanticCommitTypeAll(build)",
   ],
-  "labels": ["type:build", "scope:deps"],
+  "labels": ["type:build"],
   "separateMultipleMajor": true,
   "packageRules": [
     {
       "matchDepTypes": ["devDependencies", "dev-dependencies", "dev"],
-      "semanticCommitScope": "deps-dev",
-      "labels": ["type:build", "scope:deps-dev"],
+      // Runtime dependencies take precedence across all updates in the branch.
+      "semanticCommitScope": "{{#if (includes depTypes 'dependencies')}}deps{{else}}deps-dev{{/if}}",
+      "addLabels": ["scope:deps-dev"],
     },
     {
       "matchManagers": ["github-actions"],
       "semanticCommitScope": "deps-dev",
-      "labels": ["type:build", "scope:deps-dev"],
+      "addLabels": ["scope:deps-dev"],
+    },
+    {
+      "matchDepTypes": ["dependencies"],
+      "addLabels": ["scope:deps"],
+    },
+    {
+      "matchDatasources": ["docker"],
+      "addLabels": ["scope:deps"],
     },
     {
       "matchUpdateTypes": ["minor", "patch"],
@@ -25,6 +34,141 @@
       "automerge": true,
       "automergeStrategy": "rebase",
       "minimumReleaseAge": "7 days",
+    },
+    {
+      "matchUpdateTypes": ["digest"],
+      "automerge": true,
+      "automergeStrategy": "rebase",
+      "minimumReleaseAge": "7 days",
+    },
+    {
+      "matchDatasources": ["docker"],
+      "matchPackageNames": ["alpine"],
+      "separateMultipleMinor": true,
+      "automerge": false,
+    },
+    {
+      "matchDatasources": ["docker"],
+      "matchPackageNames": ["eclipse-temurin"],
+      // Recognize Java release/build tags, including updates from rolling major tags.
+      "versioning": "regex:^(?<major>\\d+)(\\.(?<minor>\\d+))?(\\.(?<patch>\\d+))?([._+](?<build>\\d+))?(-(?<compatibility>.*))?$",
+      "groupName": null,
+    },
+    {
+      "matchDatasources": ["docker"],
+      "matchPackageNames": ["eclipse-temurin"],
+      "matchUpdateTypes": ["major"],
+      "enabled": false,
+    },
+    // Extend existing preset groups with their integrations.
+    {
+      "matchDatasources": ["npm"],
+      "matchPackageNames": [
+        "vue",
+        "vue-template-compiler",
+        "vue-class-component",
+        "vue-meta",
+        "vue-property-decorator",
+        "vue-router",
+        "@vue/test-utils",
+      ],
+      "groupName": "vue",
+      "separateMultipleMajor": false,
+    },
+    {
+      "matchManagers": ["npm"],
+      "matchFileNames": ["package.json"],
+      "matchPackageNames": [
+        "@babel/preset-typescript",
+        "@types/jest",
+        "@vue/cli-plugin-unit-jest",
+        "@vue/vue2-jest",
+        "ts-jest",
+      ],
+      "groupName": "frontend jest",
+      "separateMultipleMajor": false,
+    },
+    {
+      "matchManagers": ["npm"],
+      "matchFileNames": ["backend/package.json"],
+      "matchPackageNames": ["@types/jest", "jest", "ts-jest"],
+      "groupName": "backend jest",
+      "separateMultipleMajor": false,
+    },
+    {
+      "matchDatasources": ["npm"],
+      "matchPackageNames": ["socket.io", "socket.io-client", "vue-socket.io-extended"],
+      "groupName": "socket.io",
+      "separateMultipleMajor": false,
+    },
+    {
+      "matchDatasources": ["npm"],
+      "matchPackageNames": [
+        "storybook",
+        "@storybook/*",
+        "chromatic",
+        "eslint-plugin-storybook",
+      ],
+      "groupName": "storybook monorepo",
+      "separateMultipleMajor": false,
+    },
+    {
+      "matchDatasources": ["npm"],
+      "matchPackageNames": [
+        "semantic-release",
+        "@semantic-release/*",
+        "conventional-changelog-conventionalcommits",
+      ],
+      "groupName": "semantic-release monorepo",
+      "separateMultipleMajor": false,
+    },
+    {
+      "matchDatasources": ["npm"],
+      "matchPackageNames": ["apexcharts", "vue-apexcharts"],
+      "groupName": "apexcharts",
+      "separateMultipleMajor": false,
+    },
+    {
+      "matchDatasources": ["npm"],
+      "matchPackageNames": ["vuetify", "vuetify-loader", "vue-cli-plugin-vuetify"],
+      "groupName": "vuetify",
+      "separateMultipleMajor": false,
+    },
+    {
+      "matchDatasources": ["npm"],
+      "matchPackageNames": ["sass", "sass-loader"],
+      "groupName": "sass",
+      "separateMultipleMajor": false,
+    },
+    {
+      "matchDatasources": ["npm"],
+      "matchPackageNames": [
+        "@rushstack/eslint-patch",
+        "@typescript-eslint/*",
+        "@vue/eslint-config-*",
+        "eslint",
+        "eslint-config-prettier",
+        "eslint-plugin-prettier",
+        "eslint-plugin-vue",
+        "prettier",
+      ],
+      "groupName": "eslint",
+      "separateMultipleMajor": false,
+    },
+    {
+      "matchDatasources": ["npm"],
+      "matchPackageNames": ["dotenv", "dotenv-expand"],
+      "groupName": "dotenv",
+      "separateMultipleMajor": false,
+    },
+    {
+      "matchDatasources": ["npm"],
+      "matchPackageNames": [
+        "/^(@types/)?(command-exists|express|pidusage|properties-reader|uuid)$/",
+      ],
+      "groupName": "{{{replace '^@types/' '' depName}}}",
+      // Related packages can have different major version numbers.
+      "separateMultipleMajor": false,
     },
   ],
   "lockFileMaintenance": {

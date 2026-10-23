@@ -120,6 +120,10 @@ export default class ConsoleComponent extends Vue {
   // noinspection JSMismatchedCollectionQueryUpdate
   private messages: Message[] = [];
 
+  private messagesLoading = true;
+
+  private bufferedMessages: Record<string, unknown>[] = [];
+
   /**
    * Whether or not the console is scrolling at the moment.
    * @private
@@ -134,7 +138,6 @@ export default class ConsoleComponent extends Vue {
 
   constructor() {
     super();
-    this.getMessages();
   }
 
   /**
@@ -144,41 +147,22 @@ export default class ConsoleComponent extends Vue {
     this.$socket.client.on(
       "server_" +
         encodeURIComponent(this.server.name || this.$route.params["server"]),
-      async (data: Record<string, unknown>) => {
+      (data: Record<string, unknown>) => {
         if (Object.prototype.hasOwnProperty.call(data, "message")) {
-          const len = this.messages.length;
-          if (Array.isArray(data["message"]))
-            for (let i = len; i < len + data["message"].length; i++) {
-              if (i == 0) await this.addDatetimeMessage(data["message"][i]);
-              else
-                await this.addDatetimeMessage(
-                  data["message"][i],
-                  data["message"][i - 1]._timestamp
-                );
-              this.messages.push(
-                Object.assign(new Message(), data["message"][i])
-              );
-            }
-          else {
-            if (len == 0)
-              await this.addDatetimeMessage(
-                data["message"] as {
-                  _timestamp: number;
-                }
-              );
-            else
-              await this.addDatetimeMessage(
-                data["message"] as {
-                  _timestamp: number;
-                },
-                this.messages[len - 1].timestamp
-              );
-            this.messages.push(Object.assign(new Message(), data["message"]));
+          const messages = Array.isArray(data["message"])
+            ? data["message"]
+            : [data["message"]];
+          const liveMessages = messages as Record<string, unknown>[];
+          if (this.messagesLoading) {
+            this.bufferedMessages.push(...liveMessages);
+          } else {
+            this.appendMessages(liveMessages);
           }
-          Vue.nextTick(this.scrollConsole);
         }
+        Vue.nextTick(this.scrollConsole);
       }
     );
+    void this.getMessages();
   }
 
   /**
@@ -198,7 +182,7 @@ export default class ConsoleComponent extends Vue {
    *
    * @private
    */
-  private async addDatetimeMessage(
+  private addDatetimeMessage(
     message: { _timestamp: number },
     lastTimestamp?: number
   ) {
@@ -207,10 +191,35 @@ export default class ConsoleComponent extends Vue {
       !lastTimestamp ||
       Math.floor(lastTimestamp / (24 * 60 * 60 * 1000)) <
         Math.floor(message._timestamp / (24 * 60 * 60 * 1000))
-    )
+    ) {
       this.messages.push(
-        new Message(MessageType.DateChange, newDate.format("YYYY-MM-DD"))
+        new Message(
+          MessageType.DateChange,
+          newDate.format("YYYY-MM-DD"),
+          message._timestamp
+        )
       );
+    }
+  }
+
+  private hasMessage(uuid: string): boolean {
+    for (let index = 0; index < this.messages.length; index++) {
+      if (this.messages[index].uuid === uuid) return true;
+    }
+    return false;
+  }
+
+  private appendMessages(messages: Record<string, unknown>[]) {
+    messages.forEach((message) => {
+      const messageData = message as {
+        _timestamp: number;
+        _uuid: string;
+      };
+      if (this.hasMessage(messageData._uuid)) return;
+      const lastMessage = this.messages[this.messages.length - 1];
+      this.addDatetimeMessage(messageData, lastMessage?.timestamp);
+      this.messages.push(Object.assign(new Message(), message));
+    });
   }
 
   /**
@@ -260,19 +269,63 @@ export default class ConsoleComponent extends Vue {
   }
 
   /**
-   * Sends a message `getMessages` to the corresponding channel. The backend is expected to return the latest 50 messages.
+   * Fetches the latest 50 messages from the REST API.
    * @private
    */
-  private getMessages(): void {
-    this.server.sendMessage("getMessages", this.$route.params["server"]);
+  private async getMessages(): Promise<void> {
+    const serverName = encodeURIComponent(
+      this.server.name || this.$route.params["server"]
+    );
+    let loadError: unknown;
+    let failedToLoad = false;
+    try {
+      const data: Record<string, unknown>[] = await this.server.fetchMessages(
+        serverName
+      );
+      this.appendMessages(data);
+    } catch (error) {
+      loadError = error;
+      failedToLoad = true;
+    } finally {
+      this.messagesLoading = false;
+      this.appendMessages(this.bufferedMessages);
+      this.bufferedMessages = [];
+      if (failedToLoad) {
+        this.messages.push(
+          new Message(
+            MessageType.Error,
+            `Could not load server messages: ${
+              loadError instanceof Error ? loadError.message : String(loadError)
+            }`
+          )
+        );
+      }
+      Vue.nextTick(this.scrollConsole);
+    }
   }
 
   /**
    * Sends a server command from the console input to the server.
    * @private
    */
-  private sendCommand() {
-    this.server.sendMessage("command " + this.command);
+  private async sendCommand(): Promise<void> {
+    try {
+      const response = await this.server.sendCommand(this.command);
+      if (!response.ok) {
+        throw new Error(
+          `Request failed (${response.status} ${response.statusText})`
+        );
+      }
+    } catch (error) {
+      this.messages.push(
+        new Message(
+          MessageType.Error,
+          `Could not send command: ${
+            error instanceof Error ? error.message : String(error)
+          }`
+        )
+      );
+    }
   }
 }
 </script>

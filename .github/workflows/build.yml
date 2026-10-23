@@ -9,6 +9,9 @@ jobs:
   npm_build_frontend:
     name: Build frontend
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
@@ -44,9 +47,19 @@ jobs:
         run: npm run build
       - name: Lint
         run: npm run lint
+      - name: Test
+        run: npm run test:unit
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7
+        with:
+          files: coverage/lcov.info
+          use_oidc: true
   npm_build_backend:
     name: Build backend
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
     defaults:
       run:
         working-directory: ./backend
@@ -83,6 +96,13 @@ jobs:
         run: ln -s ../backend/node_modules ../common/node_modules
       - name: Build backend
         run: npm run build
+      - name: Test backend
+        run: npm run test:unit
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7
+        with:
+          files: backend/coverage/lcov.info
+          use_oidc: true
   docker_build:
     name: Build docker image
     needs:

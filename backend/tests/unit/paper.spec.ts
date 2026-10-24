@@ -609,6 +609,36 @@ describe("paper", () => {
       expect(fs.readFileSync(path.join(dir, "a.jar"), "utf8")).toBe("A");
     });
 
+    it.each([
+      ["paper-1.21.8-60-1.jar", "paper-1.21.8-60.jar"],
+      ["paper-1.21.8-60-12.jar", "paper-1.21.8-60.jar"],
+      ["paper-1.21.8-60.jar", "paper-1.21.8-60.jar"],
+      ["custom-1.jar", "custom-1.jar"],
+      ["paper-custom-60-1.jar", "paper-custom-60-1.jar"],
+    ])("restores %s as %s while preserving backups", (file, restoredFile) => {
+      fs.mkdirSync(path.join(dir, "oldjars"));
+      fs.writeFileSync(path.join(dir, "oldjars", file), "restore");
+      fs.writeFileSync(path.join(dir, restoredFile), "current");
+
+      restoreOldJar(dir, file);
+
+      expect(fs.readdirSync(dir).filter((f) => f.endsWith(".jar"))).toEqual([
+        restoredFile,
+      ]);
+      expect(fs.readFileSync(path.join(dir, restoredFile), "utf8")).toBe(
+        "restore"
+      );
+      expect(listOldJars(dir)).toEqual([restoredFile]);
+      expect(
+        fs.readFileSync(path.join(dir, "oldjars", restoredFile), "utf8")
+      ).toBe("current");
+      if (file.startsWith("paper-1.21.8-60"))
+        expect(parsePaperJar(restoredFile)).toEqual({
+          version: "1.21.8",
+          build: 60,
+        });
+    });
+
     it("preserves colliding custom backups while restoring a jar", () => {
       fs.mkdirSync(path.join(dir, "oldjars"));
       fs.writeFileSync(path.join(dir, "oldjars", "a.jar"), "restore");

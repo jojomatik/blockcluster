@@ -175,13 +175,17 @@ export function listOldJars(dir: string): string[] {
 export function restoreOldJar(dir: string, file: string): void {
   if (!listOldJars(dir).includes(file))
     throw new Error("Jar not found in oldjars.");
+  const restoredFile = file.replace(
+    /^(paper-\d+(?:\.\d+)+-\d+)-\d+\.jar$/,
+    "$1.jar"
+  );
   // Park the jar first, in case the current jar has the same name.
   const parked = path.join(dir, file + ".restore");
   fs.renameSync(path.join(dir, "oldjars", file), parked);
   try {
     archiveJars(dir);
   } finally {
-    fs.renameSync(parked, path.join(dir, file));
+    fs.renameSync(parked, path.join(dir, restoredFile));
   }
 }
 

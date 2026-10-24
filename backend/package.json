@@ -32,7 +32,7 @@
     "minecraft-protocol": "^1.40.3",
     "pidusage": "4.1.0",
     "pixelheads": "^1.0.18",
-    "properties-reader": "2.3.0",
+    "properties-reader": "3.0.1",
     "socket.io": "4.8.4",
     "uuid": "11.1.1"
   },

@@ -207,7 +207,7 @@ app.post(
       server.port = requestedPort ?? getAvailablePort(servers);
       fs.writeFileSync(
         path.join(serverPath, "blockcluster.cfg"),
-        JSON.stringify({ port: server.port })
+        JSON.stringify({ creationPort: server.port })
       );
       servers.push(server);
       registeredServer = server;
@@ -500,22 +500,34 @@ async function getServers(): Promise<Server[]> {
         })
       : new Server({ _name: file });
     let configuredPort: number | undefined;
+    let config: (ServerConfig & { port?: number }) | undefined;
     try {
-      const config: ServerConfig = JSON.parse(
+      const loadedConfig: ServerConfig & { port?: number } = JSON.parse(
         fs.readFileSync(path.join(serverPath, "blockcluster.cfg"), "utf8")
       );
+      config = loadedConfig;
+      const savedPort = loadedConfig.creationPort ?? loadedConfig.port;
       if (
-        typeof config.port === "number" &&
-        Number.isInteger(config.port) &&
-        config.port >= 1024 &&
-        config.port <= 65535
+        typeof savedPort === "number" &&
+        Number.isInteger(savedPort) &&
+        savedPort >= 1024 &&
+        savedPort <= 65535
       ) {
-        configuredPort = config.port;
+        configuredPort = savedPort;
       }
     } catch {
       // Existing servers may not have a blockcluster config yet.
     }
-    if (configuredPort !== undefined) {
+    if (hasProperties) {
+      if (config && ("creationPort" in config || "port" in config)) {
+        delete config.creationPort;
+        delete config.port;
+        fs.writeFileSync(
+          path.join(serverPath, "blockcluster.cfg"),
+          JSON.stringify(config)
+        );
+      }
+    } else if (configuredPort !== undefined) {
       if (
         configuredPort === port ||
         servers.some((server) => server.port === configuredPort)
@@ -524,7 +536,7 @@ async function getServers(): Promise<Server[]> {
           `Could not restore port ${configuredPort} for server "${server.name}": port is already in use.`
         );
       } else server.port = configuredPort;
-    } else if (!hasProperties) uninitializedServers.push(server);
+    } else uninitializedServers.push(server);
     servers.push(server);
   }
   for (const server of uninitializedServers) {

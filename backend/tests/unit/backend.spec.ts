@@ -211,7 +211,7 @@ describe("backend API", () => {
     );
     fs.writeFileSync(
       path.join(serversPath, "paper-uninitialized", "blockcluster.cfg"),
-      JSON.stringify({ port: 25567 })
+      JSON.stringify({ creationPort: 25567 })
     );
     fs.writeFileSync(
       path.join(serversPath, "another-uninitialized", "blockcluster.cfg"),
@@ -420,7 +420,7 @@ describe("backend API", () => {
           path.join(serversPath, "Survival Server", "blockcluster.cfg"),
           "utf8"
         )
-      ).port
+      ).creationPort
     ).toBe(25568);
     expect(mockServerInstances[mockServerInstances.length - 1].name).toBe(
       "Survival Server"
@@ -511,7 +511,7 @@ describe("backend API", () => {
           path.join(serversPath, "Custom Port", "blockcluster.cfg"),
           "utf8"
         )
-      ).port
+      ).creationPort
     ).toBe(30123);
   });
 
@@ -634,28 +634,28 @@ describe("backend API", () => {
         "jar"
       );
     }
-    // A selected port remains authoritative after Minecraft generates properties.
+    // Minecraft's configured port takes precedence once server.properties exists.
     fs.writeFileSync(
       path.join(serversPath, "Custom Port", "server.properties"),
-      "server-port=25565"
+      "server-port=30124"
     );
     const conflicts = [
-      { name: "z-backend-conflict", port: 8081, previousPort: 0 },
-      { name: "z-duplicate-conflict", port: 30123, previousPort: 0 },
-      { name: "z-properties-conflict", port: 25565, previousPort: 30125 },
+      { name: "z-backend-conflict", port: 8081, propertiesPort: 0 },
+      { name: "z-duplicate-conflict", port: 30124, propertiesPort: 0 },
+      { name: "z-properties-conflict", port: 25565, propertiesPort: 30125 },
     ];
-    for (const { name, port, previousPort } of conflicts) {
+    for (const { name, port, propertiesPort } of conflicts) {
       const serverPath = path.join(serversPath, name);
       fs.mkdirSync(serverPath);
       fs.writeFileSync(path.join(serverPath, "paper.jar"), "jar");
       fs.writeFileSync(
         path.join(serverPath, "blockcluster.cfg"),
-        JSON.stringify({ port })
+        JSON.stringify({ creationPort: port })
       );
-      if (previousPort) {
+      if (propertiesPort) {
         fs.writeFileSync(
           path.join(serverPath, "server.properties"),
-          `server-port=${previousPort}`
+          `server-port=${propertiesPort}`
         );
       }
     }
@@ -666,15 +666,16 @@ describe("backend API", () => {
         require("../../src/backend");
       });
       const restored = mockServerInstances.slice(previousCount);
-      for (const { name, port, previousPort } of conflicts) {
+      for (const { name, port, propertiesPort } of conflicts) {
         expect(restored.find((server) => server.name === name)?.port).toBe(
-          previousPort
+          propertiesPort
         );
-        expect(logError).toHaveBeenCalledWith(
-          `Could not restore port ${port} for server "${name}": port is already in use.`
-        );
+        if (!propertiesPort)
+          expect(logError).toHaveBeenCalledWith(
+            `Could not restore port ${port} for server "${name}": port is already in use.`
+          );
       }
-      expect(logError).toHaveBeenCalledTimes(conflicts.length);
+      expect(logError).toHaveBeenCalledTimes(2);
     } finally {
       logError.mockRestore();
     }
@@ -684,7 +685,17 @@ describe("backend API", () => {
       restored.find((server) => server.name === "Survival Server")?.port
     ).toBe(25568);
     expect(restored.find((server) => server.name === "Custom Port")?.port).toBe(
-      30123
+      30124
     );
+    for (const name of ["Custom Port", "z-properties-conflict"]) {
+      const config = JSON.parse(
+        fs.readFileSync(
+          path.join(serversPath, name, "blockcluster.cfg"),
+          "utf8"
+        )
+      );
+      expect(config).not.toHaveProperty("creationPort");
+      expect(config).not.toHaveProperty("port");
+    }
   });
 });

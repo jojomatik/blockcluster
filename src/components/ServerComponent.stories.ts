@@ -117,7 +117,7 @@ const mockFetch = () => {
 };
 
 export default {
-  title: "Components/ServerComponent",
+  title: "Organisms/ServerComponent",
   component: ServerComponent,
   argTypes: {
     detailed: { control: "boolean" },

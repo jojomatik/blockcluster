@@ -5,7 +5,7 @@ import { ServerStatus } from "../../../common/components/server";
 import prepareEnum from "../../../.storybook/enumPrepare";
 
 export default {
-  title: "Components/PauseButtonComponent",
+  title: "Molecules/PauseButtonComponent",
   component: PauseButtonComponent,
   argTypes: {
     status: { control: "select", options: prepareEnum(ServerStatus) },

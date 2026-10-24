@@ -5,7 +5,7 @@ import { ServerStatus } from "../../../common/components/server";
 import prepareEnum from "../../../.storybook/enumPrepare";
 
 export default {
-  title: "Components/ToggleButtonComponent",
+  title: "Molecules/ToggleButtonComponent",
   component: ToggleButtonComponent,
   argTypes: {
     status: { control: "select", options: prepareEnum(ServerStatus) },

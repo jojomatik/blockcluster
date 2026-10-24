@@ -7,7 +7,7 @@ const itspolderHead =
   "iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAACXBIWXMAAAsSAAALEgHS3X78AAAAmUlEQVQYlWPI9TD6n+qs/x9El/ia/U+w0/kfa6sN5oNohmIfU7Bgor3ufxAbRsPYDCBJGOfDvjlgDGLDMEOYpcb/7xc2/P96Yx+Y/nx4EZztbaj8n+Hjvjn/v768/T/UQv3/j5v7/38+uADMBomB5FAU/Hx48v+7Lf2oCt5u6AEzPh+cDzYWhkFiIDmGZzOLwAyQADIGiYHkAMEjq+CVYnJuAAAAAElFTkSuQmCC";
 
 export default {
-  title: "Components/PlayerStatsComponent",
+  title: "Molecules/PlayerStatsComponent",
   component: PlayerStatsComponent,
   argTypes: { width: { control: { type: "range", min: 16, max: 64 } } },
 };

@@ -39,7 +39,7 @@ function makeServer(overrides: Record<string, unknown> = {}) {
 }
 
 export default {
-  title: "Components/ConsoleComponent",
+  title: "Organisms/ConsoleComponent",
   component: ConsoleComponent,
   argTypes: {
     status: { control: "select", options: prepareEnum(ServerStatus) },

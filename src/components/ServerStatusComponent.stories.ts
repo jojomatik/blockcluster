@@ -3,7 +3,7 @@ import { ServerStatus } from "../../common/components/server";
 import prepareEnum from "../../.storybook/enumPrepare";
 
 export default {
-  title: "Components/ServerStatusComponent",
+  title: "Atoms/ServerStatusComponent",
   component: ServerStatusComponent,
   argTypes: {
     status: { control: "select", options: prepareEnum(ServerStatus) },

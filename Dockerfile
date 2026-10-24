@@ -84,7 +84,9 @@ COPY --from=builder /usr/games/blockcluster/backend/dist backend/dist
 COPY --from=builder /usr/games/blockcluster/.env ./
 
 # Add group and user
-RUN addgroup -S blockcluster -g 1080 && adduser -S blockcluster -G blockcluster -u 1080
+RUN addgroup -S blockcluster -g 1080 && \
+    adduser -S blockcluster -G blockcluster -u 1080 && \
+    chown blockcluster:blockcluster servers
 USER blockcluster
 
 EXPOSE 8081

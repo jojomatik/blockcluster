@@ -2,6 +2,11 @@ import fs from "fs";
 import os from "os";
 import path from "path";
 import type { NextFunction, Request, Response } from "express";
+import {
+  installPaperJar,
+  listPaperBuilds,
+  listPaperVersions,
+} from "../../src/components/paper";
 
 type RouteHandler = (
   request: Request,
@@ -40,29 +45,39 @@ const mockExpress = Object.assign(
     static: jest.fn(() => jest.fn()),
   }
 );
+jest.mock("../../src/components/paper", () => ({
+  installPaperJar: jest.fn(),
+  listPaperBuilds: jest.fn(),
+  listPaperVersions: jest.fn(),
+}));
 const mockServer = Object.assign(
-  jest.fn().mockImplementation((data: { _name: string }) => {
-    const instance = {
-      name: data._name,
-      status: 0,
-      autostart: false,
-      updateStatus: jest.fn(),
-      update: jest.fn(),
-      getRecentMessages: jest.fn(() => [{ text: "recent" }]),
-      strip: jest.fn(() => ({ _name: data._name })),
-      start: jest.fn().mockResolvedValue(undefined),
-      stop: jest.fn().mockResolvedValue(undefined),
-      pause: jest.fn().mockResolvedValue(undefined),
-      restart: jest.fn().mockResolvedValue(undefined),
-      deleteWorld: jest.fn().mockResolvedValue(undefined),
-      executeCommand: jest.fn().mockResolvedValue(undefined),
-      updateConfig: jest.fn().mockResolvedValue(undefined),
-      measureUsage: jest.fn().mockResolvedValue(undefined),
-      sendServerData: jest.fn(),
-    };
-    mockServerInstances.push(instance);
-    return instance;
-  }),
+  jest
+    .fn()
+    .mockImplementation(
+      (data: { _name: string; _properties?: { serverPort: number } }) => {
+        const instance = {
+          name: data._name,
+          port: data._properties?.serverPort ?? 0,
+          status: 0,
+          autostart: false,
+          updateStatus: jest.fn(),
+          update: jest.fn(),
+          getRecentMessages: jest.fn(() => [{ text: "recent" }]),
+          strip: jest.fn(() => ({ _name: data._name })),
+          start: jest.fn().mockResolvedValue(undefined),
+          stop: jest.fn().mockResolvedValue(undefined),
+          pause: jest.fn().mockResolvedValue(undefined),
+          restart: jest.fn().mockResolvedValue(undefined),
+          deleteWorld: jest.fn().mockResolvedValue(undefined),
+          executeCommand: jest.fn().mockResolvedValue(undefined),
+          updateConfig: jest.fn().mockResolvedValue(undefined),
+          measureUsage: jest.fn().mockResolvedValue(undefined),
+          sendServerData: jest.fn(),
+        };
+        mockServerInstances.push(instance);
+        return instance;
+      }
+    ),
   {
     strip: jest.fn((servers: Array<{ strip: () => unknown }>) =>
       servers.map((server) => server.strip())
@@ -169,6 +184,11 @@ describe("backend API", () => {
         "spawn-protection=16",
       ].join("\n")
     );
+    fs.mkdirSync(path.join(serversPath, "paper-uninitialized"));
+    fs.writeFileSync(
+      path.join(serversPath, "paper-uninitialized", "paper-1.21.8-9.jar"),
+      "jar"
+    );
     process.env.SERVER_PATH = serversPath;
     process.env.VUE_APP_GIT_SHA = "abcdef012345";
     process.env.NODE_ENV = "test";
@@ -187,6 +207,7 @@ describe("backend API", () => {
     restoreInterval.mockRestore();
     restoreLog.mockRestore();
     fs.unwatchFile(path.join(serversPath, "survival", "start"));
+    fs.unwatchFile(path.join(serversPath, "paper-uninitialized", "start"));
     fs.rmSync(serversPath, { recursive: true, force: true });
     for (const listener of process.listeners("SIGTERM")) {
       if (!originalSignalListeners.includes(listener))
@@ -221,12 +242,15 @@ describe("backend API", () => {
     });
     expect(await invoke("GET", "/api/servers")).toEqual({
       status: 200,
-      body: [{ _name: "survival" }],
+      body: expect.arrayContaining([
+        { _name: "survival" },
+        { _name: "paper-uninitialized" },
+      ]),
     });
     expect((await invoke("GET", "/api/system-usage")).body).toEqual(
       expect.arrayContaining([expect.objectContaining({ cpu: 5, memory: 10 })])
     );
-    expect(mockServerInstances).toHaveLength(1);
+    expect(mockServerInstances).toHaveLength(2);
   });
 
   it("returns 404 for missing server details, messages, and actions", async () => {
@@ -289,9 +313,67 @@ describe("backend API", () => {
     expect(config.status).toBe(204);
     expect(action.status).toBe(202);
 
-    const server = mockServerInstances[0];
+    const server = mockServerInstances.find(
+      (instance) => instance.name === "survival"
+    );
+    expect(server).toBeDefined();
     expect(server.executeCommand).toHaveBeenCalledWith("say hello");
     expect(server.updateConfig).toHaveBeenCalledWith({ autostart: true });
     expect(server.pause).toHaveBeenCalled();
+  });
+
+  it("rejects Paper versions that are not currently available", async () => {
+    jest.mocked(listPaperVersions).mockResolvedValue(["1.21.8"]);
+
+    expect(
+      await invoke("POST", "/api/servers", {
+        body: { name: "Survival Server", version: "1.20.1" },
+      })
+    ).toEqual({
+      status: 400,
+      body: { error: "Paper version is not available" },
+    });
+    expect(installPaperJar).not.toHaveBeenCalled();
+  });
+
+  it("rejects unsafe server directory names", async () => {
+    jest.mocked(listPaperVersions).mockClear();
+
+    expect(
+      await invoke("POST", "/api/servers", {
+        body: { name: "../outside", version: "1.21.8" },
+      })
+    ).toEqual({ status: 400, body: { error: "Invalid server name" } });
+    expect(listPaperVersions).not.toHaveBeenCalled();
+  });
+
+  it("creates a server from the latest stable build of the selected version", async () => {
+    jest.mocked(listPaperVersions).mockResolvedValue(["1.21.8"]);
+    jest
+      .mocked(listPaperBuilds)
+      .mockResolvedValue([{ build: 9, time: "2025-01-01T00:00:00Z" }]);
+    jest.mocked(installPaperJar).mockResolvedValue("paper-1.21.8-9.jar");
+
+    const result = await invoke("POST", "/api/servers", {
+      body: { name: "Survival Server", version: "1.21.8" },
+    });
+
+    expect(result).toEqual({
+      status: 201,
+      body: { _name: "Survival Server" },
+    });
+    expect(installPaperJar).toHaveBeenCalledWith(
+      path.join(serversPath, "Survival Server"),
+      { version: "1.21.8", build: 9 }
+    );
+    expect(
+      fs.existsSync(
+        path.join(serversPath, "Survival Server", "server.properties")
+      )
+    ).toBe(false);
+    expect(mockServerInstances[mockServerInstances.length - 1].name).toBe(
+      "Survival Server"
+    );
+    expect(mockServerInstances[mockServerInstances.length - 1].start).toHaveBeenCalled();
   });
 });

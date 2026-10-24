@@ -45,6 +45,15 @@
         "title": "Über {name}"
       },
       "home": {
+        "create_server": {
+          "button": "Server erstellen",
+          "title": "Neuen Server erstellen",
+          "name": "Serververzeichnisname",
+          "version": "Paper-Version",
+          "create": "Erstellen",
+          "cancel": "Abbrechen",
+          "error": "Paper-Versionen konnten nicht geladen oder der Server nicht erstellt werden."
+        },
         "resource_usage": {
           "total": "Gesamtauslastung"
         },

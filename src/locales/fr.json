@@ -42,6 +42,15 @@
         "title": "Sur {name}"
       },
       "home": {
+        "create_server": {
+          "button": "Créer un serveur",
+          "title": "Créer un nouveau serveur",
+          "name": "Nom du répertoire du serveur",
+          "version": "Version de Paper",
+          "create": "Créer",
+          "cancel": "Annuler",
+          "error": "Impossible de charger les versions de Paper ou de créer le serveur."
+        },
         "resource_usage": {
           "total": "Utilisation totale des ressources"
         },

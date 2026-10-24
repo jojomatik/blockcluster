@@ -38,6 +38,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     </v-row>
     <v-row>
       <v-col cols="12">
+        <CreateServerDialogComponent @created="updateServers" />
         <v-btn color="secondary" v-on:click="updateServers">
           <v-icon left light>mdi-reload</v-icon>
           {{ $t("gui.views.home.update_status") }}
@@ -50,6 +51,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
 import ServerComponent from "@/components/ServerComponent.vue"; // @ is an alias to /src
+import CreateServerDialogComponent from "@/components/CreateServerDialogComponent.vue";
 import Server from "@/lib/components/server";
 import ResourceChartComponent from "@/components/ResourceChartComponent.vue";
 import ResourceUsage from "../../common/components/resource_usage";
@@ -58,6 +60,7 @@ import Player from "../../common/components/player";
 @Component({
   components: {
     ResourceChartComponent,
+    CreateServerDialogComponent,
     Server: ServerComponent,
   },
   metaInfo: {

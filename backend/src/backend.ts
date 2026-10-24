@@ -28,7 +28,11 @@ import path from "path";
 import dotenv from "dotenv";
 import dotenvExpand from "dotenv-expand";
 import { getVersion } from "../../common/version";
-import { listPaperBuilds, listPaperVersions } from "./components/paper";
+import {
+  installPaperJar,
+  listPaperBuilds,
+  listPaperVersions,
+} from "./components/paper";
 import { getJavaRuntimes } from "./components/java_runtime";
 import getDependencyInfo from "./utils/dependency_info";
 import {
@@ -55,6 +59,7 @@ const options = {
 const version = getVersion();
 
 let servers: Server[] = [];
+const creatingServerNames = new Set<string>();
 const systemUsage: ResourceUsage[] = [];
 
 app.use(express.json());
@@ -85,6 +90,88 @@ app.get("/api/servers", async (req, res) => {
   await Promise.all(servers.map((server) => server.updateStatus()));
   res.json(Server.strip(servers));
 });
+
+app.post(
+  "/api/servers",
+  asyncHandler(async (req, res) => {
+    const version = req.body?.version;
+    const requestedName = req.body?.name;
+    if (typeof version !== "string" || !/^\d+(\.\d+)+$/.test(version)) {
+      res.status(400).json({ error: "Invalid Paper version" });
+      return;
+    }
+    if (
+      typeof requestedName !== "string" ||
+      requestedName.trim() !== requestedName ||
+      !/^[A-Za-z0-9 _.-]{1,64}$/.test(requestedName) ||
+      requestedName === "." ||
+      requestedName === ".."
+    ) {
+      res.status(400).json({ error: "Invalid server name" });
+      return;
+    }
+
+    let builds: { build: number; time: string }[];
+    try {
+      const versions = await listPaperVersions();
+      if (!versions.includes(version)) {
+        res.status(400).json({ error: "Paper version is not available" });
+        return;
+      }
+      builds = await listPaperBuilds(version);
+    } catch (error) {
+      res.status(502).json({ error: "Could not load Paper versions" });
+      return;
+    }
+    if (builds.length === 0) {
+      res.status(409).json({ error: "No stable Paper build is available" });
+      return;
+    }
+
+    const nameBase = requestedName;
+    let name = nameBase;
+    let suffix = 2;
+    while (
+      creatingServerNames.has(name) ||
+      fs.existsSync(path.join(basePath, name))
+    ) {
+      name = `${nameBase}-${suffix++}`;
+    }
+
+    creatingServerNames.add(name);
+    const serverPath = path.join(basePath, name);
+    let createdDirectory = false;
+    let registeredServer: Server | null = null;
+    try {
+      fs.mkdirSync(serverPath);
+      createdDirectory = true;
+      await installPaperJar(serverPath, {
+        version,
+        build: builds[0].build,
+      });
+
+      const server = new Server({ _name: name });
+      server.port = 25565;
+      await server.update();
+      servers.push(server);
+      registeredServer = server;
+      void server.start().catch((error) => {
+        console.error("Could not start newly created Paper server:", error);
+      });
+      server.sendServerData();
+      res.status(201).json(Server.strip([server])[0]);
+    } catch (error) {
+      if (registeredServer)
+        servers = servers.filter((server) => server !== registeredServer);
+      if (createdDirectory)
+        fs.rmSync(serverPath, { recursive: true, force: true });
+      console.error("Could not create Paper server:", error);
+      res.status(502).json({ error: "Could not create Paper server" });
+    } finally {
+      creatingServerNames.delete(name);
+    }
+  })
+);
 
 app.get(
   "/api/servers/:name",
@@ -335,20 +422,25 @@ async function getServers(): Promise<Server[]> {
   const propertiesFile = "server.properties";
 
   for (const file of fs.readdirSync(basePath)) {
-    const path = basePath + "/" + file;
-    const isDir: boolean = fs.lstatSync(path).isDirectory();
-    if (isDir && fs.readdirSync(path).includes(propertiesFile)) {
-      const properties = getPropertiesFromFile(
-        PropertiesReader({
-          sourceFile: path + "/" + propertiesFile,
-        }).getAllProperties() as ServerPropertiesFile
-      );
-      const server = new Server({
-        _name: file,
-        _properties: properties,
-      });
-      servers.push(server);
-    }
+    const serverPath = path.join(basePath, file);
+    if (!fs.lstatSync(serverPath).isDirectory()) continue;
+    const files = fs.readdirSync(serverPath);
+    const hasProperties = files.includes(propertiesFile);
+    if (!hasProperties && !files.some((entry) => entry.endsWith(".jar")))
+      continue;
+
+    const server = hasProperties
+      ? new Server({
+          _name: file,
+          _properties: getPropertiesFromFile(
+            PropertiesReader({
+              sourceFile: path.join(serverPath, propertiesFile),
+            }).getAllProperties() as ServerPropertiesFile
+          ),
+        })
+      : new Server({ _name: file });
+    if (!hasProperties) server.port = 25565;
+    servers.push(server);
   }
   return servers;
 }

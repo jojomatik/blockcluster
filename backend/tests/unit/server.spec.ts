@@ -8,6 +8,10 @@ jest.mock("../../src/backend", () => ({
   io: { emit: mockIoEmit },
 }));
 
+jest.mock("../../src/components/paper", () => ({
+  getPaperUpdates: jest.fn(),
+  installPaperJar: jest.fn(),
+}));
 jest.mock("../../src/components/java_runtime", () => ({
   __esModule: true,
   getJavaRuntimes: mockGetJavaRuntimes,
@@ -23,9 +27,7 @@ describe("backend Server", () => {
   beforeEach(() => {
     mockIoEmit.mockClear();
     mockGetJavaRuntimes.mockReset();
-    mockGetJavaRuntimes.mockReturnValue([
-      { isDefault: true, path: "/java" },
-    ]);
+    mockGetJavaRuntimes.mockReturnValue([{ isDefault: true, path: "/java" }]);
   });
 
   it("marks a reachable process started and resolves a safe start", async () => {
@@ -150,5 +152,49 @@ describe("backend Server", () => {
     expect(server.resourceUsage).toHaveLength(60);
     expect(server.resourceUsage[0].time).toBe(1);
     expect(server.resourceUsage[59].time).toBe(60);
+  });
+
+  describe("installUpdate", () => {
+    const paper = jest.requireMock("../../src/components/paper");
+
+    beforeEach(() => {
+      paper.getPaperUpdates.mockReset();
+      paper.installPaperJar.mockReset();
+    });
+
+    it("refuses to update a running server", async () => {
+      const server = new Server({
+        _name: "s",
+        _status: ServerStatus.Started,
+      });
+      await expect(server.installUpdate("build")).rejects.toThrow("stopped");
+      expect(paper.installPaperJar).not.toHaveBeenCalled();
+    });
+
+    it("fails if no update is available", async () => {
+      const server = new Server({
+        _name: "s",
+        _status: ServerStatus.Stopped,
+      });
+      jest.spyOn(server as never, "getJarFile").mockReturnValue(null as never);
+      paper.getPaperUpdates.mockResolvedValue({ build: null, patch: null });
+      await expect(server.installUpdate("patch")).rejects.toThrow("No update");
+    });
+
+    it("installs an explicit version without looking up updates", async () => {
+      const server = new Server({
+        _name: "s",
+        _status: ServerStatus.Stopped,
+      });
+      jest.spyOn(server, "update").mockResolvedValue();
+      jest.spyOn(server, "sendServerData").mockImplementation();
+      const target = { version: "1.21.8", build: 5 };
+      await server.installUpdate(target);
+      expect(paper.getPaperUpdates).not.toHaveBeenCalled();
+      expect(paper.installPaperJar).toHaveBeenCalledWith(
+        expect.any(String),
+        target
+      );
+    });
   });
 });

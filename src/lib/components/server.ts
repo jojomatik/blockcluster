@@ -58,6 +58,66 @@ export default class Server extends CommonServer {
     });
   }
 
+  async fetchUpdates(encodedName = encodeURIComponent(this.name)) {
+    const response = await this.request(`/api/servers/${encodedName}/updates`);
+    return response.json();
+  }
+
+  installUpdate(
+    type: "build" | "patch",
+    encodedName = encodeURIComponent(this.name)
+  ) {
+    return this.request(`/api/servers/${encodedName}/updates`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ type }),
+    });
+  }
+
+  installVersion(
+    version: string,
+    build: number,
+    encodedName = encodeURIComponent(this.name)
+  ) {
+    return this.request(`/api/servers/${encodedName}/updates`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ type: "version", version, build }),
+    });
+  }
+
+  installExistingJar(
+    file: string,
+    encodedName = encodeURIComponent(this.name)
+  ) {
+    return this.request(`/api/servers/${encodedName}/updates`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ type: "existing", file }),
+    });
+  }
+
+  async fetchOldJars(
+    encodedName = encodeURIComponent(this.name)
+  ): Promise<string[]> {
+    const response = await this.request(`/api/servers/${encodedName}/oldjars`);
+    return response.json();
+  }
+
+  async fetchPaperVersions(): Promise<string[]> {
+    const response = await this.request("/api/paper/versions");
+    return response.json();
+  }
+
+  async fetchPaperBuilds(
+    version: string
+  ): Promise<{ build: number; time: string }[]> {
+    const response = await this.request(
+      `/api/paper/versions/${encodeURIComponent(version)}/builds`
+    );
+    return response.json();
+  }
+
   async fetchInfo(encodedName = encodeURIComponent(this.name)) {
     const response = await this.request(`/api/servers/${encodedName}`);
     return response.json();

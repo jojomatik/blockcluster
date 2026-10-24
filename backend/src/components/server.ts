@@ -36,6 +36,14 @@ import Player from "../../../common/components/player";
 import { getFaceAsBase64 } from "pixelheads";
 import { Client, createServer, Server as MCPServer } from "minecraft-protocol";
 import { getJavaRuntimes } from "./java_runtime";
+import {
+  getPaperUpdates,
+  installPaperJar,
+  listOldJars,
+  restoreOldJar,
+  PaperJarInfo,
+  PaperUpdates,
+} from "./paper";
 
 /**
  * The server side implementation of {@link CommonServer} with additional methods that won't run on the client side.
@@ -215,6 +223,43 @@ export default class Server extends CommonServer {
     io.emit("server_" + encodeURIComponent(this.name), {
       message: message,
     });
+  }
+
+  /**
+   * Returns the available PaperMC updates for the current jar.
+   */
+  async getUpdates(): Promise<PaperUpdates> {
+    return getPaperUpdates(this.getJarFile());
+  }
+
+  /**
+   * Returns the jars in the `oldjars` directory.
+   */
+  getOldJars(): string[] {
+    return listOldJars(this.getPath());
+  }
+
+  /**
+   * Replaces the current PaperMC jar with a newer build or patch.
+   * The previous jar is moved to `oldjars`.
+   *
+   * @param type `build` for the newest build of the current version, `patch` for the newest patch of the current minor version, or an explicit version and build.
+   */
+  async installUpdate(
+    type: "build" | "patch" | PaperJarInfo | { file: string }
+  ): Promise<void> {
+    if (this.status !== ServerStatus.Stopped)
+      throw new Error("The server must be stopped to update it.");
+    if (typeof type === "object" && "file" in type) {
+      restoreOldJar(this.getPath(), type.file);
+    } else {
+      const target =
+        typeof type === "string" ? (await this.getUpdates())[type] : type;
+      if (!target) throw new Error("No update available.");
+      await installPaperJar(this.getPath(), target);
+    }
+    await this.update();
+    this.sendServerData();
   }
 
   /**

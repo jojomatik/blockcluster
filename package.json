@@ -32,7 +32,7 @@
     "vue": "2.7.16",
     "vue-apexcharts": "1.7.1",
     "vue-class-component": "7.2.6",
-    "vue-i18n": "8.28.2",
+    "vue-i18n": "11.4.16",
     "vue-meta": "2.4.0",
     "vue-property-decorator": "9.1.2",
     "vue-router": "3.6.5",

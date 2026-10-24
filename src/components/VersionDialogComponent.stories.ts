@@ -1,7 +1,7 @@
 import VersionDialogComponent from "@/components/VersionDialogComponent.vue";
 import Server from "@/lib/components/server";
 import { expect } from "@storybook/jest";
-import { userEvent, within } from "@storybook/testing-library";
+import { userEvent, waitFor, within } from "@storybook/testing-library";
 
 class MockServer extends Server {
   async fetchPaperVersions() {
@@ -65,11 +65,17 @@ export const Open = {
       })
     );
     const body = within(document.body);
-    await expect(
-      await body.findByRole("button", {
-        name: /update to build 70 \(1\.21\.8\)/i,
-      })
-    ).toBeVisible();
+    // Wait for the dialog's opening transition to finish.
+    await waitFor(
+      async () => {
+        await expect(
+          await body.findByRole("button", {
+            name: /update to build 70 \(1\.21\.8\)/i,
+          })
+        ).toBeVisible();
+      },
+      { timeout: 5000 }
+    );
     await expect(
       await body.findByRole("button", { name: /update to 1\.21\.10/i })
     ).toBeVisible();

@@ -1,17 +1,12 @@
 name: Chromatic
 on:
   push:
-    branches: ["*"]
-  workflow_run:
-    workflows: ["Dependabot PR Check"]
-    types:
-      - completed
+    branches: ["**"]
 
 jobs:
   chromatic:
     name: Build storybook and publish to chromatic
     runs-on: ubuntu-latest
-    if: ${{ (github.event_name == 'push' && github.actor != 'dependabot[bot]') || (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success') }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:

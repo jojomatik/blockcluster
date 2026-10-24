@@ -21,6 +21,7 @@ const javaRuntimes = [
   { _path: JAVA_PATH, _name: "OpenJDK 17", _isDefault: true },
   { _path: "/usr/lib/jvm/java-21/bin/java", _name: "OpenJDK 21" },
 ];
+const FIXTURE_TIME = new Date("2024-01-01T12:00:00.000Z").getTime();
 
 const jojomatikHead =
   "iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAACXBIWXMAAAsSAAALEgHS3X78AAAA+ElEQVQYlR3JzUvCYACA8fefCyKs7OKgD7oF1bFTEAQimhGVRXRZxJY1FGOQs3RQZAeLIjqkESgbUSB9rMQ1Nip4wh2ey/MTbX2ShiLxehjDUgZoaWPYuQnu5QjPWhRhZ6NYmkRTHaF1MMqDKmFnh3jKj2Opg4iXfAzHzPBWTOEYSdzTDfyzdb4ryzSVYcTvxRZBEBCfy8FjEeoF5qf3IHD5NDOIn+om3rXGX8MIMexmF7e6jVNeRXTMNd7PZa5mI3C3D3Wd25l+gkqKzvES4uMowVcpjV+TuZzqC/NrO+HrmWgXFnD0RbpGHO8kiVdO0zVXcEoJevYPlgLGCbqeWAwAAAAASUVORK5CYII=";
@@ -56,10 +57,9 @@ class MockServer extends Server {
   }
 
   async fetchMessages() {
-    const now = Date.now();
     return [
       {
-        _timestamp: now - 5000,
+        _timestamp: FIXTURE_TIME - 5000,
         _uuid: "m1",
         _type: MessageType.Default,
         _text: '[Server thread/INFO]: Done (3.2s)! For help, type "help"',
@@ -73,7 +73,6 @@ class MockServer extends Server {
 }
 
 function makeServer(status: ServerStatus, name = "Survival World") {
-  const now = Date.now();
   return new MockServer({
     _name: name,
     _status: status,
@@ -101,7 +100,7 @@ function makeServer(status: ServerStatus, name = "Survival World") {
       { length: 20 },
       (_, i) =>
         new ResourceUsage(
-          now - (20 - i) * 5000,
+          FIXTURE_TIME - (20 - i) * 5000,
           0.2 + 0.1 * Math.sin(i),
           800_000_000 + i * 5_000_000
         )

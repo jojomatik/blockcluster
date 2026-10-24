@@ -45,7 +45,7 @@ export default class Server extends CommonServer {
    * The process of the minecraft server.
    * @private
    */
-  private proc: ChildProcessWithoutNullStreams;
+  private proc: ChildProcessWithoutNullStreams | null = null;
 
   /**
    * An array of the latest messages from the server.
@@ -57,7 +57,7 @@ export default class Server extends CommonServer {
    * The config of this {@link Server}.
    * @private
    */
-  private config: ServerConfig;
+  private config: ServerConfig = new ServerConfig();
 
   /**
    * An object to resolve or reject a promise if a safe start is performed.
@@ -72,7 +72,7 @@ export default class Server extends CommonServer {
    * A timeout used while starting the server to check the status every second.
    * @private
    */
-  private timeout: NodeJS.Timeout | null;
+  private timeout: NodeJS.Timeout | null = null;
 
   /**
    * A timeout used to stop the server after a certain amount of inactivity.
@@ -108,7 +108,7 @@ export default class Server extends CommonServer {
       if (this.proc != null) {
         if ("players" in serverInfo) {
           // `serverInfo` is instance of `mc.NewPingResult`
-          this.favicon = serverInfo.favicon;
+          this.favicon = serverInfo.favicon ?? "";
           this.players = {
             max: serverInfo.players.max,
             online: serverInfo.players.online,
@@ -221,16 +221,16 @@ export default class Server extends CommonServer {
    * Returns the first jar file in the server directory.
    * @private
    */
-  private getJarFile(): string {
+  private getJarFile(): string | null {
     const files = fs.readdirSync(this.getPath());
-    return files.find((file) => file.endsWith(".jar"));
+    return files.find((file) => file.endsWith(".jar")) ?? null;
   }
 
   /**
    * Returns the first jar file in the server directory.
    * @private
    */
-  private getJavaPath(): string {
+  private getJavaPath(): string | null {
     return this.config.javaPath;
   }
 
@@ -311,7 +311,7 @@ export default class Server extends CommonServer {
    */
   public async start(safe = false) {
     if (this.status === ServerStatus.Paused) {
-      this.wakeUpListener.close();
+      this.wakeUpListener?.close();
     }
 
     this.status = ServerStatus.Starting;
@@ -319,9 +319,10 @@ export default class Server extends CommonServer {
       ? "umask 0000 && "
       : "";
 
-    const javaExists = getJavaRuntimes()
-      .map((runtime) => runtime.path)
-      .includes(this.javaPath);
+    const javaPath = this.javaPath;
+    const javaExists =
+      javaPath !== null &&
+      getJavaRuntimes().some((runtime) => runtime.path === javaPath);
 
     if (!javaExists) {
       this.status = ServerStatus.Stopped;
@@ -337,9 +338,15 @@ export default class Server extends CommonServer {
       throw error;
     }
 
+    const jarFile = this.getJarFile();
+    if (!jarFile) {
+      this.status = ServerStatus.Stopped;
+      throw new Error("No .jar file found in the server directory.");
+    }
+
     this.proc = spawn(
-      permissionPrefix + '"' + this.javaPath + '/bin/java"',
-      this.flags.concat(["-jar", this.getJarFile(), "nogui"]),
+      permissionPrefix + '"' + javaPath + '/bin/java"',
+      this.flags.concat(["-jar", jarFile, "nogui"]),
       {
         cwd: this.getPath(),
         shell: true,
@@ -382,7 +389,7 @@ export default class Server extends CommonServer {
   public async stop(): Promise<void> {
     this.stopPauseTimeout();
     if (this.status == ServerStatus.Paused) {
-      this.wakeUpListener.close();
+      this.wakeUpListener?.close();
       this.status = ServerStatus.Stopped;
       await this.update();
       this.sendServerData();
@@ -397,8 +404,13 @@ export default class Server extends CommonServer {
     this.status = ServerStatus.Stopping;
     await this.update();
     this.sendServerData();
+    if (!this.proc) {
+      this.status = ServerStatus.Stopped;
+      return;
+    }
+    const proc = this.proc;
     return new Promise<void>((resolve) => {
-      this.proc.addListener("exit", async () => {
+      proc.addListener("exit", async () => {
         this.proc = null;
         await this.update();
         this.sendServerData();
@@ -465,7 +477,7 @@ export default class Server extends CommonServer {
       client.end(
         "§7[§3blockcluster§7]§r\nThe server is now waking up.\nPlease try again in a few seconds."
       );
-      this.wakeUpListener.close();
+      this.wakeUpListener?.close();
       try {
         await this.start();
       } catch (e) {
@@ -554,17 +566,20 @@ export default class Server extends CommonServer {
    * @private
    */
   private writeConsoleCommand(command: string) {
-    if (!this.proc)
+    const proc = this.proc;
+    if (!proc) {
       console.log(
         "Could not send command to server " +
           this.name +
           "! Process is " +
-          this.proc +
+          proc +
           "."
       );
+      return;
+    }
 
     try {
-      this.proc.stdin.write(command + "\n");
+      proc.stdin.write(command + "\n");
     } catch (e) {
       console.log("Could not send command to server " + this.name + "!", e);
     }
@@ -686,9 +701,10 @@ export default class Server extends CommonServer {
    * @param measuringTime if set this time is used as the time parameter of the data points.
    */
   async measureUsage(measuringTime?: number) {
-    if (this.proc != null) {
+    const proc = this.proc;
+    if (proc?.pid != null) {
       try {
-        const usage = await pidusage(this.proc.pid);
+        const usage = await pidusage(proc.pid);
         this.resourceUsage.push(
           new ResourceUsage(measuringTime, usage.cpu, usage.memory)
         );
@@ -696,7 +712,7 @@ export default class Server extends CommonServer {
         this.resourceUsage.push(new ResourceUsage(measuringTime, 0, 0));
         console.error(
           "Couldn't retrieve resource usage for pid " +
-            this.proc.pid +
+            proc.pid +
             " on server " +
             this.name +
             ".",

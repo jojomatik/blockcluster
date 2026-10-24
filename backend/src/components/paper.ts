@@ -92,19 +92,24 @@ export async function getPaperUpdates(
   if (latest && latest.id > current.build)
     result.build = { version: current.version, build: latest.id };
 
-  const minor = current.version.split(".").slice(0, 2).join(".");
-  const project = await getJson<{ versions: Record<string, string[]> }>(API);
-  const newer = (project.versions[minor] ?? [])
-    .filter(
-      (v) => /^\d+(\.\d+)+$/.test(v) && compareVersions(v, current.version) > 0
-    )
-    .sort((a, b) => compareVersions(b, a));
-  for (const version of newer) {
-    const build = await getLatestStableBuild(version);
-    if (build) {
-      result.patch = { version, build: build.id };
-      break;
+  try {
+    const minor = current.version.split(".").slice(0, 2).join(".");
+    const project = await getJson<{ versions: Record<string, string[]> }>(API);
+    const newer = (project.versions[minor] ?? [])
+      .filter(
+        (v) =>
+          /^\d+(\.\d+)+$/.test(v) && compareVersions(v, current.version) > 0
+      )
+      .sort((a, b) => compareVersions(b, a));
+    for (const version of newer) {
+      const build = await getLatestStableBuild(version);
+      if (build) {
+        result.patch = { version, build: build.id };
+        break;
+      }
     }
+  } catch {
+    return result;
   }
   return result;
 }
@@ -112,14 +117,38 @@ export async function getPaperUpdates(
 /**
  * Moves all jars in `dir` into `dir/oldjars`.
  */
-function archiveJars(dir: string): void {
+function archiveJars(dir: string): Map<string, string> {
   const oldDir = path.join(dir, "oldjars");
+  const archived = new Map<string, string>();
   for (const file of fs.readdirSync(dir)) {
     if (file.endsWith(".jar") && fs.lstatSync(path.join(dir, file)).isFile()) {
       fs.mkdirSync(oldDir, { recursive: true });
-      fs.renameSync(path.join(dir, file), path.join(oldDir, file));
+      const source = path.join(dir, file);
+      let destination = path.join(oldDir, file);
+      if (fs.existsSync(destination)) {
+        const existingIsSame =
+          fs.lstatSync(destination).isFile() &&
+          createHash("sha256").update(fs.readFileSync(source)).digest("hex") ===
+            createHash("sha256")
+              .update(fs.readFileSync(destination))
+              .digest("hex");
+        if (existingIsSame) {
+          fs.unlinkSync(source);
+          archived.set(file, destination);
+          continue;
+        }
+        const extension = path.extname(file);
+        const name = path.basename(file, extension);
+        let suffix = 1;
+        do {
+          destination = path.join(oldDir, `${name}-${suffix++}${extension}`);
+        } while (fs.existsSync(destination));
+      }
+      fs.renameSync(source, destination);
+      archived.set(file, destination);
     }
   }
+  return archived;
 }
 
 /**
@@ -185,8 +214,24 @@ export async function installPaperJar(
     throw e;
   }
 
-  archiveJars(dir);
-  fs.renameSync(tmpFile, path.join(dir, download.name));
+  const activeJar = fs
+    .readdirSync(dir)
+    .find(
+      (file) =>
+        file.endsWith(".jar") && fs.lstatSync(path.join(dir, file)).isFile()
+    );
+  const archived = archiveJars(dir);
+  try {
+    fs.renameSync(tmpFile, path.join(dir, download.name));
+  } catch (error) {
+    const previousJar = activeJar && archived.get(activeJar);
+    if (previousJar && fs.existsSync(previousJar)) {
+      try {
+        fs.renameSync(previousJar, path.join(dir, activeJar));
+      } catch {}
+    }
+    throw error;
+  }
   return download.name;
 }
 

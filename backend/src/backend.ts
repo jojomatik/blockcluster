@@ -313,6 +313,20 @@ app.post("/api/servers/:name/actions", (req, res) => {
   res.status(202).end();
 });
 
+app.post(
+  "/api/servers/:name/eula",
+  asyncHandler(async (req, res) => {
+    const server = servers.find((entry) => entry.name === req.params.name);
+    if (!server) {
+      res.status(404).json({ error: "Server not found" });
+      return;
+    }
+
+    await server.acceptEula();
+    res.status(202).end();
+  })
+);
+
 app.post("/api/servers/:name/commands", (req, res) => {
   const server = servers.find((entry) => entry.name === req.params.name);
   if (!server) {

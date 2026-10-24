@@ -66,6 +66,7 @@ const mockServer = Object.assign(
           getRecentMessages: jest.fn(() => [{ text: "recent" }]),
           strip: jest.fn(() => ({ _name: data._name })),
           start: jest.fn().mockResolvedValue(undefined),
+          acceptEula: jest.fn().mockResolvedValue(undefined),
           stop: jest.fn().mockResolvedValue(undefined),
           pause: jest.fn().mockResolvedValue(undefined),
           restart: jest.fn().mockResolvedValue(undefined),
@@ -318,6 +319,11 @@ describe("backend API", () => {
       })
     ).toEqual({ status: 404, body: { error: "Server not found" } });
     expect(
+      await invoke("POST", "/api/servers/:name/eula", {
+        params: { name: "missing" },
+      })
+    ).toEqual({ status: 404, body: { error: "Server not found" } });
+    expect(
       await invoke("POST", "/api/servers/:name/actions", {
         params: { name: "missing" },
         body: { action: "start" },
@@ -373,6 +379,18 @@ describe("backend API", () => {
     expect(server.executeCommand).toHaveBeenCalledWith("say hello");
     expect(server.updateConfig).toHaveBeenCalledWith({ autostart: true });
     expect(server.pause).toHaveBeenCalled();
+  });
+
+  it("accepts the EULA for an existing server", async () => {
+    const result = await invoke("POST", "/api/servers/:name/eula", {
+      params: { name: "survival" },
+    });
+
+    expect(result.status).toBe(202);
+    expect(
+      mockServerInstances.find((instance) => instance.name === "survival")
+        .acceptEula
+    ).toHaveBeenCalled();
   });
 
   it("rejects Paper versions that are not currently available", async () => {

@@ -68,6 +68,14 @@
         "console": {
           "title": "Console"
         },
+        "eula": {
+          "title": "Contrat de licence utilisateur final Minecraft",
+          "description": "Le serveur ne peut pas démarrer tant que vous n'avez pas accepté le contrat de licence utilisateur final Minecraft.",
+          "link": "Lire le contrat de licence Minecraft",
+          "accept": "J'accepte le contrat de licence Minecraft",
+          "start": "Démarrer le serveur",
+          "cancel": "Annuler"
+        },
         "delete_world": {
           "dialog": {
             "cancel": "Annuler",

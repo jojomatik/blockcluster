@@ -9,6 +9,42 @@ import ServerComponent from "../../../src/components/ServerComponent.vue";
 import Server from "../../../src/lib/components/server";
 
 describe("server interaction components", () => {
+  it("cancels the EULA dialog without accepting or starting the server", async () => {
+    const server = new Server({ _name: "survival" });
+    server.acceptEula = jest.fn();
+    server.sendAction = jest.fn();
+    const wrapper = shallowMount(ServerComponent, {
+      propsData: { server, detailed: false },
+      mocks: {
+        $route: { params: {} },
+        $socket: { client: { on: jest.fn(), off: jest.fn() } },
+        $t: (key: string) => key,
+      },
+    });
+    await wrapper.setProps({ detailed: true });
+    await wrapper.setData({
+      eulaDialog: true,
+      eulaAccepted: true,
+      eulaError: "A previous attempt failed",
+    });
+    const cancel = wrapper
+      .findAll("v-btn-stub")
+      .wrappers.find(
+        (button) => button.text() === "gui.views.server.eula.cancel"
+      );
+    if (!cancel) throw new Error("EULA cancel button was not rendered.");
+
+    cancel.vm.$emit("click");
+    await wrapper.vm.$nextTick();
+
+    expect(wrapper.vm.$data.eulaDialog).toBe(false);
+    expect(wrapper.vm.$data.eulaAccepted).toBe(false);
+    expect(wrapper.vm.$data.eulaError).toBe("");
+    expect(server.acceptEula).not.toHaveBeenCalled();
+    expect(server.sendAction).not.toHaveBeenCalled();
+    wrapper.destroy();
+  });
+
   it("blocks world deletion during a transition and closes after a successful delete", async () => {
     const sendAction = jest.fn().mockResolvedValue(undefined);
     const server = new Server({ _name: "my world" });

@@ -114,4 +114,76 @@ describe("ConsoleComponent", () => {
     ]);
     wrapper.destroy();
   });
+
+  describe("EULA prompt", () => {
+    const eulaText =
+      "You need to agree to the EULA in order to run the server. Go to eula.txt for more info.";
+
+    async function mountWithHistory(history: MessageData[]) {
+      const server = new Server({ _name: "eula" });
+      server.fetchMessages = jest.fn().mockResolvedValue(history);
+      let onMessage: ((data: Record<string, unknown>) => void) | undefined;
+      const wrapper = shallowMount(ConsoleComponent, {
+        propsData: { server, status: ServerStatus.Stopped },
+        mocks: {
+          $route: { params: {} },
+          $socket: {
+            client: {
+              on: (_event: string, callback: typeof onMessage) => {
+                onMessage = callback;
+              },
+              off: jest.fn(),
+            },
+          },
+          $t: (key: string) => key,
+        },
+      });
+      // Keep the scrolling logic inert, as jsdom does not implement it.
+      const consoleElement = document.createElement("div");
+      Object.defineProperty(consoleElement, "offsetTop", { value: 0 });
+      Object.defineProperty(consoleElement, "offsetHeight", { value: 100 });
+      const consoleEnd = document.createElement("span");
+      Object.defineProperty(consoleEnd, "offsetTop", { value: 0 });
+      wrapper.vm.$refs.console = consoleElement;
+      wrapper.vm.$refs.consoleEnd = consoleEnd;
+      await new Promise((resolve) => window.setTimeout(resolve, 0));
+      await wrapper.vm.$nextTick();
+      if (!onMessage) throw new Error("Message handler was not registered.");
+      return { wrapper, onMessage };
+    }
+
+    it("requests the dialog when the EULA message is the latest message", async () => {
+      const { wrapper } = await mountWithHistory([
+        createMessage("1", 1000, "starting"),
+        createMessage("2", 2000, eulaText),
+      ]);
+
+      expect(wrapper.emitted("eula-required")).toHaveLength(1);
+      wrapper.destroy();
+    });
+
+    it("does not request the dialog for a EULA message that was followed by other messages", async () => {
+      const { wrapper } = await mountWithHistory([
+        createMessage("1", 1000, eulaText),
+        createMessage("2", 2000, "starting again"),
+        createMessage("3", 3000, 'Done (3.2s)! For help, type "help"'),
+      ]);
+
+      expect(wrapper.emitted("eula-required")).toBeUndefined();
+      wrapper.destroy();
+    });
+
+    it("requests the dialog for a live EULA message and not once later messages arrive", async () => {
+      const { wrapper, onMessage } = await mountWithHistory([
+        createMessage("1", 1000, "starting"),
+      ]);
+
+      onMessage({ message: createMessage("2", 2000, eulaText) });
+      expect(wrapper.emitted("eula-required")).toHaveLength(1);
+
+      onMessage({ message: createMessage("3", 3000, "starting again") });
+      expect(wrapper.emitted("eula-required")).toHaveLength(1);
+      wrapper.destroy();
+    });
+  });
 });

@@ -71,6 +71,14 @@
         "console": {
           "title": "Console"
         },
+        "eula": {
+          "title": "Minecraft End User License Agreement",
+          "description": "The server cannot start until you agree to the Minecraft End User License Agreement.",
+          "link": "Read the Minecraft EULA",
+          "accept": "I agree to the Minecraft EULA",
+          "start": "Start server",
+          "cancel": "Cancel"
+        },
         "delete_world": {
           "dialog": {
             "cancel": "Cancel",

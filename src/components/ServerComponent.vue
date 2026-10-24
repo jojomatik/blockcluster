@@ -140,7 +140,50 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <ResourceChartComponent
               :resource-usage="this.server.resourceUsage"
             />
-            <ConsoleComponent :server="server" :status="server.status" />
+            <ConsoleComponent
+              :server="server"
+              :status="server.status"
+              @eula-required="showEulaDialog"
+            />
+            <v-dialog v-model="eulaDialog" persistent max-width="500px">
+              <v-card>
+                <v-card-title>
+                  {{ $t("gui.views.server.eula.title") }}
+                </v-card-title>
+                <v-card-text>
+                  <p>{{ $t("gui.views.server.eula.description") }}</p>
+                  <p>
+                    <a
+                      href="https://www.minecraft.net/en-us/eula"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {{ $t("gui.views.server.eula.link") }}
+                    </a>
+                  </p>
+                  <v-checkbox
+                    v-model="eulaAccepted"
+                    :label="$t('gui.views.server.eula.accept')"
+                  />
+                  <v-alert v-if="eulaError" type="error" dense>
+                    {{ eulaError }}
+                  </v-alert>
+                </v-card-text>
+                <v-card-actions class="justify-end">
+                  <v-btn text :disabled="eulaLoading" @click="cancelEula">
+                    {{ $t("gui.views.server.eula.cancel") }}
+                  </v-btn>
+                  <v-btn
+                    color="secondary"
+                    :disabled="!eulaAccepted || eulaLoading"
+                    :loading="eulaLoading"
+                    @click="acceptEula"
+                  >
+                    {{ $t("gui.views.server.eula.start") }}
+                  </v-btn>
+                </v-card-actions>
+              </v-card>
+            </v-dialog>
           </v-card-text>
           <v-card-actions class="px-4">
             <ToggleButtonComponent
@@ -302,6 +345,14 @@ export default class ServerComponent extends Vue {
     patch: { version: string; build: number } | null;
   } | null = null;
 
+  private eulaDialog = false;
+
+  private eulaAccepted = false;
+
+  private eulaLoading = false;
+
+  private eulaError = "";
+
   constructor() {
     super();
   }
@@ -386,6 +437,31 @@ export default class ServerComponent extends Vue {
       .catch((error: unknown) =>
         console.error(`Could not ${action} server:`, error)
       );
+  }
+
+  private showEulaDialog(): void {
+    this.eulaDialog = true;
+  }
+
+  private cancelEula(): void {
+    this.eulaDialog = false;
+    this.eulaAccepted = false;
+    this.eulaError = "";
+  }
+
+  private async acceptEula(): Promise<void> {
+    this.eulaLoading = true;
+    this.eulaError = "";
+    try {
+      await this.server.acceptEula();
+      this.eulaDialog = false;
+      this.eulaAccepted = false;
+    } catch (error) {
+      this.eulaError = error instanceof Error ? error.message : String(error);
+      console.error("Could not accept the Minecraft EULA:", error);
+    } finally {
+      this.eulaLoading = false;
+    }
   }
 
   /**

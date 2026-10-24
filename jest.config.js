@@ -14,6 +14,7 @@ module.exports = {
   coverageDirectory: "<rootDir>/coverage",
   coverageProvider: "v8",
   moduleFileExtensions: ["ts", "tsx", ...preset.moduleFileExtensions],
+  setupFilesAfterEnv: ["<rootDir>/tests/unit/setup.ts"],
   testPathIgnorePatterns: ["<rootDir>/backend/"],
   globals: {
     "vue-jest": {

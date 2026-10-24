@@ -133,34 +133,34 @@ describe("VersionDialogComponent", () => {
     wrapper.destroy();
   });
 
+  it("keeps the latest request's error when an older request later succeeds", async () => {
+    const older = deferred<Build[]>();
+    const fetch = jest
+      .fn()
+      .mockReturnValueOnce(older.promise)
+      .mockRejectedValueOnce(new Error("latest failure"));
+    const { wrapper, vm } = mountDialog(fetch);
+    vm.version = "1.21.8";
+    const olderRequest = vm.loadBuilds(vm.version);
+    vm.version = "1.21.10";
+    await vm.loadBuilds(vm.version);
+
+    older.resolve([{ build: 70, time: "2025-01-01" }]);
+    await olderRequest;
+
+    expect(vm.builds).toEqual([]);
+    expect(vm.build).toBeNull();
+    expect(vm.error).toBe(true);
+    expect(vm.loadingBuilds).toBe(false);
+    wrapper.destroy();
+  });
+
   it("shows a failure of the current request and clears its loading state", async () => {
     const { wrapper, vm } = mountDialog(
       jest.fn().mockRejectedValue(new Error("offline"))
     );
     vm.version = "1.21.8";
     await vm.loadBuilds(vm.version);
-    expect(vm.error).toBe(true);
-    expect(vm.loadingBuilds).toBe(false);
-    wrapper.destroy();
-  });
-
-  it("keeps the latest request's error when an older request later succeeds", async () => {
-    const older = deferred<Build[]>();
-    const fetchBuilds = jest
-      .fn()
-      .mockReturnValueOnce(older.promise)
-      .mockRejectedValueOnce(new Error("latest failure"));
-    const { wrapper, vm } = mountDialog(fetchBuilds);
-    vm.version = "1.21.8";
-    const olderRequest = vm.loadBuilds(vm.version);
-    vm.version = "1.21.10";
-    await vm.loadBuilds(vm.version);
-
-    older.resolve([{ build: 70, time: "old" }]);
-    await olderRequest;
-
-    expect(vm.builds).toEqual([]);
-    expect(vm.build).toBeNull();
     expect(vm.error).toBe(true);
     expect(vm.loadingBuilds).toBe(false);
     wrapper.destroy();

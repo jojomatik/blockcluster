@@ -128,20 +128,26 @@ function archiveJars(dir: string): Map<string, string> {
       fs.mkdirSync(oldDir, { recursive: true });
       let destination = path.join(oldDir, file);
       let suffix = 1;
+      let identical = false;
       let checksum: string | undefined;
       while (fs.existsSync(destination)) {
-        if (parsePaperJar(file) && fs.lstatSync(destination).isFile()) {
+        if (fs.lstatSync(destination).isFile()) {
           checksum ??= createHash("sha256")
             .update(fs.readFileSync(source))
             .digest("hex");
-          const existingChecksum = createHash("sha256")
-            .update(fs.readFileSync(destination))
-            .digest("hex");
-          if (checksum === existingChecksum) break;
+          if (
+            checksum ===
+            createHash("sha256")
+              .update(fs.readFileSync(destination))
+              .digest("hex")
+          ) {
+            identical = true;
+            break;
+          }
         }
         destination = path.join(oldDir, `${file.slice(0, -4)}-${suffix++}.jar`);
       }
-      if (fs.existsSync(destination)) fs.unlinkSync(source);
+      if (identical) fs.unlinkSync(source);
       else fs.renameSync(source, destination);
       archived.set(file, destination);
     }
@@ -226,11 +232,8 @@ export async function installPaperJar(
     if (activeJar && previousJar && fs.existsSync(previousJar)) {
       try {
         fs.renameSync(previousJar, path.join(dir, activeJar));
-      } catch (restoreError) {
-        throw new AggregateError(
-          [error, restoreError],
-          "Could not activate the new jar or restore the previous jar."
-        );
+      } catch {
+        // Preserve the activation error; the backup remains in oldjars.
       }
     }
     throw error;

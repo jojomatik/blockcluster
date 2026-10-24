@@ -29,6 +29,7 @@
             outlined
             class="mb-2"
             :loading="installing"
+            :disabled="installing"
             @click="run(() => server.installUpdate('build', encodedName))"
           >
             {{
@@ -43,6 +44,7 @@
             block
             outlined
             :loading="installing"
+            :disabled="installing"
             @click="run(() => server.installUpdate('patch', encodedName))"
           >
             {{
@@ -61,6 +63,7 @@
           :items="versions"
           :label="$t('gui.views.server.version_dialog.version')"
           :loading="loadingVersions"
+          :disabled="installing"
           v-model="version"
           @change="loadBuilds"
         />
@@ -71,7 +74,7 @@
           :item-text="formatBuild"
           :label="$t('gui.views.server.version_dialog.build')"
           :loading="loadingBuilds"
-          :disabled="!version"
+          :disabled="installing || !version"
           v-model="build"
         />
         <p class="font-weight-light" style="font-size: 12px">
@@ -81,7 +84,7 @@
           block
           outlined
           class="mb-4"
-          :disabled="!version || build === null"
+          :disabled="installing || !version || build === null"
           :loading="installing"
           @click="run(() => server.installVersion(version, build, encodedName))"
         >
@@ -103,12 +106,13 @@
             dense
             :items="oldJars"
             :loading="loadingOldJars"
+            :disabled="installing"
             v-model="oldJar"
           />
           <v-btn
             block
             outlined
-            :disabled="!oldJar"
+            :disabled="installing || !oldJar"
             :loading="installing"
             @click="run(() => server.installExistingJar(oldJar, encodedName))"
           >
@@ -190,13 +194,14 @@ export default class VersionDialogComponent extends Vue {
     this.error = false;
     this.loadingBuilds = true;
     try {
-      this.builds = await this.server.fetchPaperBuilds(version);
-      if (this.version === version && this.builds.length > 0)
-        this.build = this.builds[0].build;
+      const builds = await this.server.fetchPaperBuilds(version);
+      if (this.version !== version) return;
+      this.builds = builds;
+      if (builds.length > 0) this.build = builds[0].build;
     } catch (e) {
-      this.error = true;
+      if (this.version === version) this.error = true;
     } finally {
-      this.loadingBuilds = false;
+      if (this.version === version) this.loadingBuilds = false;
     }
   }
 

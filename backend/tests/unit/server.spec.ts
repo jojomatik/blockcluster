@@ -11,6 +11,7 @@ jest.mock("../../src/backend", () => ({
 jest.mock("../../src/components/paper", () => ({
   getPaperUpdates: jest.fn(),
   installPaperJar: jest.fn(),
+  restoreOldJar: jest.fn(),
 }));
 jest.mock("../../src/components/java_runtime", () => ({
   __esModule: true,
@@ -160,6 +161,7 @@ describe("backend Server", () => {
     beforeEach(() => {
       paper.getPaperUpdates.mockReset();
       paper.installPaperJar.mockReset();
+      paper.restoreOldJar.mockReset();
     });
 
     it("refuses to update a running server", async () => {
@@ -196,5 +198,78 @@ describe("backend Server", () => {
         target
       );
     });
+
+    it.each(["lookup", "download", "restore"])(
+      "rejects installs and starts during %s and allows another install afterward",
+      async (phase) => {
+        const server = new Server({
+          _name: "s",
+          _status: ServerStatus.Stopped,
+        });
+        const target = { version: "1.21.8", build: 5 };
+        let finish!: () => void;
+        const pending = new Promise<void>((resolve) => {
+          finish = resolve;
+        });
+        jest.spyOn(server, "update").mockResolvedValue();
+        jest.spyOn(server, "sendServerData").mockImplementation();
+        jest.spyOn(server, "getUpdates").mockImplementation(async () => {
+          if (phase === "lookup") await pending;
+          return { current: null, build: target, patch: null };
+        });
+        if (phase === "download")
+          paper.installPaperJar.mockReturnValueOnce(pending);
+        if (phase === "restore")
+          jest.spyOn(server, "update").mockReturnValueOnce(pending);
+
+        const installation = server.installUpdate(
+          phase === "restore" ? { file: "old.jar" } : "build"
+        );
+        await Promise.resolve();
+        await expect(server.installUpdate(target)).rejects.toThrow(
+          "already in progress"
+        );
+        await expect(server.start()).rejects.toThrow("update is in progress");
+        expect(server.status).toBe(ServerStatus.Stopped);
+
+        finish();
+        await installation;
+        await expect(server.installUpdate(target)).resolves.toBeUndefined();
+      }
+    );
+
+    it.each(["lookup", "download", "restore", "refresh"])(
+      "allows retry after a %s failure",
+      async (phase) => {
+        const server = new Server({
+          _name: "s",
+          _status: ServerStatus.Stopped,
+        });
+        const target = { version: "1.21.8", build: 5 };
+        const error = new Error("failed");
+        const update = jest.spyOn(server, "update").mockResolvedValue();
+        jest.spyOn(server, "sendServerData").mockImplementation();
+        const lookup = jest.spyOn(server, "getUpdates");
+        if (phase === "lookup") lookup.mockRejectedValueOnce(error);
+        if (phase === "download")
+          paper.installPaperJar.mockRejectedValueOnce(error);
+        if (phase === "restore")
+          paper.restoreOldJar.mockImplementationOnce(() => {
+            throw error;
+          });
+        if (phase === "refresh") update.mockRejectedValueOnce(error);
+
+        await expect(
+          server.installUpdate(
+            phase === "lookup"
+              ? "build"
+              : phase === "restore"
+              ? { file: "old.jar" }
+              : target
+          )
+        ).rejects.toBe(error);
+        await expect(server.installUpdate(target)).resolves.toBeUndefined();
+      }
+    );
   });
 });

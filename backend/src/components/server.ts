@@ -55,6 +55,8 @@ export default class Server extends CommonServer {
    */
   private proc: ChildProcessWithoutNullStreams | null = null;
 
+  private updatingJar = false;
+
   /**
    * An array of the latest messages from the server.
    * @private
@@ -248,18 +250,25 @@ export default class Server extends CommonServer {
   async installUpdate(
     type: "build" | "patch" | PaperJarInfo | { file: string }
   ): Promise<void> {
+    if (this.updatingJar)
+      throw new Error("A jar update is already in progress.");
     if (this.status !== ServerStatus.Stopped)
       throw new Error("The server must be stopped to update it.");
-    if (typeof type === "object" && "file" in type) {
-      restoreOldJar(this.getPath(), type.file);
-    } else {
-      const target =
-        typeof type === "string" ? (await this.getUpdates())[type] : type;
-      if (!target) throw new Error("No update available.");
-      await installPaperJar(this.getPath(), target);
+    this.updatingJar = true;
+    try {
+      if (typeof type === "object" && "file" in type) {
+        restoreOldJar(this.getPath(), type.file);
+      } else {
+        const target =
+          typeof type === "string" ? (await this.getUpdates())[type] : type;
+        if (!target) throw new Error("No update available.");
+        await installPaperJar(this.getPath(), target);
+      }
+      await this.update();
+      this.sendServerData();
+    } finally {
+      this.updatingJar = false;
     }
-    await this.update();
-    this.sendServerData();
   }
 
   /**
@@ -355,6 +364,10 @@ export default class Server extends CommonServer {
    * @param safe only resolve promise as soon as the server reaches {@link ServerStatus#Started}.
    */
   public async start(safe = false) {
+    if (this.updatingJar)
+      throw new Error(
+        "Cannot start the server while a jar update is in progress."
+      );
     if (this.status === ServerStatus.Paused) {
       this.wakeUpListener?.close();
     }

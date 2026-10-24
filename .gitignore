@@ -32,3 +32,6 @@ pnpm-debug.log*
 
 # Docker compose local
 docker-compose.local.yml
+
+# Storybook coverage
+/.nyc_output/

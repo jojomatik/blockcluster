@@ -1,0 +1,7 @@
+{
+  "extension": [".js", ".ts", ".vue"],
+  "include": ["src/**", "common/**"],
+  "exclude": ["**/*.stories.*", "**/*.d.ts", "src/main.ts", "src/stories/**"],
+  "exclude-after-remap": false,
+  "reporter": ["text", "lcov"]
+}

@@ -9,6 +9,12 @@ module.exports = {
     "@storybook/addon-links",
     "@storybook/addon-essentials",
     "@storybook/addon-interactions",
+    {
+      name: "@storybook/addon-coverage",
+      options: {
+        istanbul: { exclude: ["**/*.stories.*", "**/.storybook/**"] },
+      },
+    },
   ],
   framework: "@storybook/vue-webpack5",
   typescript: {
@@ -27,6 +33,10 @@ module.exports = {
       ...config.resolve.alias,
       "@": path.resolve(__dirname, "../src"),
     };
+    // Minifying instrumented code is very slow and unnecessary for coverage runs.
+    if (process.env.STORY_COVERAGE === "true") {
+      config.optimization.minimize = false;
+    }
     return config;
   },
   core: {

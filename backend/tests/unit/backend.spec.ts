@@ -401,6 +401,14 @@ describe("backend API", () => {
   });
 
   it("reserves distinct ports for concurrent server creations", async () => {
+    jest.mocked(listPaperVersions).mockResolvedValue(["1.21.8"]);
+    jest
+      .mocked(listPaperBuilds)
+      .mockResolvedValue([{ build: 9, time: "2025-01-01T00:00:00Z" }]);
+    jest.mocked(installPaperJar).mockResolvedValue("paper-1.21.8-9.jar");
+
+    const existingServerCount = mockServerInstances.length;
+    const existingPorts = mockServerInstances.map((server) => server.port);
     const results = await Promise.all([
       invoke("POST", "/api/servers", {
         body: { name: "Concurrent A", version: "1.21.8" },
@@ -411,8 +419,13 @@ describe("backend API", () => {
     ]);
 
     expect(results.map((result) => result.status)).toEqual([201, 201]);
-    const ports = mockServerInstances.map((server) => server.port);
+    expect(mockServerInstances).toHaveLength(existingServerCount + 2);
+    const ports = mockServerInstances
+      .slice(existingServerCount)
+      .map((server) => server.port);
     expect(new Set(ports).size).toBe(ports.length);
-    expect(ports.slice(-2)).toEqual([25569, 25570]);
+    for (const port of ports) {
+      expect(existingPorts).not.toContain(port);
+    }
   });
 });

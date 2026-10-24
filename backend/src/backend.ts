@@ -211,12 +211,13 @@ app.get(
 app.get(
   "/api/paper/versions/:version/builds",
   asyncHandler(async (req, res) => {
-    if (!/^\d+(\.\d+)+$/.test(req.params.version)) {
+    const version = req.params.version;
+    if (typeof version !== "string" || !/^\d+(\.\d+)+$/.test(version)) {
       res.status(400).json({ error: "Invalid version" });
       return;
     }
     try {
-      res.json(await listPaperBuilds(req.params.version));
+      res.json(await listPaperBuilds(version));
     } catch (error) {
       res.status(502).json({ error: "Could not load Paper builds" });
     }
@@ -288,7 +289,7 @@ app.post(
 
 app.use(express.static(path.join(__dirname, "../../../../dist")));
 
-app.get("*", (req, res) => {
+app.get("/{*splat}", (req, res) => {
   res.sendFile(path.join(__dirname, "../../../../dist/index.html"));
 });
 

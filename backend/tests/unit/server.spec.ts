@@ -2,6 +2,8 @@ import fs from "fs";
 import childProcess from "child_process";
 import commandExists from "command-exists";
 import mc from "minecraft-protocol";
+import { EventEmitter } from "events";
+import { PassThrough } from "stream";
 const mockIoEmit = jest.fn();
 const mockGetJavaRuntimes = jest.fn();
 
@@ -136,6 +138,136 @@ describe("backend Server", () => {
     }
   });
 
+  it("records EULA acceptance and broadcasts startup and running states", async () => {
+    jest.useFakeTimers();
+    const server = new Server({ _name: "survival" });
+    const writeFile = jest.spyOn(fs, "writeFileSync").mockImplementation();
+    const start = jest.spyOn(server, "start").mockImplementation(async () => {
+      server.status = ServerStatus.Starting;
+    });
+    const updateStatus = jest
+      .spyOn(server, "updateStatus")
+      .mockImplementation(async () => {
+        server.status = ServerStatus.Started;
+      });
+
+    try {
+      await server.acceptEula();
+
+      expect(writeFile).toHaveBeenCalledWith(
+        "/servers/survival/eula.txt",
+        expect.stringContaining("eula=true"),
+        { mode: 0o666 }
+      );
+      expect(start).toHaveBeenCalledTimes(1);
+      expect(mockIoEmit).toHaveBeenCalledWith("server_survival", {
+        serverInfo: expect.objectContaining({ status: ServerStatus.Starting }),
+      });
+
+      await jest.advanceTimersByTimeAsync(1000);
+
+      expect(updateStatus).toHaveBeenCalledTimes(1);
+      expect(mockIoEmit).toHaveBeenLastCalledWith("server_survival", {
+        serverInfo: expect.objectContaining({ status: ServerStatus.Started }),
+      });
+    } finally {
+      writeFile.mockRestore();
+      start.mockRestore();
+      updateStatus.mockRestore();
+      jest.useRealTimers();
+    }
+  });
+
+  describe("EULA acceptance lifecycle", () => {
+    let server: Server;
+    let writeFile: jest.SpyInstance;
+    let start: jest.SpyInstance;
+
+    beforeEach(() => {
+      server = new Server({ _name: "survival" });
+      writeFile = jest.spyOn(fs, "writeFileSync").mockImplementation();
+      start = jest.spyOn(server, "start").mockResolvedValue();
+    });
+
+    afterEach(() => jest.restoreAllMocks());
+
+    it("rejects acceptance for a started server without writing or starting", async () => {
+      server.status = ServerStatus.Started;
+
+      await expect(server.acceptEula()).rejects.toThrow("already started");
+
+      expect(writeFile).not.toHaveBeenCalled();
+      expect(start).not.toHaveBeenCalled();
+      expect(server.status).toBe(ServerStatus.Started);
+    });
+
+    it.each([
+      { exitCode: 0, signalCode: null },
+      { exitCode: null, signalCode: "SIGTERM" },
+    ])("skips waiting for an exited process: %j", async (exitStatus) => {
+      const proc = Object.assign(new EventEmitter(), exitStatus);
+      Object.assign(server, { proc });
+
+      await server.acceptEula();
+
+      expect(proc.listenerCount("exit")).toBe(0);
+      expect(server).toHaveProperty("proc", null);
+      expect(start).toHaveBeenCalledTimes(1);
+    });
+
+    it("shares acceptance while waiting for a running refusal process to exit", async () => {
+      const proc = Object.assign(new EventEmitter(), {
+        exitCode: null,
+        signalCode: null,
+      });
+      Object.assign(server, { proc });
+      server.status = ServerStatus.Starting;
+
+      const first = server.acceptEula();
+      const second = server.acceptEula();
+
+      expect(second).toBe(first);
+      expect(writeFile).toHaveBeenCalledTimes(1);
+      expect(proc.listenerCount("exit")).toBe(1);
+      expect(start).not.toHaveBeenCalled();
+      proc.emit("exit", 0, null);
+      await Promise.all([first, second]);
+      expect(start).toHaveBeenCalledTimes(1);
+    });
+
+    it.each([false, true])(
+      "shares acceptance until startup settles and allows a later attempt (failure: %s)",
+      async (fails) => {
+        let settle!: () => void;
+        const error = new Error("Java failed");
+        start.mockReturnValueOnce(
+          new Promise<void>((resolve, reject) => {
+            settle = () => (fails ? reject(error) : resolve());
+          })
+        );
+        const first = server.acceptEula();
+        const second = server.acceptEula();
+        expect(second).toBe(first);
+        expect(writeFile).toHaveBeenCalledTimes(1);
+        expect(start).toHaveBeenCalledTimes(1);
+
+        settle();
+        if (fails) {
+          await expect(first).rejects.toBe(error);
+          await expect(second).rejects.toBe(error);
+        } else {
+          await Promise.all([first, second]);
+        }
+
+        const later = server.acceptEula();
+        expect(later).not.toBe(first);
+        await later;
+        expect(writeFile).toHaveBeenCalledTimes(2);
+        expect(start).toHaveBeenCalledTimes(2);
+      }
+    );
+  });
+
   it("launches Java and checks status using the same allocated port", async () => {
     const server = new Server({ _name: "new-server", _javaPath: "/java" });
     server.port = 25568;
@@ -144,7 +276,7 @@ describe("backend Server", () => {
       .mockReturnValue(["paper.jar"] as never);
     const command = jest.spyOn(commandExists, "sync").mockReturnValue(false);
     const spawn = jest.spyOn(childProcess, "spawn").mockReturnValue({
-      stdout: { on: jest.fn() },
+      stdout: { on: jest.fn(), setEncoding: jest.fn() },
       stderr: { on: jest.fn() },
     } as never);
     const ping = jest.spyOn(mc, "ping").mockResolvedValue({} as never);
@@ -166,6 +298,54 @@ describe("backend Server", () => {
       ping.mockRestore();
     }
   });
+
+  it.each(["\n", ""])(
+    "emits complete stdout lines across chunks and flushes at end (terminator: %j)",
+    async (terminator) => {
+      const server = new Server({ _name: "survival", _javaPath: "/java" });
+      const stdout = new PassThrough();
+      const readdir = jest
+        .spyOn(fs, "readdirSync")
+        .mockReturnValue(["paper.jar"] as never);
+      const command = jest.spyOn(commandExists, "sync").mockReturnValue(false);
+      const spawn = jest.spyOn(childProcess, "spawn").mockReturnValue({
+        stdout,
+        stderr: { on: jest.fn() },
+      } as never);
+      const eulaText =
+        "π You need to agree to the EULA in order to run the server. Go to eula.txt for more info.";
+      const bytes = Buffer.from(eulaText);
+
+      try {
+        await server.start();
+        stdout.write("starting\n\n");
+        // Split both a UTF-8 character and the EULA pattern across chunks.
+        stdout.write(bytes.subarray(0, 1));
+        stdout.write(bytes.subarray(1, 25));
+        await Promise.resolve();
+        expect(server.getRecentMessages().map(({ text }) => text)).toEqual([
+          "starting",
+        ]);
+
+        const ended = new Promise<void>((resolve) => stdout.once("end", resolve));
+        stdout.end(Buffer.concat([bytes.subarray(25), Buffer.from(terminator)]));
+        await ended;
+
+        expect(server.getRecentMessages().map(({ text }) => text)).toEqual([
+          "starting",
+          eulaText,
+        ]);
+        expect(mockIoEmit).toHaveBeenLastCalledWith("server_survival", {
+          message: expect.objectContaining({ text: eulaText }),
+        });
+      } finally {
+        stdout.destroy();
+        readdir.mockRestore();
+        command.mockRestore();
+        spawn.mockRestore();
+      }
+    }
+  );
 
   it("records zero usage when no child process is running and caps history at 60", async () => {
     const server = new Server({ _name: "idle" });

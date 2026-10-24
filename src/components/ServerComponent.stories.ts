@@ -102,6 +102,28 @@ class MockServer extends Server {
   async sendCommand() {
     return new Response();
   }
+
+  async acceptEula() {
+    this.status = ServerStatus.Starting;
+    setTimeout(() => (this.status = ServerStatus.Started), 300);
+    return new Response();
+  }
+}
+
+const eulaText =
+  "[Server thread/INFO]: You need to agree to the EULA in order to run the server. Go to eula.txt for more info.";
+
+/** A stopped {@link Server} whose console history ends with the given messages. */
+function makeServerWithMessages(texts: string[]) {
+  const server = makeServer(ServerStatus.Stopped);
+  server.fetchMessages = async () =>
+    texts.map((text, i) => ({
+      _timestamp: FIXTURE_TIME - (texts.length - i) * 1000,
+      _uuid: `eula-${i}`,
+      _type: MessageType.Default,
+      _text: text,
+    }));
+  return server;
 }
 
 function makeServer(status: ServerStatus, name = "Survival World") {
@@ -237,6 +259,69 @@ export const PauseServer = {
     await expect(
       await canvas.findByRole("button", { name: /^unpause$/i })
     ).toBeVisible();
+  },
+};
+
+/** Shows the EULA dialog, which only allows starting after agreeing, and starts the server. */
+export const EulaDialog = {
+  args: {
+    server: makeServerWithMessages(["Loading libraries", eulaText]),
+    detailed: true,
+  },
+  play: async () => {
+    const dialog = within(await within(document.body).findByRole("dialog"));
+    await expect(
+      dialog.getByRole("link", { name: /read the minecraft eula/i })
+    ).toHaveAttribute("href", "https://www.minecraft.net/en-us/eula");
+    await expect(
+      dialog.getByRole("button", { name: /^start server$/i })
+    ).toBeDisabled();
+  },
+};
+
+/** Accepts the EULA and starts the server. Not snapshotted, as the dialog is closed afterwards. */
+export const EulaDialogAccept = {
+  ...EulaDialog,
+  parameters: { chromatic: { disableSnapshot: true } },
+  play: async ({ canvasElement }: { canvasElement: HTMLElement }) => {
+    const dialog = within(await within(document.body).findByRole("dialog"));
+    const start = dialog.getByRole("button", { name: /^start server$/i });
+    await expect(start).toBeDisabled();
+    const agree = dialog.getByText(/i agree to the minecraft eula/i);
+    // The dialog ignores pointer events while it is still animating in.
+    await waitFor(async () => {
+      await expect(getComputedStyle(agree).pointerEvents).not.toBe("none");
+      await userEvent.click(agree);
+    });
+    await waitFor(() => expect(start).toBeEnabled());
+    await userEvent.click(start);
+    await waitFor(
+      async () =>
+        expect(
+          await within(canvasElement).findByRole("button", { name: /^stop$/i })
+        ).toBeInTheDocument(),
+      { timeout: 3000 }
+    );
+  },
+};
+
+/** The EULA message is followed by later messages, so the dialog must not open again. */
+export const EulaAlreadyAccepted = {
+  args: {
+    server: makeServerWithMessages([
+      eulaText,
+      "[Server thread/INFO]: Starting minecraft server",
+      '[Server thread/INFO]: Done (3.2s)! For help, type "help"',
+    ]),
+    detailed: true,
+  },
+  play: async ({ canvasElement }: { canvasElement: HTMLElement }) => {
+    await expect(
+      await within(canvasElement).findByText(/Done \(3\.2s\)/)
+    ).toBeVisible();
+    await expect(
+      within(document.body).queryByRole("dialog")
+    ).not.toBeInTheDocument();
   },
 };
 

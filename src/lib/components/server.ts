@@ -39,6 +39,12 @@ export default class Server extends CommonServer {
     });
   }
 
+  acceptEula(encodedName = encodeURIComponent(this.name)) {
+    return this.request(`/api/servers/${encodedName}/eula`, {
+      method: "POST",
+    });
+  }
+
   sendCommand(command: string, encodedName = encodeURIComponent(this.name)) {
     return this.request(`/api/servers/${encodedName}/commands`, {
       method: "POST",

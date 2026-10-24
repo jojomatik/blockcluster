@@ -157,6 +157,7 @@ export default class ConsoleComponent extends Vue {
             this.bufferedMessages.push(...liveMessages);
           } else {
             this.appendMessages(liveMessages);
+            this.checkEulaRequired();
           }
         }
         Vue.nextTick(this.scrollConsole);
@@ -220,6 +221,23 @@ export default class ConsoleComponent extends Vue {
       this.addDatetimeMessage(messageData, lastMessage?.timestamp);
       this.messages.push(Object.assign(new Message(), message));
     });
+  }
+
+  /**
+   * Emits `eula-required` if the latest message is the EULA refusal, so that a server which was
+   * started again after accepting the EULA does not prompt for it anew.
+   * @private
+   */
+  private checkEulaRequired(): void {
+    const last = this.messages[this.messages.length - 1];
+    if (
+      last !== undefined &&
+      /You need to agree to the EULA in order to run the server/i.test(
+        last.text
+      )
+    ) {
+      this.$emit("eula-required");
+    }
   }
 
   /**
@@ -290,6 +308,7 @@ export default class ConsoleComponent extends Vue {
       this.messagesLoading = false;
       this.appendMessages(this.bufferedMessages);
       this.bufferedMessages = [];
+      this.checkEulaRequired();
       if (failedToLoad) {
         this.messages.push(
           new Message(

@@ -57,6 +57,8 @@ export default class Server extends CommonServer {
 
   private updateInProgress = false;
 
+  private eulaAcceptance?: Promise<void>;
+
   /**
    * An array of the latest messages from the server.
    * @private
@@ -417,17 +419,25 @@ export default class Server extends CommonServer {
       }
     );
     if (this.pauseOnIdle.enable) this.startPauseTimeout();
-    this.proc.stdout.on("data", (data) => {
-      const messages = data.toString().split("\n");
-      messages.forEach(async (messageText: string) => {
-        if (messageText !== "") {
-          const message = new Message(MessageType.Default, messageText);
-          // Handle message in backend.
-          await this.handleConsoleMessage(message);
-          // Send message to the frontend.
-          await this.sendConsoleMessage(message);
-        }
-      });
+    let stdoutBuffer = "";
+    const sendStdoutLine = async (messageText: string) => {
+      if (messageText !== "") {
+        const message = new Message(MessageType.Default, messageText);
+        // Handle message in backend.
+        await this.handleConsoleMessage(message);
+        // Send message to the frontend.
+        await this.sendConsoleMessage(message);
+      }
+    };
+    this.proc.stdout.setEncoding("utf8");
+    this.proc.stdout.on("data", (data: string) => {
+      const messages = (stdoutBuffer + data).split("\n");
+      stdoutBuffer = messages.pop() ?? "";
+      messages.forEach(sendStdoutLine);
+    });
+    this.proc.stdout.on("end", () => {
+      void sendStdoutLine(stdoutBuffer);
+      stdoutBuffer = "";
     });
 
     this.proc.stderr.on("data", (data) => {
@@ -445,6 +455,47 @@ export default class Server extends CommonServer {
       return new Promise((resolve, reject) => {
         this.safeStartPromise = { resolve: resolve, reject: reject };
       });
+  }
+
+  /**
+   * Records acceptance of the Minecraft EULA and starts the server.
+   */
+  public acceptEula(): Promise<void> {
+    if (!this.eulaAcceptance) {
+      this.eulaAcceptance = this.acceptEulaAndStart().finally(() => {
+        this.eulaAcceptance = undefined;
+      });
+    }
+    return this.eulaAcceptance;
+  }
+
+  private async acceptEulaAndStart(): Promise<void> {
+    if (this.status === ServerStatus.Started) {
+      throw new Error("The server is already started.");
+    }
+
+    fs.writeFileSync(
+      this.getPath() + "/eula.txt",
+      "#By changing the setting below to TRUE you are indicating your agreement to our EULA (https://aka.ms/MinecraftEULA).\neula=true\n",
+      { mode: 0o666 }
+    );
+
+    const previousProcess = this.proc;
+    if (previousProcess) {
+      if (
+        previousProcess.exitCode === null &&
+        previousProcess.signalCode === null
+      ) {
+        await new Promise<void>((resolve) => {
+          previousProcess.once("exit", () => resolve());
+        });
+      }
+      if (this.proc === previousProcess) this.proc = null;
+    }
+
+    this.status = ServerStatus.Stopped;
+    await this.start();
+    this.sendServerData();
   }
 
   /**

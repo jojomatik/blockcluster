@@ -71,6 +71,14 @@
         "console": {
           "title": "Konsole"
         },
+        "eula": {
+          "title": "Minecraft-Endbenutzer-Lizenzvereinbarung",
+          "description": "Der Server kann erst starten, wenn du der Minecraft-Endbenutzer-Lizenzvereinbarung zustimmst.",
+          "link": "Minecraft-EULA lesen",
+          "accept": "Ich stimme der Minecraft-EULA zu",
+          "start": "Server starten",
+          "cancel": "Abbrechen"
+        },
         "delete_world": {
           "dialog": {
             "cancel": "Abbrechen",

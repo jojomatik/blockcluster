@@ -20,7 +20,7 @@ module.exports = {
     plugins: [
       new LicenseCheckerWebpackPlugin({
         allow:
-          "(Apache-2.0 OR BSD-2-Clause OR BSD-3-Clause OR MIT OR 0BSD OR LicenseRef-vue-apexcharts)",
+          "(Apache-2.0 OR BSD-2-Clause OR BSD-3-Clause OR MIT OR 0BSD OR OFL-1.1 OR LicenseRef-vue-apexcharts)",
         // Accept its non-SPDX license while preserving the original license text for attribution.
         override: {
           "vue-apexcharts@1.7.1": { licenseName: "LicenseRef-vue-apexcharts" },

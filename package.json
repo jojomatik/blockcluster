@@ -21,7 +21,7 @@
     "chromatic": "npx chromatic"
   },
   "dependencies": {
-    "@fontsource/roboto": "^4.5.8",
+    "@fontsource/roboto": "^5.0.0",
     "@mdi/font": "^7.4.47",
     "apexcharts": "4.7.0",
     "core-js": "^3.50.0",

@@ -1,7 +1,7 @@
 import { shallowMount } from "@vue/test-utils";
 import VersionDialogComponent from "../../../src/components/VersionDialogComponent.vue";
 
-type Builds = { build: number; time: string }[];
+type Build = { build: number; time: string };
 
 function deferred<T>() {
   let resolve!: (value: T) => void;
@@ -14,9 +14,9 @@ function deferred<T>() {
 }
 
 function mountDialog(fetchPaperBuilds = jest.fn()) {
-  return shallowMount(VersionDialogComponent, {
+  const wrapper = shallowMount(VersionDialogComponent, {
     propsData: {
-      server: { name: "survival", fetchPaperBuilds },
+      server: { name: "test", fetchPaperBuilds },
       updates: {
         build: { version: "1.21.8", build: 70 },
         patch: { version: "1.21.10", build: 5 },
@@ -24,107 +24,145 @@ function mountDialog(fetchPaperBuilds = jest.fn()) {
     },
     mocks: { $t: (key: string) => key },
   });
+  const vm = wrapper.vm as unknown as {
+    version: string;
+    builds: Build[];
+    build: number | null;
+    error: boolean;
+    loadingBuilds: boolean;
+    loadBuilds: (version: string) => Promise<void>;
+  };
+  return { wrapper, vm };
 }
 
 describe("VersionDialogComponent", () => {
-  it("disables every install action while installing and preserves availability checks", async () => {
-    const wrapper = mountDialog();
+  it("disables every install action and selector during installation", async () => {
+    const { wrapper } = mountDialog();
     await wrapper.setData({
       version: "1.21.8",
       build: 70,
       oldJars: ["old.jar"],
       oldJar: "old.jar",
     });
-    const actions = () =>
+    const buttons = () =>
       wrapper
         .findAllComponents({ name: "VBtn" })
-        .wrappers.filter((button) => button.props("block"));
-    expect(actions()).toHaveLength(4);
-    expect(actions().map((button) => button.props("disabled"))).toEqual([
-      false,
-      false,
-      false,
-      false,
-    ]);
+        .wrappers.filter(
+          (button) => button.props("outlined") && button.props("block")
+        );
+    const selectors = () =>
+      wrapper.findAllComponents({ name: "VSelect" }).wrappers;
+    expect(buttons()).toHaveLength(4);
+    expect(buttons().every((button) => !button.props("disabled"))).toBe(true);
 
     await wrapper.setData({ installing: true });
-    expect(actions().every((button) => button.props("disabled"))).toBe(true);
+    expect(buttons().every((button) => button.props("disabled"))).toBe(true);
+    expect(selectors().every((select) => select.props("disabled"))).toBe(true);
 
-    await wrapper.setData({ installing: false, version: null, oldJar: null });
-    expect(actions().map((button) => button.props("disabled"))).toEqual([
+    await wrapper.setData({
+      installing: false,
+      version: null,
+      build: null,
+      oldJar: null,
+    });
+    expect(buttons().map((button) => button.props("disabled"))).toEqual([
       false,
       false,
       true,
       true,
     ]);
+    expect(selectors()[1].props("disabled")).toBe(true);
     await wrapper.setData({ version: "1.21.8", build: null });
-    expect(actions()[2].props("disabled")).toBe(true);
+    expect(buttons()[2].props("disabled")).toBe(true);
     wrapper.destroy();
   });
 
   it.each(["success", "failure"])(
-    "ignores an obsolete request's %s while the latest request is pending",
+    "ignores superseded request %s while the current request is pending",
     async (outcome) => {
-      const older = deferred<Builds>();
-      const latest = deferred<Builds>();
-      const fetchBuilds = jest
+      const old = deferred<Build[]>();
+      const current = deferred<Build[]>();
+      const fetch = jest
         .fn()
-        .mockReturnValueOnce(older.promise)
-        .mockReturnValueOnce(latest.promise);
-      const wrapper = mountDialog(fetchBuilds);
-      const loadBuilds = wrapper.vm.$options.methods?.loadBuilds;
-      if (!loadBuilds) throw new Error("Missing loadBuilds method");
-      await wrapper.setData({ version: "1.21.8" });
-      const olderRequest = loadBuilds.call(wrapper.vm, "1.21.8");
-      await wrapper.setData({ version: "1.21.10" });
-      const latestRequest = loadBuilds.call(wrapper.vm, "1.21.10");
+        .mockReturnValueOnce(old.promise)
+        .mockReturnValueOnce(current.promise);
+      const { wrapper, vm } = mountDialog(fetch);
+      vm.version = "1.21.8";
+      const first = vm.loadBuilds(vm.version);
+      vm.version = "1.21.10";
+      const second = vm.loadBuilds(vm.version);
 
-      if (outcome === "success") older.resolve([{ build: 70, time: "old" }]);
-      else older.reject(new Error("obsolete failure"));
-      await olderRequest;
+      if (outcome === "success")
+        old.resolve([{ build: 70, time: "2025-01-01" }]);
+      else old.reject(new Error("offline"));
+      await first;
+      expect(vm.builds).toEqual([]);
+      expect(vm.build).toBeNull();
+      expect(vm.error).toBe(false);
+      expect(vm.loadingBuilds).toBe(true);
 
-      expect(wrapper.vm.$data).toMatchObject({
-        builds: [],
-        build: null,
-        error: false,
-        loadingBuilds: true,
-      });
-      const builds = [{ build: 5, time: "latest" }];
-      latest.resolve(builds);
-      await latestRequest;
-      expect(wrapper.vm.$data).toMatchObject({
-        builds,
-        build: 5,
-        error: false,
-        loadingBuilds: false,
-      });
+      const builds = [{ build: 5, time: "2025-01-02" }];
+      current.resolve(builds);
+      await second;
+      expect(vm.builds).toEqual(builds);
+      expect(vm.build).toBe(5);
+      expect(vm.error).toBe(false);
+      expect(vm.loadingBuilds).toBe(false);
       wrapper.destroy();
     }
   );
 
+  it("keeps the current selection when a superseded response arrives last", async () => {
+    const old = deferred<Build[]>();
+    const builds = [{ build: 5, time: "2025-01-02" }];
+    const fetch = jest
+      .fn()
+      .mockReturnValueOnce(old.promise)
+      .mockResolvedValueOnce(builds);
+    const { wrapper, vm } = mountDialog(fetch);
+    vm.version = "1.21.8";
+    const first = vm.loadBuilds(vm.version);
+    vm.version = "1.21.10";
+    await vm.loadBuilds(vm.version);
+    old.resolve([{ build: 70, time: "2025-01-01" }]);
+    await first;
+    expect(vm.builds).toEqual(builds);
+    expect(vm.build).toBe(5);
+    expect(vm.error).toBe(false);
+    expect(vm.loadingBuilds).toBe(false);
+    wrapper.destroy();
+  });
+
+  it("shows a failure of the current request and clears its loading state", async () => {
+    const { wrapper, vm } = mountDialog(
+      jest.fn().mockRejectedValue(new Error("offline"))
+    );
+    vm.version = "1.21.8";
+    await vm.loadBuilds(vm.version);
+    expect(vm.error).toBe(true);
+    expect(vm.loadingBuilds).toBe(false);
+    wrapper.destroy();
+  });
+
   it("keeps the latest request's error when an older request later succeeds", async () => {
-    const older = deferred<Builds>();
+    const older = deferred<Build[]>();
     const fetchBuilds = jest
       .fn()
       .mockReturnValueOnce(older.promise)
       .mockRejectedValueOnce(new Error("latest failure"));
-    const wrapper = mountDialog(fetchBuilds);
-    const loadBuilds = wrapper.vm.$options.methods?.loadBuilds;
-    if (!loadBuilds) throw new Error("Missing loadBuilds method");
-    await wrapper.setData({ version: "1.21.8" });
-    const olderRequest = loadBuilds.call(wrapper.vm, "1.21.8");
-    await wrapper.setData({ version: "1.21.10" });
-    await loadBuilds.call(wrapper.vm, "1.21.10");
+    const { wrapper, vm } = mountDialog(fetchBuilds);
+    vm.version = "1.21.8";
+    const olderRequest = vm.loadBuilds(vm.version);
+    vm.version = "1.21.10";
+    await vm.loadBuilds(vm.version);
 
     older.resolve([{ build: 70, time: "old" }]);
     await olderRequest;
 
-    expect(wrapper.vm.$data).toMatchObject({
-      builds: [],
-      build: null,
-      error: true,
-      loadingBuilds: false,
-    });
+    expect(vm.builds).toEqual([]);
+    expect(vm.build).toBeNull();
+    expect(vm.error).toBe(true);
+    expect(vm.loadingBuilds).toBe(false);
     wrapper.destroy();
   });
 });

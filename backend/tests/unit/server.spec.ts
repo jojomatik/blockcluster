@@ -1,4 +1,5 @@
 import fs from "fs";
+import type { PaperUpdates } from "../../src/components/paper";
 
 const mockIoEmit = jest.fn();
 const mockGetJavaRuntimes = jest.fn();
@@ -11,6 +12,7 @@ jest.mock("../../src/backend", () => ({
 jest.mock("../../src/components/paper", () => ({
   getPaperUpdates: jest.fn(),
   installPaperJar: jest.fn(),
+  restoreOldJar: jest.fn(),
 }));
 jest.mock("../../src/components/java_runtime", () => ({
   __esModule: true,
@@ -160,6 +162,7 @@ describe("backend Server", () => {
     beforeEach(() => {
       paper.getPaperUpdates.mockReset();
       paper.installPaperJar.mockReset();
+      paper.restoreOldJar.mockReset();
     });
 
     it("refuses to update a running server", async () => {
@@ -179,6 +182,93 @@ describe("backend Server", () => {
       jest.spyOn(server as never, "getJarFile").mockReturnValue(null as never);
       paper.getPaperUpdates.mockResolvedValue({ build: null, patch: null });
       await expect(server.installUpdate("patch")).rejects.toThrow("No update");
+    });
+
+    it("rejects installs and starts during update lookup, then releases the guard", async () => {
+      const server = new Server({ _name: "s", _status: ServerStatus.Stopped });
+      let finishLookup!: (value: PaperUpdates) => void;
+      jest.spyOn(server, "getUpdates").mockReturnValue(
+        new Promise((resolve) => {
+          finishLookup = resolve;
+        })
+      );
+      jest.spyOn(server, "update").mockResolvedValue();
+      jest.spyOn(server, "sendServerData").mockImplementation();
+
+      const pending = server.installUpdate("build");
+      await expect(server.installUpdate({ file: "old.jar" })).rejects.toThrow(
+        "in progress"
+      );
+      await expect(server.start()).rejects.toThrow("in progress");
+      expect(server.status).toBe(ServerStatus.Stopped);
+      expect(paper.restoreOldJar).not.toHaveBeenCalled();
+      finishLookup({ current: null, build: null, patch: null });
+      await expect(pending).rejects.toThrow("No update");
+      await expect(
+        server.installUpdate({ version: "1.21.8", build: 5 })
+      ).resolves.toBeUndefined();
+    });
+
+    it("holds the guard during download and releases it after an install failure", async () => {
+      const server = new Server({ _name: "s", _status: ServerStatus.Stopped });
+      jest.spyOn(server, "update").mockResolvedValue();
+      jest.spyOn(server, "sendServerData").mockImplementation();
+      let failInstall!: (reason: Error) => void;
+      paper.installPaperJar.mockReturnValueOnce(
+        new Promise((_resolve, reject) => {
+          failInstall = reject;
+        })
+      );
+      const target = { version: "1.21.8", build: 5 };
+      const pending = server.installUpdate(target);
+
+      await expect(server.installUpdate(target)).rejects.toThrow("in progress");
+      await expect(server.start()).rejects.toThrow("in progress");
+      failInstall(new Error("download failed"));
+      await expect(pending).rejects.toThrow("download failed");
+      await expect(server.installUpdate(target)).resolves.toBeUndefined();
+    });
+
+    it("holds the guard until refresh completes after restoring an old jar", async () => {
+      const server = new Server({ _name: "s", _status: ServerStatus.Stopped });
+      let finishUpdate!: () => void;
+      jest
+        .spyOn(server, "update")
+        .mockReturnValueOnce(
+          new Promise((resolve) => {
+            finishUpdate = resolve;
+          })
+        )
+        .mockResolvedValue();
+      jest.spyOn(server, "sendServerData").mockImplementation();
+
+      const pending = server.installUpdate({ file: "old.jar" });
+      expect(paper.restoreOldJar).toHaveBeenCalledWith("/servers/s", "old.jar");
+      await expect(server.start()).rejects.toThrow("in progress");
+      await expect(server.installUpdate("build")).rejects.toThrow(
+        "in progress"
+      );
+      finishUpdate();
+      await pending;
+      await expect(
+        server.installUpdate({ file: "old.jar" })
+      ).resolves.toBeUndefined();
+    });
+
+    it("releases the guard after an old jar restore fails", async () => {
+      const server = new Server({ _name: "s", _status: ServerStatus.Stopped });
+      jest.spyOn(server, "update").mockResolvedValue();
+      jest.spyOn(server, "sendServerData").mockImplementation();
+      paper.restoreOldJar.mockImplementationOnce(() => {
+        throw new Error("restore failed");
+      });
+
+      await expect(server.installUpdate({ file: "old.jar" })).rejects.toThrow(
+        "restore failed"
+      );
+      await expect(
+        server.installUpdate({ file: "old.jar" })
+      ).resolves.toBeUndefined();
     });
 
     it("installs an explicit version without looking up updates", async () => {

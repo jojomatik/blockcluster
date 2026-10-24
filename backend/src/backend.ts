@@ -65,10 +65,18 @@ const creatingServerNames = new Set<string>();
 const creatingServerPorts = new Set<number>();
 const systemUsage: ResourceUsage[] = [];
 
-function getAvailablePort(servers: Server[]): number {
+function getAvailablePort(
+  servers: Server[],
+  unavailablePorts = new Set<number>()
+): number {
   const usedPorts = new Set(servers.map((server) => server.port));
   for (let port = 25565; port <= 65535; port++) {
-    if (!usedPorts.has(port) && !creatingServerPorts.has(port)) return port;
+    if (
+      !usedPorts.has(port) &&
+      !creatingServerPorts.has(port) &&
+      !unavailablePorts.has(port)
+    )
+      return port;
   }
   throw new Error("No server port is available");
 }
@@ -479,6 +487,7 @@ export const basePath: string = ((): string => {
 async function getServers(): Promise<Server[]> {
   const servers: Server[] = [];
   const uninitializedServers: Server[] = [];
+  const unavailablePorts = new Set<number>();
   const propertiesFile = "server.properties";
 
   for (const file of fs.readdirSync(basePath)) {
@@ -522,25 +531,35 @@ async function getServers(): Promise<Server[]> {
       if (config && ("creationPort" in config || "port" in config)) {
         delete config.creationPort;
         delete config.port;
-        fs.writeFileSync(
-          path.join(serverPath, "blockcluster.cfg"),
-          JSON.stringify(config)
-        );
+        try {
+          fs.writeFileSync(
+            path.join(serverPath, "blockcluster.cfg"),
+            JSON.stringify(config)
+          );
+        } catch (error) {
+          console.error(
+            `Could not clean up legacy port config for server "${server.name}".`,
+            error
+          );
+        }
       }
     } else if (configuredPort !== undefined) {
       if (
         configuredPort === port ||
-        servers.some((server) => server.port === configuredPort)
+        servers.some((server) => server.port === configuredPort) ||
+        !(await isPortAvailable(configuredPort))
       ) {
         console.error(
-          `Could not restore port ${configuredPort} for server "${server.name}": port is already in use.`
+          `Could not restore port ${configuredPort} for server "${server.name}": port is unavailable.`
         );
+        unavailablePorts.add(configuredPort);
+        uninitializedServers.push(server);
       } else server.port = configuredPort;
     } else uninitializedServers.push(server);
     servers.push(server);
   }
   for (const server of uninitializedServers) {
-    server.port = getAvailablePort(servers);
+    server.port = getAvailablePort(servers, unavailablePorts);
   }
   return servers;
 }

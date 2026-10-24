@@ -177,6 +177,19 @@ describe("backend API", () => {
   let restoreInterval: jest.SpyInstance;
   let restoreLog: jest.SpyInstance;
 
+  async function loadBackend(): Promise<void> {
+    const loaded = new Promise<void>((resolve) => {
+      restoreInterval.mockImplementationOnce(() => {
+        resolve();
+        return {} as never;
+      });
+    });
+    jest.isolateModules(() => {
+      require("../../src/backend");
+    });
+    await loaded;
+  }
+
   beforeAll(async () => {
     serversPath = fs.mkdtempSync(path.join(os.tmpdir(), "blockcluster-api-"));
     fs.mkdirSync(path.join(serversPath, "survival"));
@@ -225,10 +238,7 @@ describe("backend API", () => {
       .mockReturnValue({} as never);
     restoreLog = jest.spyOn(console, "log").mockImplementation();
 
-    jest.isolateModules(() => {
-      require("../../src/backend");
-    });
-    await new Promise((resolve) => setTimeout(resolve, 0));
+    await loadBackend();
   });
 
   afterAll(() => {
@@ -639,9 +649,16 @@ describe("backend API", () => {
       path.join(serversPath, "Custom Port", "server.properties"),
       "server-port=30124"
     );
+    const listener = net.createServer();
+    await new Promise<void>((resolve, reject) => {
+      listener.once("error", reject);
+      listener.listen(0, "127.0.0.1", resolve);
+    });
+    const occupiedPort = (listener.address() as net.AddressInfo).port;
     const conflicts = [
       { name: "z-backend-conflict", port: 8081, propertiesPort: 0 },
       { name: "z-duplicate-conflict", port: 30124, propertiesPort: 0 },
+      { name: "z-host-conflict", port: occupiedPort, propertiesPort: 0 },
       { name: "z-properties-conflict", port: 25565, propertiesPort: 30125 },
     ];
     for (const { name, port, propertiesPort } of conflicts) {
@@ -662,24 +679,29 @@ describe("backend API", () => {
     const previousCount = mockServerInstances.length;
     const logError = jest.spyOn(console, "error").mockImplementation();
     try {
-      jest.isolateModules(() => {
-        require("../../src/backend");
-      });
+      await loadBackend();
       const restored = mockServerInstances.slice(previousCount);
       for (const { name, port, propertiesPort } of conflicts) {
-        expect(restored.find((server) => server.name === name)?.port).toBe(
-          propertiesPort
-        );
-        if (!propertiesPort)
+        const restoredPort = restored.find(
+          (server) => server.name === name
+        )?.port;
+        if (propertiesPort) expect(restoredPort).toBe(propertiesPort);
+        else {
+          expect(restoredPort).toBeGreaterThanOrEqual(25565);
+          expect(restoredPort).not.toBe(port);
           expect(logError).toHaveBeenCalledWith(
-            `Could not restore port ${port} for server "${name}": port is already in use.`
+            `Could not restore port ${port} for server "${name}": port is unavailable.`
           );
+        }
       }
-      expect(logError).toHaveBeenCalledTimes(2);
+      expect(new Set(restored.map((server) => server.port)).size).toBe(
+        restored.length
+      );
+      expect(logError).toHaveBeenCalledTimes(3);
     } finally {
       logError.mockRestore();
+      await new Promise<void>((resolve) => listener.close(() => resolve()));
     }
-    await new Promise((resolve) => setTimeout(resolve, 0));
     const restored = mockServerInstances.slice(previousCount);
     expect(
       restored.find((server) => server.name === "Survival Server")?.port
@@ -696,6 +718,93 @@ describe("backend API", () => {
       );
       expect(config).not.toHaveProperty("creationPort");
       expect(config).not.toHaveProperty("port");
+    }
+  });
+
+  it.each(["creationPort", "port"])(
+    "loads servers using server.properties when cleaning up %s fails",
+    async (key) => {
+      const configPath = path.join(
+        serversPath,
+        "Custom Port",
+        "blockcluster.cfg"
+      );
+      const config = { [key]: 30123, flags: ["-Xmx2G"], autostart: true };
+      fs.writeFileSync(configPath, JSON.stringify(config));
+      const writeFileSync = fs.writeFileSync;
+      const writeError = new Error("read-only config");
+      const writeFile = jest
+        .spyOn(fs, "writeFileSync")
+        .mockImplementation((file, ...args) => {
+          if (file === configPath) throw writeError;
+          return writeFileSync(file, ...args);
+        });
+      const logError = jest.spyOn(console, "error").mockImplementation();
+      const previousCount = mockServerInstances.length;
+      try {
+        await loadBackend();
+        const restored = mockServerInstances.slice(previousCount);
+        expect(
+          restored.find((server) => server.name === "Custom Port")?.port
+        ).toBe(30124);
+        for (const server of restored) expect(server.update).toHaveBeenCalled();
+        expect(JSON.parse(fs.readFileSync(configPath, "utf8"))).toEqual(config);
+        expect(logError).toHaveBeenCalledWith(
+          'Could not clean up legacy port config for server "Custom Port".',
+          writeError
+        );
+      } finally {
+        writeFile.mockRestore();
+        logError.mockRestore();
+      }
+    }
+  );
+
+  it("assigns an automatic port when a saved port cannot be bound", async () => {
+    const fixturePath = fs.mkdtempSync(
+      path.join(os.tmpdir(), "blockcluster-bind-")
+    );
+    const serverPath = path.join(fixturePath, "denied-port");
+    fs.mkdirSync(serverPath);
+    fs.writeFileSync(path.join(serverPath, "paper.jar"), "jar");
+    fs.writeFileSync(
+      path.join(serverPath, "blockcluster.cfg"),
+      JSON.stringify({ creationPort: 25565 })
+    );
+    process.env.SERVER_PATH = fixturePath;
+    const listener = new net.Server();
+    const listen = jest.spyOn(listener, "listen").mockImplementation(() => {
+      process.nextTick(() => {
+        listener.emit(
+          "error",
+          Object.assign(new Error("permission denied"), {
+            code: "EACCES",
+          })
+        );
+      });
+      return listener;
+    });
+    const createServer = jest
+      .spyOn(net, "createServer")
+      .mockReturnValueOnce(listener);
+    const logError = jest.spyOn(console, "error").mockImplementation();
+    const previousCount = mockServerInstances.length;
+    try {
+      await loadBackend();
+      expect(listen).toHaveBeenCalledWith(25565, expect.any(Function));
+      expect(mockServerInstances.slice(previousCount)).toEqual([
+        expect.objectContaining({ name: "denied-port", port: 25566 }),
+      ]);
+      expect(logError).toHaveBeenCalledWith(
+        'Could not restore port 25565 for server "denied-port": port is unavailable.'
+      );
+    } finally {
+      createServer.mockRestore();
+      listen.mockRestore();
+      logError.mockRestore();
+      process.env.SERVER_PATH = serversPath;
+      fs.unwatchFile(path.join(serverPath, "start"));
+      fs.rmSync(fixturePath, { recursive: true, force: true });
     }
   });
 });

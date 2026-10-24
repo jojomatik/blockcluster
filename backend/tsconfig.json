@@ -6,18 +6,12 @@
     "noImplicitAny": true,
     "moduleResolution": "node16",
     "isolatedModules": true,
-    "types": [
-      "node"
-    ],
+    "noEmit": true,
+    "types": ["node", "jest"],
     "sourceMap": true,
     "rootDir": "..",
     "outDir": "dist",
-    "lib": [
-      "esnext",
-      "dom"
-    ]
+    "lib": ["esnext", "dom"]
   },
-  "include": [
-    "src/**/*"
-  ]
+  "include": ["src/**/*", "tests/**/*.ts", "../common/tests/**/*.ts"]
 }

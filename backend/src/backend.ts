@@ -224,8 +224,9 @@ export const basePath: string = ((): string => {
   let basePath: string = process.env.SERVER_PATH ?? "";
   if (!basePath)
     try {
-      const configuredPath =
-        PropertiesReader("./settings.properties").get("server-path");
+      const configuredPath = PropertiesReader({
+        sourceFile: "./settings.properties",
+      }).get("server-path");
       if (configuredPath == null) throw new Error("Missing server-path");
       basePath = configuredPath.toString();
     } catch (error) {
@@ -249,9 +250,9 @@ async function getServers(): Promise<Server[]> {
     const isDir: boolean = fs.lstatSync(path).isDirectory();
     if (isDir && fs.readdirSync(path).includes(propertiesFile)) {
       const properties = getPropertiesFromFile(
-        PropertiesReader(
-          path + "/" + propertiesFile
-        ).getAllProperties() as ServerPropertiesFile
+        PropertiesReader({
+          sourceFile: path + "/" + propertiesFile,
+        }).getAllProperties() as ServerPropertiesFile
       );
       const server = new Server({
         _name: file,

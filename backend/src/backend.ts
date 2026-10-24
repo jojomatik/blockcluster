@@ -515,8 +515,16 @@ async function getServers(): Promise<Server[]> {
     } catch {
       // Existing servers may not have a blockcluster config yet.
     }
-    if (configuredPort !== undefined) server.port = configuredPort;
-    else if (!hasProperties) uninitializedServers.push(server);
+    if (configuredPort !== undefined) {
+      if (
+        configuredPort === port ||
+        servers.some((server) => server.port === configuredPort)
+      ) {
+        console.error(
+          `Could not restore port ${configuredPort} for server "${server.name}": port is already in use.`
+        );
+      } else server.port = configuredPort;
+    } else if (!hasProperties) uninitializedServers.push(server);
     servers.push(server);
   }
   for (const server of uninitializedServers) {

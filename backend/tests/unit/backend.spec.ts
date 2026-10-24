@@ -626,7 +626,7 @@ describe("backend API", () => {
     }
   });
 
-  it("restores selected automatic and custom ports after a backend restart", async () => {
+  it("restores nonconflicting ports and reports conflicts after a backend restart", async () => {
     for (const name of ["Survival Server", "Custom Port"]) {
       // The installer is mocked; supply the JAR that it normally writes.
       fs.writeFileSync(
@@ -639,10 +639,45 @@ describe("backend API", () => {
       path.join(serversPath, "Custom Port", "server.properties"),
       "server-port=25565"
     );
+    const conflicts = [
+      { name: "z-backend-conflict", port: 8081, previousPort: 0 },
+      { name: "z-duplicate-conflict", port: 30123, previousPort: 0 },
+      { name: "z-properties-conflict", port: 25565, previousPort: 30125 },
+    ];
+    for (const { name, port, previousPort } of conflicts) {
+      const serverPath = path.join(serversPath, name);
+      fs.mkdirSync(serverPath);
+      fs.writeFileSync(path.join(serverPath, "paper.jar"), "jar");
+      fs.writeFileSync(
+        path.join(serverPath, "blockcluster.cfg"),
+        JSON.stringify({ port })
+      );
+      if (previousPort) {
+        fs.writeFileSync(
+          path.join(serverPath, "server.properties"),
+          `server-port=${previousPort}`
+        );
+      }
+    }
     const previousCount = mockServerInstances.length;
-    jest.isolateModules(() => {
-      require("../../src/backend");
-    });
+    const logError = jest.spyOn(console, "error").mockImplementation();
+    try {
+      jest.isolateModules(() => {
+        require("../../src/backend");
+      });
+      const restored = mockServerInstances.slice(previousCount);
+      for (const { name, port, previousPort } of conflicts) {
+        expect(restored.find((server) => server.name === name)?.port).toBe(
+          previousPort
+        );
+        expect(logError).toHaveBeenCalledWith(
+          `Could not restore port ${port} for server "${name}": port is already in use.`
+        );
+      }
+      expect(logError).toHaveBeenCalledTimes(conflicts.length);
+    } finally {
+      logError.mockRestore();
+    }
     await new Promise((resolve) => setTimeout(resolve, 0));
     const restored = mockServerInstances.slice(previousCount);
     expect(

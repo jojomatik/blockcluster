@@ -48,6 +48,9 @@
           "name": "Nom du répertoire du serveur",
           "name_hint": "1 à 64 caractères : A–Z, a–z, 0–9, espaces, _, . ou -. Le nom ne peut pas être . ou ..",
           "version": "Version de Paper",
+          "port": "Port",
+          "port_hint": "Facultatif. Laissez vide pour utiliser le prochain port libre (1024–65535).",
+          "port_invalid": "Saisissez un port entre 1024 et 65535.",
           "create": "Créer",
           "cancel": "Annuler",
           "error": "Impossible de charger les versions de Paper ou de créer le serveur."

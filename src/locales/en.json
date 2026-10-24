@@ -51,6 +51,9 @@
           "name": "Server directory name",
           "name_hint": "1–64 characters: A–Z, a–z, 0–9, spaces, _, . or -. Names cannot be . or ..",
           "version": "Paper version",
+          "port": "Port",
+          "port_hint": "Optional. Leave empty to use the next free port (1024–65535).",
+          "port_invalid": "Enter a port between 1024 and 65535.",
           "create": "Create",
           "cancel": "Cancel",
           "error": "Could not load Paper versions or create the server."

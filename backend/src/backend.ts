@@ -24,6 +24,8 @@ import PropertiesReader from "properties-reader";
 import { ServerStatus } from "../../common/components/server";
 import Server from "./components/server";
 import path from "path";
+import net from "net";
+import type ServerConfig from "./components/server_config";
 
 import dotenv from "dotenv";
 import dotenvExpand from "dotenv-expand";
@@ -60,14 +62,31 @@ const version = getVersion();
 
 let servers: Server[] = [];
 const creatingServerNames = new Set<string>();
+const creatingServerPorts = new Set<number>();
 const systemUsage: ResourceUsage[] = [];
 
-function getAvailablePort(servers: Server[]): number {
+function getAvailablePort(
+  servers: Server[],
+  unavailablePorts = new Set<number>()
+): number {
   const usedPorts = new Set(servers.map((server) => server.port));
   for (let port = 25565; port <= 65535; port++) {
-    if (!usedPorts.has(port)) return port;
+    if (
+      !usedPorts.has(port) &&
+      !creatingServerPorts.has(port) &&
+      !unavailablePorts.has(port)
+    )
+      return port;
   }
   throw new Error("No server port is available");
+}
+
+function isPortAvailable(port: number): Promise<boolean> {
+  return new Promise((resolve) => {
+    const listener = net.createServer();
+    listener.once("error", () => resolve(false));
+    listener.listen(port, () => listener.close(() => resolve(true)));
+  });
 }
 
 app.use(express.json());
@@ -119,6 +138,27 @@ app.post(
       return;
     }
 
+    const requestedPort = req.body?.port;
+    if (requestedPort !== undefined && requestedPort !== null) {
+      if (
+        !Number.isInteger(requestedPort) ||
+        requestedPort < 1024 ||
+        requestedPort > 65535
+      ) {
+        res.status(400).json({ error: "Invalid port" });
+        return;
+      }
+      if (
+        !(await isPortAvailable(requestedPort)) ||
+        requestedPort === port ||
+        creatingServerPorts.has(requestedPort) ||
+        servers.some((server) => server.port === requestedPort)
+      ) {
+        res.status(409).json({ error: "Port is already in use" });
+        return;
+      }
+    }
+
     let builds: { build: number; time: string }[];
     try {
       const versions = await listPaperVersions();
@@ -147,6 +187,19 @@ app.post(
     }
 
     creatingServerNames.add(name);
+    if (requestedPort) {
+      if (
+        !(await isPortAvailable(requestedPort)) ||
+        requestedPort === port ||
+        creatingServerPorts.has(requestedPort) ||
+        servers.some((server) => server.port === requestedPort)
+      ) {
+        creatingServerNames.delete(name);
+        res.status(409).json({ error: "Port is already in use" });
+        return;
+      }
+      creatingServerPorts.add(requestedPort);
+    }
     const serverPath = path.join(basePath, name);
     let createdDirectory = false;
     let registeredServer: Server | null = null;
@@ -159,7 +212,11 @@ app.post(
       });
 
       const server = new Server({ _name: name });
-      server.port = getAvailablePort(servers);
+      server.port = requestedPort ?? getAvailablePort(servers);
+      fs.writeFileSync(
+        path.join(serverPath, "blockcluster.cfg"),
+        JSON.stringify({ creationPort: server.port })
+      );
       servers.push(server);
       registeredServer = server;
       await server.update();
@@ -177,6 +234,7 @@ app.post(
       res.status(502).json({ error: "Could not create Paper server" });
     } finally {
       creatingServerNames.delete(name);
+      if (requestedPort) creatingServerPorts.delete(requestedPort);
     }
   })
 );
@@ -429,6 +487,7 @@ export const basePath: string = ((): string => {
 async function getServers(): Promise<Server[]> {
   const servers: Server[] = [];
   const uninitializedServers: Server[] = [];
+  const unavailablePorts = new Set<number>();
   const propertiesFile = "server.properties";
 
   for (const file of fs.readdirSync(basePath)) {
@@ -449,11 +508,58 @@ async function getServers(): Promise<Server[]> {
           ),
         })
       : new Server({ _name: file });
-    if (!hasProperties) uninitializedServers.push(server);
+    let configuredPort: number | undefined;
+    let config: (ServerConfig & { port?: number }) | undefined;
+    try {
+      const loadedConfig: ServerConfig & { port?: number } = JSON.parse(
+        fs.readFileSync(path.join(serverPath, "blockcluster.cfg"), "utf8")
+      );
+      config = loadedConfig;
+      const savedPort = loadedConfig.creationPort ?? loadedConfig.port;
+      if (
+        typeof savedPort === "number" &&
+        Number.isInteger(savedPort) &&
+        savedPort >= 1024 &&
+        savedPort <= 65535
+      ) {
+        configuredPort = savedPort;
+      }
+    } catch {
+      // Existing servers may not have a blockcluster config yet.
+    }
+    if (hasProperties) {
+      if (config && ("creationPort" in config || "port" in config)) {
+        delete config.creationPort;
+        delete config.port;
+        try {
+          fs.writeFileSync(
+            path.join(serverPath, "blockcluster.cfg"),
+            JSON.stringify(config)
+          );
+        } catch (error) {
+          console.error(
+            `Could not clean up legacy port config for server "${server.name}".`,
+            error
+          );
+        }
+      }
+    } else if (configuredPort !== undefined) {
+      if (
+        configuredPort === port ||
+        servers.some((server) => server.port === configuredPort) ||
+        !(await isPortAvailable(configuredPort))
+      ) {
+        console.error(
+          `Could not restore port ${configuredPort} for server "${server.name}": port is unavailable.`
+        );
+        unavailablePorts.add(configuredPort);
+        uninitializedServers.push(server);
+      } else server.port = configuredPort;
+    } else uninitializedServers.push(server);
     servers.push(server);
   }
   for (const server of uninitializedServers) {
-    server.port = getAvailablePort(servers);
+    server.port = getAvailablePort(servers, unavailablePorts);
   }
   return servers;
 }

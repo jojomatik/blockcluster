@@ -25,6 +25,12 @@ import { PauseOnIdleType } from "../../../common/components/server";
  */
 export default class ServerConfig {
   /**
+   * The port selected during server creation, until Minecraft writes
+   * server.properties.
+   */
+  public creationPort?: number;
+
+  /**
    * The flags of the server.
    */
   public flags: string[];

@@ -47,4 +47,24 @@ describe("Player", () => {
     expect(stripped).not.toHaveProperty("extra");
     expect(JSON.parse(player.stringify())).not.toHaveProperty("extra");
   });
+
+  it("strips and serializes player collections without leaking runtime fields", () => {
+    const players = [
+      Object.assign(new Player("first-id", "First", "first-head"), {
+        internalCache: "private",
+      }),
+      new Player("second-id", "Second", "second-head"),
+    ];
+
+    const stripped = Player.strip(players);
+    const serialized = JSON.parse(Player.stringify(players));
+
+    expect(stripped).toHaveLength(2);
+    expect(stripped[0]).toBeInstanceOf(Player);
+    expect(stripped[0]).not.toHaveProperty("internalCache");
+    expect(serialized).toEqual([
+      { _uuid: "first-id", _name: "First", _head: "first-head" },
+      { _uuid: "second-id", _name: "Second", _head: "second-head" },
+    ]);
+  });
 });

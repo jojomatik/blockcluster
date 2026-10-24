@@ -58,7 +58,7 @@ Open `http://[your ip]:8081` in your browser.
 ### Manual setup 
 Prerequisites:
 - Git
-- Node.js (v16+) and npm (v8+)
+- Node.js (v24+) and npm (v11+)
 - Java (to run the minecraft servers)
 
 1. First build the app using the instructions from ["Building manually"](#building-manually).
@@ -130,7 +130,7 @@ docker-compose up --force-recreate --build
 ### Building manually
 Prerequisites:
 - Git
-- Node.js (v16+) and npm (v8+)
+- Node.js (v24+) and npm (v11+)
 - Java (only to run the minecraft servers)
 
 Run the following commands:

@@ -28,6 +28,7 @@
             block
             outlined
             class="mb-2"
+            :disabled="installing"
             :loading="installing"
             @click="run(() => server.installUpdate('build', encodedName))"
           >
@@ -42,6 +43,7 @@
             v-if="updates.patch"
             block
             outlined
+            :disabled="installing"
             :loading="installing"
             @click="run(() => server.installUpdate('patch', encodedName))"
           >
@@ -81,7 +83,7 @@
           block
           outlined
           class="mb-4"
-          :disabled="!version || build === null"
+          :disabled="installing || !version || build === null"
           :loading="installing"
           @click="run(() => server.installVersion(version, build, encodedName))"
         >
@@ -108,7 +110,7 @@
           <v-btn
             block
             outlined
-            :disabled="!oldJar"
+            :disabled="installing || !oldJar"
             :loading="installing"
             @click="run(() => server.installExistingJar(oldJar, encodedName))"
           >
@@ -190,13 +192,14 @@ export default class VersionDialogComponent extends Vue {
     this.error = false;
     this.loadingBuilds = true;
     try {
-      this.builds = await this.server.fetchPaperBuilds(version);
-      if (this.version === version && this.builds.length > 0)
-        this.build = this.builds[0].build;
+      const builds = await this.server.fetchPaperBuilds(version);
+      if (this.version !== version) return;
+      this.builds = builds;
+      if (builds.length > 0) this.build = builds[0].build;
     } catch (e) {
-      this.error = true;
+      if (this.version === version) this.error = true;
     } finally {
-      this.loadingBuilds = false;
+      if (this.version === version) this.loadingBuilds = false;
     }
   }
 

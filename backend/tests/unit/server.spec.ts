@@ -199,7 +199,7 @@ describe("backend Server", () => {
       await expect(server.installUpdate({ file: "old.jar" })).rejects.toThrow(
         "in progress"
       );
-      await expect(server.start()).rejects.toThrow("in progress");
+      await expect(server.start()).rejects.toThrow("jar is being updated");
       expect(server.status).toBe(ServerStatus.Stopped);
       expect(paper.restoreOldJar).not.toHaveBeenCalled();
       finishLookup({ current: null, build: null, patch: null });
@@ -223,7 +223,7 @@ describe("backend Server", () => {
       const pending = server.installUpdate(target);
 
       await expect(server.installUpdate(target)).rejects.toThrow("in progress");
-      await expect(server.start()).rejects.toThrow("in progress");
+      await expect(server.start()).rejects.toThrow("jar is being updated");
       failInstall(new Error("download failed"));
       await expect(pending).rejects.toThrow("download failed");
       await expect(server.installUpdate(target)).resolves.toBeUndefined();
@@ -244,7 +244,7 @@ describe("backend Server", () => {
 
       const pending = server.installUpdate({ file: "old.jar" });
       expect(paper.restoreOldJar).toHaveBeenCalledWith("/servers/s", "old.jar");
-      await expect(server.start()).rejects.toThrow("in progress");
+      await expect(server.start()).rejects.toThrow("jar is being updated");
       await expect(server.installUpdate("build")).rejects.toThrow(
         "in progress"
       );
@@ -285,6 +285,34 @@ describe("backend Server", () => {
         expect.any(String),
         target
       );
+    });
+
+    it("rejects concurrent updates and prevents the server from starting", async () => {
+      const server = new Server({
+        _name: "s",
+        _status: ServerStatus.Stopped,
+      });
+      let finishInstall!: (file: string) => void;
+      paper.installPaperJar.mockReturnValue(
+        new Promise((resolve) => {
+          finishInstall = resolve;
+        })
+      );
+      jest.spyOn(server, "update").mockResolvedValue();
+      jest.spyOn(server, "sendServerData").mockImplementation();
+      const installation = server.installUpdate({
+        version: "1.21.8",
+        build: 5,
+      });
+
+      await expect(
+        server.installUpdate({ version: "1.21.8", build: 6 })
+      ).rejects.toThrow("already in progress");
+      await expect(server.start()).rejects.toThrow("jar is being updated");
+
+      finishInstall("paper-1.21.8-5.jar");
+      await installation;
+      expect(server.status).toBe(ServerStatus.Stopped);
     });
   });
 });

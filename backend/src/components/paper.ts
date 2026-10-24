@@ -108,8 +108,9 @@ export async function getPaperUpdates(
         break;
       }
     }
-  } catch (e) {
+  } catch {
     // A failed patch lookup must not discard an available build update.
+    return result;
   }
   return result;
 }
@@ -221,9 +222,10 @@ export async function installPaperJar(
   try {
     fs.renameSync(tmpFile, path.join(dir, download.name));
   } catch (error) {
-    if (activeJar) {
+    const previousJar = activeJar && archived.get(activeJar);
+    if (activeJar && previousJar && fs.existsSync(previousJar)) {
       try {
-        fs.renameSync(archived.get(activeJar)!, path.join(dir, activeJar));
+        fs.renameSync(previousJar, path.join(dir, activeJar));
       } catch (restoreError) {
         throw new AggregateError(
           [error, restoreError],

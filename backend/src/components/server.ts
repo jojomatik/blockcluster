@@ -366,7 +366,7 @@ export default class Server extends CommonServer {
   public async start(safe = false) {
     if (this.updateInProgress)
       throw new Error(
-        "Cannot start the server while a jar update is in progress."
+        "The server cannot start while its jar is being updated."
       );
     if (this.status === ServerStatus.Paused) {
       this.wakeUpListener?.close();

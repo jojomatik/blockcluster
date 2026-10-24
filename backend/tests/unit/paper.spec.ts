@@ -109,6 +109,31 @@ describe("paper", () => {
       }
     );
 
+    it("keeps the build update when looking up project versions fails", async () => {
+      jest.spyOn(global, "fetch").mockImplementation((async (
+        input: RequestInfo | URL
+      ) => {
+        const url = String(input);
+        if (url.endsWith("/projects/paper"))
+          return new Response("", { status: 500 });
+        return json([build("1.21.8", 70)]);
+      }) as typeof fetch);
+
+      const result = await getPaperUpdates("paper-1.21.8-60.jar");
+
+      expect(result.build).toEqual({ version: "1.21.8", build: 70 });
+      expect(result.patch).toBeNull();
+    });
+
+    it("keeps the build update when looking up a newer patch build fails", async () => {
+      mockApi({ "1.21.8": [build("1.21.8", 70)] });
+
+      const result = await getPaperUpdates("paper-1.21.8-60.jar");
+
+      expect(result.build).toEqual({ version: "1.21.8", build: 70 });
+      expect(result.patch).toBeNull();
+    });
+
     it("offers nothing when already up to date", async () => {
       mockApi({ "1.20.6": [build("1.20.6", 10)] });
       const result = await getPaperUpdates("paper-1.20.6-10.jar");
@@ -258,6 +283,63 @@ describe("paper", () => {
       ).rejects.toThrow("Checksum");
 
       expect(fs.readdirSync(dir)).toEqual(["paper-1.21.8-60.jar"]);
+    });
+
+    it("keeps a single archived copy of an identical jar", async () => {
+      mockApi({ "1.21.8": [build("1.21.8", 70)] });
+      fs.mkdirSync(path.join(dir, "oldjars"));
+      fs.writeFileSync(path.join(dir, "paper-1.21.8-60.jar"), JAR_BODY);
+      fs.writeFileSync(
+        path.join(dir, "oldjars", "paper-1.21.8-60.jar"),
+        JAR_BODY
+      );
+
+      await installPaperJar(dir, { version: "1.21.8", build: 70 });
+
+      expect(fs.readdirSync(path.join(dir, "oldjars"))).toEqual([
+        "paper-1.21.8-60.jar",
+      ]);
+    });
+
+    it("uses a unique archive name when a jar name already has different contents", async () => {
+      mockApi({ "1.21.8": [build("1.21.8", 70)] });
+      fs.mkdirSync(path.join(dir, "oldjars"));
+      fs.writeFileSync(path.join(dir, "paper-1.21.8-60.jar"), "current");
+      fs.writeFileSync(
+        path.join(dir, "oldjars", "paper-1.21.8-60.jar"),
+        "previous"
+      );
+
+      await installPaperJar(dir, { version: "1.21.8", build: 70 });
+
+      expect(fs.readdirSync(path.join(dir, "oldjars")).sort()).toEqual([
+        "paper-1.21.8-60-1.jar",
+        "paper-1.21.8-60.jar",
+      ]);
+      expect(
+        fs.readFileSync(
+          path.join(dir, "oldjars", "paper-1.21.8-60-1.jar"),
+          "utf8"
+        )
+      ).toBe("current");
+    });
+
+    it("restores the active jar when activating the downloaded jar fails", async () => {
+      mockApi({ "1.21.8": [build("1.21.8", 70)] });
+      const activeJar = path.join(dir, "paper-1.21.8-60.jar");
+      fs.writeFileSync(activeJar, "active");
+      const activationError = new Error("activation failed");
+      const renameSync = fs.renameSync;
+      jest.spyOn(fs, "renameSync").mockImplementation((source, destination) => {
+        if (String(source).endsWith(".jar.download")) throw activationError;
+        return renameSync.call(fs, source, destination);
+      });
+
+      await expect(
+        installPaperJar(dir, { version: "1.21.8", build: 70 })
+      ).rejects.toBe(activationError);
+
+      expect(fs.readFileSync(activeJar, "utf8")).toBe("active");
     });
 
     it("rejects unknown builds", async () => {

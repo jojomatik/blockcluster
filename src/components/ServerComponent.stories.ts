@@ -124,9 +124,16 @@ export default {
   },
   decorators: [
     () => {
-      mockFetch();
+      let originalFetch: typeof window.fetch;
       return {
         router: new VueRouter({ mode: "abstract" }),
+        beforeMount() {
+          originalFetch = window.fetch;
+          mockFetch();
+        },
+        mounted() {
+          window.fetch = originalFetch;
+        },
         template: "<story/>",
       };
     },

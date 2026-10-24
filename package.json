@@ -82,7 +82,7 @@
     "socket.io": "4.8.4",
     "storybook": "7.6.24",
     "style-loader": "^4.0.0",
-    "typescript": "~6.0.0",
+    "typescript": "~7.0.0",
     "vue-cli-plugin-vuetify": "2.5.8",
     "vue-template-compiler": "2.7.16",
     "vuetify-loader": "1.9.2"

@@ -49,6 +49,7 @@
     "@storybook/addon-interactions": "7.6.24",
     "@storybook/addon-links": "7.6.24",
     "@storybook/blocks": "7.6.24",
+    "@storybook/jest": "0.2.3",
     "@storybook/testing-library": "0.2.2",
     "@storybook/vue": "7.6.24",
     "@storybook/vue-webpack5": "7.6.24",

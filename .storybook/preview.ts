@@ -17,6 +17,9 @@ export const decorators: Decorator[] = [
 ];
 
 export const parameters = {
+  options: {
+    storySort: { order: ["Blockcluster", "Atoms", "Molecules", "Organisms"] },
+  },
   actions: { argTypesRegex: "^on[A-Z].*" },
   controls: {
     matchers: {

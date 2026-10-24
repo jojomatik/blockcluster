@@ -3,7 +3,7 @@ import { ServerStatus } from "../../../common/components/server";
 import prepareEnum from "../../../.storybook/enumPrepare";
 
 export default {
-  title: "Components/RestartButtonComponent",
+  title: "Molecules/RestartButtonComponent",
   component: RestartButtonComponent,
   argTypes: {
     status: {

@@ -66,11 +66,19 @@ describe("paper", () => {
   it("ignores custom jars", () => {
     expect(parsePaperJar("spigot.jar")).toBeNull();
     expect(parsePaperJar(null)).toBeNull();
+    expect(parsePaperJar("paper-1.21.8.1-60.jar")).toBeNull();
+    expect(parsePaperJar("paper-1.021.8-60.jar")).toBeNull();
   });
 
-  it("compares versions numerically", () => {
+  it("compares semantic versions while normalizing two-part Paper versions", () => {
     expect(compareVersions("1.21.10", "1.21.9")).toBeGreaterThan(0);
     expect(compareVersions("1.21", "1.21.0")).toBe(0);
+    expect(compareVersions("1.21.8-alpha.2", "1.21.8-alpha.10")).toBeLessThan(
+      0
+    );
+    expect(() => compareVersions("1.21.8.1", "1.21.8")).toThrow(
+      "invalid semantic versions"
+    );
   });
 
   describe("getPaperUpdates", () => {

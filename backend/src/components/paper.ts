@@ -3,6 +3,7 @@ import path from "path";
 import { Readable } from "stream";
 import { pipeline } from "stream/promises";
 import { createHash } from "crypto";
+import * as semver from "semver";
 
 const API = "https://fill.papermc.io/v3/projects/paper";
 
@@ -25,6 +26,16 @@ export interface PaperUpdates {
   patch: PaperJarInfo | null;
 }
 
+function parseVersion(version: string): semver.SemVer | null {
+  const normalized = /^\d+\.\d+$/.test(version) ? `${version}.0` : version;
+  return semver.parse(normalized);
+}
+
+function parsePaperVersion(version: string): semver.SemVer | null {
+  if (!/^\d+(?:\.\d+){1,2}$/.test(version)) return null;
+  return parseVersion(version);
+}
+
 interface PaperBuild {
   id: number;
   channel: string;
@@ -39,21 +50,21 @@ interface PaperBuild {
  * Returns `null` for any other (custom) jar.
  */
 export function parsePaperJar(file: string | null): PaperJarInfo | null {
-  const match = /^paper-(\d+(?:\.\d+)+)-(\d+)\.jar$/.exec(file ?? "");
-  return match ? { version: match[1], build: parseInt(match[2]) } : null;
+  const match = /^paper-(\d+(?:\.\d+){1,2})-(\d+)\.jar$/.exec(file ?? "");
+  return match && parsePaperVersion(match[1])
+    ? { version: match[1], build: parseInt(match[2], 10) }
+    : null;
 }
 
 /**
- * Compares two dotted versions numerically.
+ * Compares two semantic versions, treating Paper's two-part versions as having a zero patch.
  */
 export function compareVersions(a: string, b: string): number {
-  const pa = a.split(".").map(Number);
-  const pb = b.split(".").map(Number);
-  for (let i = 0; i < Math.max(pa.length, pb.length); i++) {
-    const diff = (pa[i] ?? 0) - (pb[i] ?? 0);
-    if (diff !== 0) return diff;
-  }
-  return 0;
+  const parsedA = parseVersion(a);
+  const parsedB = parseVersion(b);
+  if (!parsedA || !parsedB)
+    throw new TypeError("Cannot compare invalid semantic versions.");
+  return semver.compare(parsedA, parsedB);
 }
 
 async function getJson<T>(url: string): Promise<T> {
@@ -98,7 +109,8 @@ export async function getPaperUpdates(
     const newer = (project.versions[minor] ?? [])
       .filter(
         (v) =>
-          /^\d+(\.\d+)+$/.test(v) && compareVersions(v, current.version) > 0
+          parsePaperVersion(v) !== null &&
+          compareVersions(v, current.version) > 0
       )
       .sort((a, b) => compareVersions(b, a));
     for (const version of newer) {
@@ -252,7 +264,7 @@ export async function listPaperVersions(): Promise<string[]> {
   const project = await getJson<{ versions: Record<string, string[]> }>(API);
   return Object.values(project.versions)
     .flat()
-    .filter((v) => /^\d+(\.\d+)+$/.test(v))
+    .filter((v) => parsePaperVersion(v) !== null)
     .sort((a, b) => compareVersions(b, a));
 }
 

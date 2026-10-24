@@ -108,8 +108,8 @@ export async function getPaperUpdates(
         break;
       }
     }
-  } catch (e) {
-    // The build update is still available if the patch lookup fails.
+  } catch {
+    return result;
   }
   return result;
 }
@@ -141,7 +141,7 @@ function archiveJars(dir: string): Map<string, string> {
         while (fs.existsSync(destination)) {
           destination = path.join(
             oldDir,
-            `${file.slice(0, -4)}.${suffix++}.jar`
+            `${file.slice(0, -4)}-${suffix++}.jar`
           );
         }
         fs.renameSync(source, destination);
@@ -215,18 +215,25 @@ export async function installPaperJar(
     throw e;
   }
 
-  const activeJar = fs.readdirSync(dir).find((file) => file.endsWith(".jar"));
+  const activeJar = fs
+    .readdirSync(dir)
+    .find(
+      (file) =>
+        file.endsWith(".jar") && fs.lstatSync(path.join(dir, file)).isFile()
+    );
   const archived = archiveJars(dir);
   try {
     fs.renameSync(tmpFile, path.join(dir, download.name));
-  } catch (e) {
-    try {
-      const backup = activeJar && archived.get(activeJar);
-      if (backup) fs.renameSync(backup, path.join(dir, activeJar));
-    } catch {
-      // Keep the activation error if restoring the backup also fails.
+  } catch (error) {
+    const previousJar = activeJar && archived.get(activeJar);
+    if (previousJar && fs.existsSync(previousJar)) {
+      try {
+        fs.renameSync(previousJar, path.join(dir, activeJar));
+      } catch {
+        // Keep the activation error if restoring the backup also fails.
+      }
     }
-    throw e;
+    throw error;
   }
   return download.name;
 }

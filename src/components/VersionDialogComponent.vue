@@ -63,6 +63,7 @@
           :items="versions"
           :label="$t('gui.views.server.version_dialog.version')"
           :loading="loadingVersions"
+          :disabled="installing"
           v-model="version"
           @change="loadBuilds"
         />
@@ -73,7 +74,7 @@
           :item-text="formatBuild"
           :label="$t('gui.views.server.version_dialog.build')"
           :loading="loadingBuilds"
-          :disabled="!version"
+          :disabled="installing || !version"
           v-model="build"
         />
         <p class="font-weight-light" style="font-size: 12px">
@@ -105,6 +106,7 @@
             dense
             :items="oldJars"
             :loading="loadingOldJars"
+            :disabled="installing"
             v-model="oldJar"
           />
           <v-btn

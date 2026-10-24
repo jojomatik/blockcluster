@@ -29,7 +29,7 @@
     "moment": "2.31.0",
     "socket.io-client": "4.8.4",
     "uuid": "11.1.1",
-    "vue": "2.7.16",
+    "vue": "3.0.0",
     "vue-apexcharts": "1.7.1",
     "vue-class-component": "7.2.6",
     "vue-i18n": "8.28.2",

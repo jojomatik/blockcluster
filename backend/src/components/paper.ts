@@ -108,8 +108,8 @@ export async function getPaperUpdates(
         break;
       }
     }
-  } catch (e) {
-    // A failed patch lookup must not hide an available build update.
+  } catch {
+    return result;
   }
   return result;
 }
@@ -129,7 +129,7 @@ function archiveJars(dir: string): Map<string, string> {
       let identical = false;
       let checksum: string | undefined;
       while (fs.existsSync(destination)) {
-        if (parsePaperJar(file) && fs.lstatSync(destination).isFile()) {
+        if (fs.lstatSync(destination).isFile()) {
           checksum ??= createHash("sha256")
             .update(fs.readFileSync(source))
             .digest("hex");
@@ -143,7 +143,7 @@ function archiveJars(dir: string): Map<string, string> {
             break;
           }
         }
-        destination = path.join(oldDir, `${file.slice(0, -4)}.${suffix++}.jar`);
+        destination = path.join(oldDir, `${file.slice(0, -4)}-${suffix++}.jar`);
       }
       if (identical) fs.unlinkSync(source);
       else fs.renameSync(source, destination);
@@ -225,10 +225,16 @@ export async function installPaperJar(
   const archived = archiveJars(dir);
   try {
     fs.renameSync(tmpFile, path.join(dir, download.name));
-  } catch (e) {
-    if (activeJar)
-      fs.renameSync(archived.get(activeJar)!, path.join(dir, activeJar));
-    throw e;
+  } catch (error) {
+    const previousJar = activeJar && archived.get(activeJar);
+    if (previousJar && fs.existsSync(previousJar)) {
+      try {
+        fs.renameSync(previousJar, path.join(dir, activeJar));
+      } catch {
+        // Preserve the activation error; the backup remains in oldjars.
+      }
+    }
+    throw error;
   }
   return download.name;
 }

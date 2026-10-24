@@ -15,6 +15,13 @@ module.exports = {
   coverageProvider: "v8",
   moduleFileExtensions: ["ts", "tsx", ...preset.moduleFileExtensions],
   testPathIgnorePatterns: ["<rootDir>/backend/"],
+  globals: {
+    "vue-jest": {
+      transform: {
+        "^ts$": require.resolve("./jest.vue-typescript-transformer.js"),
+      },
+    },
+  },
   transform: {
     ...preset.transform,
     "^.+\\.tsx?$": [

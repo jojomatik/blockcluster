@@ -1,3 +1,5 @@
+import fs from "fs";
+
 const mockIoEmit = jest.fn();
 const mockGetJavaRuntimes = jest.fn();
 
@@ -100,6 +102,33 @@ describe("backend Server", () => {
         }),
       })
     );
+  });
+
+  it("writes updated settings to blockcluster.cfg", async () => {
+    const server = new Server({ _name: "survival" });
+    const update = jest.spyOn(server, "update").mockResolvedValue();
+    const writeFile = jest.spyOn(fs, "writeFileSync").mockImplementation();
+    const settings = {
+      flags: ["-Xmx2G"],
+      autostart: true,
+      pauseOnIdle: { enable: true, timeout: 60 },
+      javaPath: "/custom/java",
+    };
+
+    try {
+      await server.updateConfig(settings);
+
+      expect(writeFile).toHaveBeenCalledTimes(1);
+      expect(writeFile).toHaveBeenCalledWith(
+        "/servers/survival/blockcluster.cfg",
+        JSON.stringify(settings),
+        { mode: 0o666 }
+      );
+      expect(update).toHaveBeenCalledTimes(1);
+    } finally {
+      writeFile.mockRestore();
+      update.mockRestore();
+    }
   });
 
   it("records zero usage when no child process is running and caps history at 60", async () => {

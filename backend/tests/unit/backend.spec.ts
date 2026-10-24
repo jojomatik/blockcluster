@@ -1,6 +1,7 @@
 import fs from "fs";
 import os from "os";
 import path from "path";
+import net from "net";
 import type { NextFunction, Request, Response } from "express";
 import {
   installPaperJar,
@@ -108,13 +109,25 @@ jest.mock("../../src/utils/dependency_info", () => ({
 
 type Result = { status: number; body: unknown };
 
-function createResponse(): { response: Response; result: Result } {
+function createResponse(): {
+  response: Response;
+  result: Result;
+  completed: Promise<void>;
+  fail: (error: unknown) => void;
+} {
+  let finish!: () => void;
+  let fail!: (error: unknown) => void;
+  const completed = new Promise<void>((resolve, reject) => {
+    finish = resolve;
+    fail = reject;
+  });
   const result: Result = { status: 200, body: undefined };
   const response = {} as Response;
   Object.assign(response, {
     contentType: jest.fn(() => response),
     send: jest.fn((body: unknown) => {
       result.body = body;
+      finish();
       return response;
     }),
     status: jest.fn((status: number) => {
@@ -123,12 +136,16 @@ function createResponse(): { response: Response; result: Result } {
     }),
     json: jest.fn((body: unknown) => {
       result.body = body;
+      finish();
       return response;
     }),
-    end: jest.fn(() => response),
+    end: jest.fn(() => {
+      finish();
+      return response;
+    }),
     sendFile: jest.fn(() => response),
   });
-  return { response, result };
+  return { response, result, completed, fail };
 }
 
 async function invoke(
@@ -138,18 +155,16 @@ async function invoke(
 ): Promise<Result> {
   const handlers = mockRoutes.get(`${method} ${route}`);
   if (!handlers) throw new Error(`Missing route handler: ${method} ${route}`);
-  const { response, result } = createResponse();
+  const { response, result, completed, fail } = createResponse();
   const request = {
     params: data.params || {},
     body: data.body,
   } as Request;
-  const next = jest.fn();
+  const next = jest.fn(fail);
   const endpoint = handlers[handlers.length - 1];
   endpoint(request, response, next);
 
-  // Express does not await route handlers, so let async response work settle.
-  await new Promise((resolve) => setTimeout(resolve, 0));
-  if (next.mock.calls.length > 0) throw next.mock.calls[0][0];
+  await completed;
   return result;
 }
 
@@ -194,6 +209,14 @@ describe("backend API", () => {
       path.join(serversPath, "another-uninitialized", "paper-1.21.8-9.jar"),
       "jar"
     );
+    fs.writeFileSync(
+      path.join(serversPath, "paper-uninitialized", "blockcluster.cfg"),
+      JSON.stringify({ port: 25567 })
+    );
+    fs.writeFileSync(
+      path.join(serversPath, "another-uninitialized", "blockcluster.cfg"),
+      JSON.stringify({ port: "invalid" })
+    );
     process.env.SERVER_PATH = serversPath;
     process.env.VUE_APP_GIT_SHA = "abcdef012345";
     process.env.NODE_ENV = "test";
@@ -211,9 +234,11 @@ describe("backend API", () => {
   afterAll(() => {
     restoreInterval.mockRestore();
     restoreLog.mockRestore();
-    fs.unwatchFile(path.join(serversPath, "survival", "start"));
-    fs.unwatchFile(path.join(serversPath, "paper-uninitialized", "start"));
-    fs.unwatchFile(path.join(serversPath, "another-uninitialized", "start"));
+    for (const name of new Set(
+      mockServerInstances.map((server) => server.name)
+    )) {
+      fs.unwatchFile(path.join(serversPath, String(name), "start"));
+    }
     fs.rmSync(serversPath, { recursive: true, force: true });
     for (const listener of process.listeners("SIGTERM")) {
       if (!originalSignalListeners.includes(listener))
@@ -389,6 +414,14 @@ describe("backend API", () => {
         path.join(serversPath, "Survival Server", "server.properties")
       )
     ).toBe(false);
+    expect(
+      JSON.parse(
+        fs.readFileSync(
+          path.join(serversPath, "Survival Server", "blockcluster.cfg"),
+          "utf8"
+        )
+      ).port
+    ).toBe(25568);
     expect(mockServerInstances[mockServerInstances.length - 1].name).toBe(
       "Survival Server"
     );
@@ -424,6 +457,36 @@ describe("backend API", () => {
     ).toEqual({ status: 409, body: { error: "Port is already in use" } });
   });
 
+  it("rejects the backend listener port before loading Paper versions", async () => {
+    jest.mocked(listPaperVersions).mockClear();
+    expect(
+      await invoke("POST", "/api/servers", {
+        body: { name: "Backend Port", version: "1.21.8", port: 8081 },
+      })
+    ).toEqual({ status: 409, body: { error: "Port is already in use" } });
+    expect(listPaperVersions).not.toHaveBeenCalled();
+  });
+
+  it("rejects a port occupied by another host listener", async () => {
+    const listener = net.createServer();
+    await new Promise<void>((resolve, reject) => {
+      listener.once("error", reject);
+      listener.listen(0, "127.0.0.1", resolve);
+    });
+    try {
+      jest.mocked(listPaperVersions).mockClear();
+      const port = (listener.address() as net.AddressInfo).port;
+      expect(
+        await invoke("POST", "/api/servers", {
+          body: { name: "Occupied Port", version: "1.21.8", port },
+        })
+      ).toEqual({ status: 409, body: { error: "Port is already in use" } });
+      expect(listPaperVersions).not.toHaveBeenCalled();
+    } finally {
+      await new Promise<void>((resolve) => listener.close(() => resolve()));
+    }
+  });
+
   it("creates a server with the requested free port", async () => {
     jest.mocked(listPaperVersions).mockResolvedValue(["1.21.8"]);
     jest
@@ -442,6 +505,14 @@ describe("backend API", () => {
     expect(
       fs.existsSync(path.join(serversPath, "Custom Port", "server.properties"))
     ).toBe(false);
+    expect(
+      JSON.parse(
+        fs.readFileSync(
+          path.join(serversPath, "Custom Port", "blockcluster.cfg"),
+          "utf8"
+        )
+      ).port
+    ).toBe(30123);
   });
 
   it("rejects concurrent creations that request the same port", async () => {
@@ -490,5 +561,95 @@ describe("backend API", () => {
     for (const port of ports) {
       expect(existingPorts).not.toContain(port);
     }
+  });
+  it("excludes a requested port while its download is still pending", async () => {
+    const usedPorts = new Set(mockServerInstances.map((server) => server.port));
+    let reservedPort = 25565;
+    while (usedPorts.has(reservedPort)) reservedPort++;
+    let release!: (jar: string) => void;
+    let entered!: () => void;
+    const downloading = new Promise<void>((resolve) => {
+      entered = resolve;
+    });
+    const download = new Promise<string>((resolve) => {
+      release = resolve;
+    });
+    jest.mocked(installPaperJar).mockImplementationOnce(() => {
+      entered();
+      return download;
+    });
+    const pending = invoke("POST", "/api/servers", {
+      body: { name: "Pending Port", version: "1.21.8", port: reservedPort },
+    });
+    await downloading;
+    try {
+      const result = await invoke("POST", "/api/servers", {
+        body: { name: "Automatic Port", version: "1.21.8" },
+      });
+      expect(result.status).toBe(201);
+      expect(mockServerInstances[mockServerInstances.length - 1].port).toBe(
+        reservedPort + 1
+      );
+    } finally {
+      release("paper-1.21.8-9.jar");
+      expect((await pending).status).toBe(201);
+    }
+  });
+
+  it("cleans up a failed port write and releases the reservation", async () => {
+    const writeFile = jest
+      .spyOn(fs, "writeFileSync")
+      .mockImplementationOnce(() => {
+        throw new Error("disk full");
+      });
+    const logError = jest.spyOn(console, "error").mockImplementation();
+    try {
+      expect(
+        await invoke("POST", "/api/servers", {
+          body: { name: "Write Failure", version: "1.21.8", port: 30300 },
+        })
+      ).toEqual({
+        status: 502,
+        body: { error: "Could not create Paper server" },
+      });
+      expect(fs.existsSync(path.join(serversPath, "Write Failure"))).toBe(
+        false
+      );
+      expect(
+        await invoke("POST", "/api/servers", {
+          body: { name: "Write Failure", version: "1.21.8", port: 30300 },
+        })
+      ).toMatchObject({ status: 201 });
+    } finally {
+      writeFile.mockRestore();
+      logError.mockRestore();
+    }
+  });
+
+  it("restores selected automatic and custom ports after a backend restart", async () => {
+    for (const name of ["Survival Server", "Custom Port"]) {
+      // The installer is mocked; supply the JAR that it normally writes.
+      fs.writeFileSync(
+        path.join(serversPath, name, "paper-1.21.8-9.jar"),
+        "jar"
+      );
+    }
+    // A selected port remains authoritative after Minecraft generates properties.
+    fs.writeFileSync(
+      path.join(serversPath, "Custom Port", "server.properties"),
+      "server-port=25565"
+    );
+    const previousCount = mockServerInstances.length;
+    jest.isolateModules(() => {
+      require("../../src/backend");
+    });
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    const restored = mockServerInstances.slice(previousCount);
+    expect(
+      restored.find((server) => server.name === "Survival Server")?.port
+    ).toBe(25568);
+    expect(restored.find((server) => server.name === "Custom Port")?.port).toBe(
+      30123
+    );
   });
 });

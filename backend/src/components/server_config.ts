@@ -25,6 +25,11 @@ import { PauseOnIdleType } from "../../../common/components/server";
  */
 export default class ServerConfig {
   /**
+   * The port selected when creating the server, if managed by blockcluster.
+   */
+  public port?: number;
+
+  /**
    * The flags of the server.
    */
   public flags: string[];

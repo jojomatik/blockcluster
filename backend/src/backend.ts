@@ -24,6 +24,8 @@ import PropertiesReader from "properties-reader";
 import { ServerStatus } from "../../common/components/server";
 import Server from "./components/server";
 import path from "path";
+import net from "net";
+import type ServerConfig from "./components/server_config";
 
 import dotenv from "dotenv";
 import dotenvExpand from "dotenv-expand";
@@ -66,9 +68,17 @@ const systemUsage: ResourceUsage[] = [];
 function getAvailablePort(servers: Server[]): number {
   const usedPorts = new Set(servers.map((server) => server.port));
   for (let port = 25565; port <= 65535; port++) {
-    if (!usedPorts.has(port)) return port;
+    if (!usedPorts.has(port) && !creatingServerPorts.has(port)) return port;
   }
   throw new Error("No server port is available");
+}
+
+function isPortAvailable(port: number): Promise<boolean> {
+  return new Promise((resolve) => {
+    const listener = net.createServer();
+    listener.once("error", () => resolve(false));
+    listener.listen(port, () => listener.close(() => resolve(true)));
+  });
 }
 
 app.use(express.json());
@@ -131,6 +141,8 @@ app.post(
         return;
       }
       if (
+        !(await isPortAvailable(requestedPort)) ||
+        requestedPort === port ||
         creatingServerPorts.has(requestedPort) ||
         servers.some((server) => server.port === requestedPort)
       ) {
@@ -169,6 +181,8 @@ app.post(
     creatingServerNames.add(name);
     if (requestedPort) {
       if (
+        !(await isPortAvailable(requestedPort)) ||
+        requestedPort === port ||
         creatingServerPorts.has(requestedPort) ||
         servers.some((server) => server.port === requestedPort)
       ) {
@@ -191,6 +205,10 @@ app.post(
 
       const server = new Server({ _name: name });
       server.port = requestedPort ?? getAvailablePort(servers);
+      fs.writeFileSync(
+        path.join(serverPath, "blockcluster.cfg"),
+        JSON.stringify({ port: server.port })
+      );
       servers.push(server);
       registeredServer = server;
       await server.update();
@@ -481,7 +499,24 @@ async function getServers(): Promise<Server[]> {
           ),
         })
       : new Server({ _name: file });
-    if (!hasProperties) uninitializedServers.push(server);
+    let configuredPort: number | undefined;
+    try {
+      const config: ServerConfig = JSON.parse(
+        fs.readFileSync(path.join(serverPath, "blockcluster.cfg"), "utf8")
+      );
+      if (
+        typeof config.port === "number" &&
+        Number.isInteger(config.port) &&
+        config.port >= 1024 &&
+        config.port <= 65535
+      ) {
+        configuredPort = config.port;
+      }
+    } catch {
+      // Existing servers may not have a blockcluster config yet.
+    }
+    if (configuredPort !== undefined) server.port = configuredPort;
+    else if (!hasProperties) uninitializedServers.push(server);
     servers.push(server);
   }
   for (const server of uninitializedServers) {

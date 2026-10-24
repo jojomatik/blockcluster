@@ -28,6 +28,7 @@ import path from "path";
 import dotenv from "dotenv";
 import dotenvExpand from "dotenv-expand";
 import { getVersion } from "../../common/version";
+import { listPaperBuilds, listPaperVersions } from "./components/paper";
 import { getJavaRuntimes } from "./components/java_runtime";
 import getDependencyInfo from "./utils/dependency_info";
 import {
@@ -58,14 +59,13 @@ const systemUsage: ResourceUsage[] = [];
 
 app.use(express.json());
 
-const asyncHandler = (
-  handler: (
-    req: express.Request,
-    res: express.Response
-  ) => Promise<void>
-): express.RequestHandler => (req, res, next) => {
-  void handler(req, res).catch(next);
-};
+const asyncHandler =
+  (
+    handler: (req: express.Request, res: express.Response) => Promise<void>
+  ): express.RequestHandler =>
+  (req, res, next) => {
+    void handler(req, res).catch(next);
+  };
 
 // Handles queries to the version API endpoint and returns the version.
 app.get("/api/version", (req, res) => {
@@ -197,6 +197,95 @@ app.patch(
   })
 );
 
+app.get(
+  "/api/paper/versions",
+  asyncHandler(async (req, res) => {
+    try {
+      res.json(await listPaperVersions());
+    } catch (error) {
+      res.status(502).json({ error: "Could not load Paper versions" });
+    }
+  })
+);
+
+app.get(
+  "/api/paper/versions/:version/builds",
+  asyncHandler(async (req, res) => {
+    if (!/^\d+(\.\d+)+$/.test(req.params.version)) {
+      res.status(400).json({ error: "Invalid version" });
+      return;
+    }
+    try {
+      res.json(await listPaperBuilds(req.params.version));
+    } catch (error) {
+      res.status(502).json({ error: "Could not load Paper builds" });
+    }
+  })
+);
+
+app.get(
+  "/api/servers/:name/updates",
+  asyncHandler(async (req, res) => {
+    const server = servers.find((entry) => entry.name === req.params.name);
+    if (!server) {
+      res.status(404).json({ error: "Server not found" });
+      return;
+    }
+    try {
+      res.json(await server.getUpdates());
+    } catch (error) {
+      res.status(502).json({ error: "Could not check for updates" });
+    }
+  })
+);
+
+app.get("/api/servers/:name/oldjars", (req, res) => {
+  const server = servers.find((entry) => entry.name === req.params.name);
+  if (!server) {
+    res.status(404).json({ error: "Server not found" });
+    return;
+  }
+  res.json(server.getOldJars());
+});
+
+app.post(
+  "/api/servers/:name/updates",
+  asyncHandler(async (req, res) => {
+    const server = servers.find((entry) => entry.name === req.params.name);
+    if (!server) {
+      res.status(404).json({ error: "Server not found" });
+      return;
+    }
+    let type = req.body?.type;
+    if (type === "existing") {
+      if (typeof req.body.file !== "string") {
+        res.status(400).json({ error: "Invalid file" });
+        return;
+      }
+      type = { file: req.body.file };
+    } else if (type === "version") {
+      type = { version: req.body.version, build: req.body.build };
+      if (
+        typeof type.version !== "string" ||
+        !/^\d+(\.\d+)+$/.test(type.version) ||
+        !Number.isInteger(type.build)
+      ) {
+        res.status(400).json({ error: "Invalid version or build" });
+        return;
+      }
+    } else if (type !== "build" && type !== "patch") {
+      res.status(400).json({ error: "Invalid update type" });
+      return;
+    }
+    try {
+      await server.installUpdate(type);
+      res.status(204).end();
+    } catch (error) {
+      res.status(409).json({ error: (error as Error).message });
+    }
+  })
+);
+
 app.use(express.static(path.join(__dirname, "../../../../dist")));
 
 app.get("*", (req, res) => {
@@ -275,9 +364,7 @@ async function measureUsage(measuringTime?: number) {
   } catch (e) {
     systemUsage.push(new ResourceUsage(measuringTime, 0, 0));
     console.error(
-      "Couldn't retrieve resource usage for the main pid " +
-        process.pid +
-        ".",
+      "Couldn't retrieve resource usage for the main pid " + process.pid + ".",
       e
     );
   }

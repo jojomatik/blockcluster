@@ -54,7 +54,15 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                       <td>
                         {{ $t("gui.views.server.executable") }}
                       </td>
-                      <td>{{ server.jar }}</td>
+                      <td>
+                        {{ server.jar }}
+                        <VersionDialogComponent
+                          :server="server"
+                          :disabled="server.status !== ServerStatus.Stopped"
+                          :updates="updates"
+                          @installed="onVersionInstalled"
+                        />
+                      </td>
                     </tr>
                     <tr>
                       <td>
@@ -234,6 +242,7 @@ import { PauseOnIdleType, ServerStatus } from "../../common/components/server";
 import ServerStatusComponent from "@/components/ServerStatusComponent.vue";
 import ConsoleComponent from "@/components/ConsoleComponent.vue";
 import ResourceChartComponent from "@/components/ResourceChartComponent.vue";
+import VersionDialogComponent from "@/components/VersionDialogComponent.vue";
 import WorldDeleteDialogComponent from "@/components/WorldDeleteDialogComponent.vue";
 import JavaRuntime, {
   getDefaultRuntime,
@@ -256,6 +265,7 @@ import PauseButtonComponent from "@/components/buttons/PauseButtonComponent.vue"
     PlayerStatsComponent,
     FlagDialogComponent,
     WorldDeleteDialogComponent,
+    VersionDialogComponent,
     ResourceChartComponent,
     ConsoleComponent,
     ServerStatusComponent,
@@ -282,6 +292,15 @@ export default class ServerComponent extends Vue {
    * @private
    */
   private javaRuntimes: JavaRuntime[] = [];
+
+  /**
+   * The available jar updates, or `null` if unknown or not applicable.
+   * @private
+   */
+  private updates: {
+    build: { version: string; build: number } | null;
+    patch: { version: string; build: number } | null;
+  } | null = null;
 
   constructor() {
     super();
@@ -311,6 +330,22 @@ export default class ServerComponent extends Vue {
       );
     }
     if (this.detailed) await this.update();
+    if (this.detailed) await this.loadUpdates();
+  }
+
+  private async loadUpdates(): Promise<void> {
+    try {
+      this.updates = await this.server.fetchUpdates(
+        encodeURIComponent(this.getName())
+      );
+    } catch (error) {
+      this.updates = null;
+    }
+  }
+
+  private async onVersionInstalled(): Promise<void> {
+    await this.update();
+    await this.loadUpdates();
   }
 
   /**

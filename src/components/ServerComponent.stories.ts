@@ -67,6 +67,38 @@ class MockServer extends Server {
     ];
   }
 
+  async fetchUpdates() {
+    return {
+      current: { version: "1.20.4", build: 400 },
+      build: { version: "1.20.4", build: 497 },
+      patch: { version: "1.20.6", build: 151 },
+    };
+  }
+
+  async installUpdate() {
+    return new Response();
+  }
+
+  async fetchPaperVersions() {
+    return ["1.20.6", "1.20.4", "1.19.4"];
+  }
+
+  async fetchPaperBuilds() {
+    return [{ build: 497, time: "2024-03-01T12:00:00.000Z" }];
+  }
+
+  async fetchOldJars() {
+    return ["paper-1.20.2-318.jar"];
+  }
+
+  async installExistingJar() {
+    return new Response();
+  }
+
+  async installVersion() {
+    return new Response();
+  }
+
   async sendCommand() {
     return new Response();
   }
@@ -153,6 +185,26 @@ export const Detailed = {
 
 export const DetailedStopped = {
   args: { server: makeServer(ServerStatus.Stopped), detailed: true },
+};
+
+/** Opens the version dialog, which contains the update buttons. */
+export const VersionDialog = {
+  args: { server: makeServer(ServerStatus.Stopped), detailed: true },
+  play: async ({ canvasElement }: { canvasElement: HTMLElement }) => {
+    const canvas = within(canvasElement);
+    await userEvent.click(
+      await canvas.findByRole("button", { name: /change version/i })
+    );
+    const body = within(document.body);
+    await expect(
+      await body.findByRole("button", {
+        name: /update to build 497 \(1\.20\.4\)/i,
+      })
+    ).toBeEnabled();
+    await expect(
+      await body.findByRole("button", { name: /update to 1\.20\.6/i })
+    ).toBeEnabled();
+  },
 };
 
 /** Starts the server through the toggle button and waits for it to come up. */

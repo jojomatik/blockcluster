@@ -72,6 +72,21 @@
           "text": "Welt löschen"
         },
         "executable": "Server JAR-Datei",
+        "version_dialog": {
+          "choose": "Version ändern",
+          "version": "Version",
+          "build": "Build",
+          "install": "Installieren",
+          "cancel": "Abbrechen",
+          "error": "Daten der Paper-API konnten nicht geladen werden.",
+          "warning": "Die Installation einer anderen Version ersetzt die aktuelle JAR-Datei, die archiviert wird. Sichere deine Welt vor einem Downgrade.",
+          "main_title": "Paper-Version wählen",
+          "update_build": "Auf Build {build} ({version}) aktualisieren",
+          "update_patch": "Auf {version} aktualisieren",
+          "download_new": "Neue Paper-Version herunterladen",
+          "select_existing": "Vorhandene Version auswählen",
+          "no_existing": "Keine früheren Versionen gefunden."
+        },
         "favicon": {
           "alt": "Favicon von {name}"
         },

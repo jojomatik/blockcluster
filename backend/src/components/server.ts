@@ -36,6 +36,14 @@ import Player from "../../../common/components/player";
 import { getFaceAsBase64 } from "pixelheads";
 import { Client, createServer, Server as MCPServer } from "minecraft-protocol";
 import { getJavaRuntimes } from "./java_runtime";
+import {
+  getPaperUpdates,
+  installPaperJar,
+  listOldJars,
+  restoreOldJar,
+  PaperJarInfo,
+  PaperUpdates,
+} from "./paper";
 
 /**
  * The server side implementation of {@link CommonServer} with additional methods that won't run on the client side.
@@ -46,6 +54,8 @@ export default class Server extends CommonServer {
    * @private
    */
   private proc: ChildProcessWithoutNullStreams | null = null;
+
+  private updateInProgress = false;
 
   /**
    * An array of the latest messages from the server.
@@ -218,6 +228,50 @@ export default class Server extends CommonServer {
   }
 
   /**
+   * Returns the available PaperMC updates for the current jar.
+   */
+  async getUpdates(): Promise<PaperUpdates> {
+    return getPaperUpdates(this.getJarFile());
+  }
+
+  /**
+   * Returns the jars in the `oldjars` directory.
+   */
+  getOldJars(): string[] {
+    return listOldJars(this.getPath());
+  }
+
+  /**
+   * Replaces the current PaperMC jar with a newer build or patch.
+   * The previous jar is moved to `oldjars`.
+   *
+   * @param type `build` for the newest build of the current version, `patch` for the newest patch of the current minor version, or an explicit version and build.
+   */
+  async installUpdate(
+    type: "build" | "patch" | PaperJarInfo | { file: string }
+  ): Promise<void> {
+    if (this.updateInProgress)
+      throw new Error("A jar update is already in progress.");
+    if (this.status !== ServerStatus.Stopped)
+      throw new Error("The server must be stopped to update it.");
+    this.updateInProgress = true;
+    try {
+      if (typeof type === "object" && "file" in type) {
+        restoreOldJar(this.getPath(), type.file);
+      } else {
+        const target =
+          typeof type === "string" ? (await this.getUpdates())[type] : type;
+        if (!target) throw new Error("No update available.");
+        await installPaperJar(this.getPath(), target);
+      }
+      await this.update();
+      this.sendServerData();
+    } finally {
+      this.updateInProgress = false;
+    }
+  }
+
+  /**
    * Returns the first jar file in the server directory.
    * @private
    */
@@ -310,6 +364,10 @@ export default class Server extends CommonServer {
    * @param safe only resolve promise as soon as the server reaches {@link ServerStatus#Started}.
    */
   public async start(safe = false) {
+    if (this.updateInProgress)
+      throw new Error(
+        "The server cannot start while its jar is being updated."
+      );
     if (this.status === ServerStatus.Paused) {
       this.wakeUpListener?.close();
     }

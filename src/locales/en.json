@@ -72,6 +72,21 @@
           "text": "Delete World"
         },
         "executable": "Server JAR-file",
+        "version_dialog": {
+          "choose": "Change version",
+          "version": "Version",
+          "build": "Build",
+          "install": "Install",
+          "cancel": "Cancel",
+          "error": "Could not load data from the Paper API.",
+          "warning": "Installing a different version replaces the current jar, which is archived. Back up your world before downgrading.",
+          "main_title": "Choose Paper version",
+          "update_build": "Update to build {build} ({version})",
+          "update_patch": "Update to {version}",
+          "download_new": "Download new Paper version",
+          "select_existing": "Select existing version",
+          "no_existing": "No previous versions found."
+        },
         "favicon": {
           "alt": "favicon of {name}"
         },

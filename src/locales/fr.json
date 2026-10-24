@@ -69,6 +69,21 @@
           "text": "Supprimer le monde"
         },
         "executable": "JAR-fichier du serveur",
+        "version_dialog": {
+          "choose": "Changer de version",
+          "version": "Version",
+          "build": "Build",
+          "install": "Installer",
+          "cancel": "Annuler",
+          "error": "Impossible de charger les données de l'API Paper.",
+          "warning": "L'installation d'une autre version remplace le JAR actuel, qui est archivé. Sauvegardez votre monde avant de rétrograder.",
+          "main_title": "Choisir la version de Paper",
+          "update_build": "Mettre à jour vers le build {build} ({version})",
+          "update_patch": "Mettre à jour vers {version}",
+          "download_new": "Télécharger une nouvelle version de Paper",
+          "select_existing": "Sélectionner une version existante",
+          "no_existing": "Aucune version précédente trouvée."
+        },
         "favicon": {
           "alt": "favicon of {name}"
         },

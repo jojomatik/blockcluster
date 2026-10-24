@@ -404,7 +404,13 @@ export default class Server extends CommonServer {
 
     this.proc = spawn(
       permissionPrefix + '"' + javaPath + '/bin/java"',
-      this.flags.concat(["-jar", jarFile, "nogui"]),
+      this.flags.concat([
+        "-jar",
+        jarFile,
+        "nogui",
+        "--port",
+        String(this.port),
+      ]),
       {
         cwd: this.getPath(),
         shell: true,

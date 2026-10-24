@@ -8,6 +8,44 @@ describe("CreateServerDialogComponent", () => {
     global.fetch = originalFetch;
   });
 
+  it.each([
+    ["", false],
+    ["   ", false],
+    ["name#1", false],
+    ["a".repeat(65), false],
+    [".", false],
+    ["..", false],
+    ["../outside", false],
+    ["café", false],
+    ["name\nnext", false],
+    ["a".repeat(64), true],
+    ["My Server_1.2-3", true],
+  ])("validates the submitted name %j", async (name, valid) => {
+    const fetch = jest.fn().mockResolvedValue({ ok: true });
+    global.fetch = fetch as unknown as typeof global.fetch;
+    const wrapper = shallowMount(CreateServerDialogComponent, {
+      mocks: { $t: (key: string) => key },
+      stubs: { VDialog: { template: "<div><slot /></div>" } },
+    });
+    await wrapper.setData({ name, version: "1.21.8" });
+
+    expect(
+      wrapper.findAllComponents({ name: "VBtn" }).at(1).props("disabled")
+    ).toBe(!valid);
+    expect(wrapper.findComponent({ name: "VTextField" }).props("hint")).toBe(
+      "gui.views.home.create_server.name_hint"
+    );
+    expect(
+      wrapper.findComponent({ name: "VTextField" }).props("persistentHint")
+    ).toBe(true);
+
+    await (
+      wrapper.vm as typeof wrapper.vm & { create: () => Promise<void> }
+    ).create();
+    expect(fetch).toHaveBeenCalledTimes(valid ? 1 : 0);
+    wrapper.destroy();
+  });
+
   it("loads Paper versions and submits the directory name and selected version", async () => {
     const fetch = jest
       .fn()

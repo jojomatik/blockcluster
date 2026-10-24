@@ -49,6 +49,7 @@
           "button": "Server erstellen",
           "title": "Neuen Server erstellen",
           "name": "Serververzeichnisname",
+          "name_hint": "1–64 Zeichen: A–Z, a–z, 0–9, Leerzeichen, _, . oder -. Der Name darf nicht . oder .. sein.",
           "version": "Paper-Version",
           "create": "Erstellen",
           "cancel": "Abbrechen",

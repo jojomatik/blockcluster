@@ -62,6 +62,14 @@ let servers: Server[] = [];
 const creatingServerNames = new Set<string>();
 const systemUsage: ResourceUsage[] = [];
 
+function getAvailablePort(servers: Server[]): number {
+  const usedPorts = new Set(servers.map((server) => server.port));
+  for (let port = 25565; port <= 65535; port++) {
+    if (!usedPorts.has(port)) return port;
+  }
+  throw new Error("No server port is available");
+}
+
 app.use(express.json());
 
 const asyncHandler =
@@ -151,10 +159,10 @@ app.post(
       });
 
       const server = new Server({ _name: name });
-      server.port = 25565;
-      await server.update();
+      server.port = getAvailablePort(servers);
       servers.push(server);
       registeredServer = server;
+      await server.update();
       void server.start().catch((error) => {
         console.error("Could not start newly created Paper server:", error);
       });
@@ -419,6 +427,7 @@ export const basePath: string = ((): string => {
  */
 async function getServers(): Promise<Server[]> {
   const servers: Server[] = [];
+  const uninitializedServers: Server[] = [];
   const propertiesFile = "server.properties";
 
   for (const file of fs.readdirSync(basePath)) {
@@ -439,8 +448,11 @@ async function getServers(): Promise<Server[]> {
           ),
         })
       : new Server({ _name: file });
-    if (!hasProperties) server.port = 25565;
+    if (!hasProperties) uninitializedServers.push(server);
     servers.push(server);
+  }
+  for (const server of uninitializedServers) {
+    server.port = getAvailablePort(servers);
   }
   return servers;
 }

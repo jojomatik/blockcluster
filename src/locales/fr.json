@@ -46,6 +46,7 @@
           "button": "Créer un serveur",
           "title": "Créer un nouveau serveur",
           "name": "Nom du répertoire du serveur",
+          "name_hint": "1 à 64 caractères : A–Z, a–z, 0–9, espaces, _, . ou -. Le nom ne peut pas être . ou ..",
           "version": "Version de Paper",
           "create": "Créer",
           "cancel": "Annuler",

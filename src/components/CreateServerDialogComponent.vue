@@ -35,6 +35,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <v-text-field
           v-model="name"
           :label="$t('gui.views.home.create_server.name')"
+          :hint="$t('gui.views.home.create_server.name_hint')"
+          persistent-hint
           :disabled="creating"
           autofocus
         />
@@ -52,7 +54,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </v-btn>
         <v-btn
           color="secondary"
-          :disabled="!name.trim() || !version || loadingVersions || creating"
+          :disabled="!validName || !version || loadingVersions || creating"
           :loading="creating"
           @click="create"
         >
@@ -76,6 +78,13 @@ export default class CreateServerDialogComponent extends Vue {
   private creating = false;
   private error = false;
 
+  private get validName(): boolean {
+    const name = this.name.trim();
+    return (
+      /^[A-Za-z0-9 _.-]{1,64}$/.test(name) && name !== "." && name !== ".."
+    );
+  }
+
   private async open(): Promise<void> {
     this.dialog = true;
     this.name = "";
@@ -95,7 +104,13 @@ export default class CreateServerDialogComponent extends Vue {
 
   private async create(): Promise<void> {
     const name = this.name.trim();
-    if (!name || !this.version) return;
+    if (
+      !this.validName ||
+      !this.version ||
+      this.loadingVersions ||
+      this.creating
+    )
+      return;
     this.error = false;
     this.creating = true;
     try {

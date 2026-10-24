@@ -189,6 +189,11 @@ describe("backend API", () => {
       path.join(serversPath, "paper-uninitialized", "paper-1.21.8-9.jar"),
       "jar"
     );
+    fs.mkdirSync(path.join(serversPath, "another-uninitialized"));
+    fs.writeFileSync(
+      path.join(serversPath, "another-uninitialized", "paper-1.21.8-9.jar"),
+      "jar"
+    );
     process.env.SERVER_PATH = serversPath;
     process.env.VUE_APP_GIT_SHA = "abcdef012345";
     process.env.NODE_ENV = "test";
@@ -208,6 +213,7 @@ describe("backend API", () => {
     restoreLog.mockRestore();
     fs.unwatchFile(path.join(serversPath, "survival", "start"));
     fs.unwatchFile(path.join(serversPath, "paper-uninitialized", "start"));
+    fs.unwatchFile(path.join(serversPath, "another-uninitialized", "start"));
     fs.rmSync(serversPath, { recursive: true, force: true });
     for (const listener of process.listeners("SIGTERM")) {
       if (!originalSignalListeners.includes(listener))
@@ -250,7 +256,19 @@ describe("backend API", () => {
     expect((await invoke("GET", "/api/system-usage")).body).toEqual(
       expect.arrayContaining([expect.objectContaining({ cpu: 5, memory: 10 })])
     );
-    expect(mockServerInstances).toHaveLength(2);
+    expect(mockServerInstances).toHaveLength(3);
+  });
+
+  it("allocates distinct ports for JAR-only servers after reading configured ports", () => {
+    expect(
+      mockServerInstances.find((server) => server.name === "survival").port
+    ).toBe(25565);
+    expect(
+      mockServerInstances
+        .filter((server) => server.name !== "survival")
+        .map((server) => server.port)
+        .sort()
+    ).toEqual([25566, 25567]);
   });
 
   it("returns 404 for missing server details, messages, and actions", async () => {
@@ -374,6 +392,27 @@ describe("backend API", () => {
     expect(mockServerInstances[mockServerInstances.length - 1].name).toBe(
       "Survival Server"
     );
-    expect(mockServerInstances[mockServerInstances.length - 1].start).toHaveBeenCalled();
+    expect(
+      mockServerInstances[mockServerInstances.length - 1].start
+    ).toHaveBeenCalled();
+    expect(mockServerInstances[mockServerInstances.length - 1].port).toBe(
+      25568
+    );
+  });
+
+  it("reserves distinct ports for concurrent server creations", async () => {
+    const results = await Promise.all([
+      invoke("POST", "/api/servers", {
+        body: { name: "Concurrent A", version: "1.21.8" },
+      }),
+      invoke("POST", "/api/servers", {
+        body: { name: "Concurrent B", version: "1.21.8" },
+      }),
+    ]);
+
+    expect(results.map((result) => result.status)).toEqual([201, 201]);
+    const ports = mockServerInstances.map((server) => server.port);
+    expect(new Set(ports).size).toBe(ports.length);
+    expect(ports.slice(-2)).toEqual([25569, 25570]);
   });
 });

@@ -3,7 +3,6 @@
     "module": "node16",
     "esModuleInterop": true,
     "target": "es6",
-    "strict": false,
     "noImplicitAny": true,
     "moduleResolution": "node16",
     "isolatedModules": true,
@@ -13,11 +12,6 @@
     "sourceMap": true,
     "rootDir": "..",
     "outDir": "dist",
-    "paths": {
-      "uuid": [
-        "./node_modules/uuid"
-      ]
-    },
     "lib": [
       "esnext",
       "dom"

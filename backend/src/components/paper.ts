@@ -109,6 +109,7 @@ export async function getPaperUpdates(
       }
     }
   } catch {
+    // A failed patch lookup must not discard an available build update.
     return result;
   }
   return result;
@@ -228,7 +229,7 @@ export async function installPaperJar(
     fs.renameSync(tmpFile, path.join(dir, download.name));
   } catch (error) {
     const previousJar = activeJar && archived.get(activeJar);
-    if (previousJar && fs.existsSync(previousJar)) {
+    if (activeJar && previousJar && fs.existsSync(previousJar)) {
       try {
         fs.renameSync(previousJar, path.join(dir, activeJar));
       } catch {

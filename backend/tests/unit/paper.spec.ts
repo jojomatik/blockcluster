@@ -92,6 +92,23 @@ describe("paper", () => {
       expect(result.patch).toEqual({ version: "1.21.10", build: 5 });
     });
 
+    it.each(["project metadata", "patch builds"])(
+      "preserves the build update when %s lookup fails",
+      async (failure) => {
+        const fetchSpy = mockApi({ "1.21.8": [build("1.21.8", 70)] });
+        if (failure === "project metadata") {
+          fetchSpy.mockImplementationOnce(() => json([build("1.21.8", 70)]));
+          fetchSpy.mockRejectedValueOnce(new Error("offline"));
+        }
+
+        await expect(getPaperUpdates("paper-1.21.8-60.jar")).resolves.toEqual({
+          current: { version: "1.21.8", build: 60 },
+          build: { version: "1.21.8", build: 70 },
+          patch: null,
+        });
+      }
+    );
+
     it("keeps the build update when looking up project versions fails", async () => {
       jest.spyOn(global, "fetch").mockImplementation((async (
         input: RequestInfo | URL
@@ -211,6 +228,89 @@ describe("paper", () => {
       ]);
       expect(fs.readFileSync(path.join(dir, name), "utf8")).toBe(JAR_BODY);
     });
+
+    it.each([
+      ["paper-1.21.8-60.jar", JAR_BODY, JAR_BODY, 1],
+      ["paper-1.21.8-60.jar", "different", JAR_BODY, 2],
+      ["custom.jar", "custom", "custom", 1],
+    ])(
+      "preserves backups for %s with archived %s and current %s",
+      async (file, previous, current, count) => {
+        mockApi({ "1.21.8": [build("1.21.8", 70)] });
+        fs.mkdirSync(path.join(dir, "oldjars"));
+        fs.writeFileSync(path.join(dir, "oldjars", file), previous);
+        fs.writeFileSync(path.join(dir, file), current);
+
+        await installPaperJar(dir, { version: "1.21.8", build: 70 });
+
+        const oldJars = listOldJars(dir);
+        expect(oldJars).toHaveLength(count);
+        expect(fs.readFileSync(path.join(dir, "oldjars", file), "utf8")).toBe(
+          previous
+        );
+        if (count === 2) {
+          const unique = oldJars.find((name) => name !== file);
+          if (!unique) throw new Error("Missing unique archive");
+          expect(
+            fs.readFileSync(path.join(dir, "oldjars", unique), "utf8")
+          ).toBe(current);
+        }
+      }
+    );
+
+    it("chooses an unused archive name across repeated collisions", async () => {
+      mockApi({ "1.21.8": [build("1.21.8", 70)] });
+      fs.mkdirSync(path.join(dir, "oldjars"));
+      fs.writeFileSync(path.join(dir, "oldjars", "custom.jar"), "first");
+      fs.writeFileSync(path.join(dir, "oldjars", "custom-1.jar"), "second");
+      fs.writeFileSync(path.join(dir, "custom.jar"), "third");
+
+      await installPaperJar(dir, { version: "1.21.8", build: 70 });
+
+      expect(
+        listOldJars(dir)
+          .map((file) =>
+            fs.readFileSync(path.join(dir, "oldjars", file), "utf8")
+          )
+          .sort()
+      ).toEqual(["first", "second", "third"]);
+    });
+
+    it.each([null, "different backup", JAR_BODY])(
+      "restores the active jar after activation fails with backup %s",
+      async (backup) => {
+        mockApi({ "1.21.8": [build("1.21.8", 70)] });
+        const activeJar = "paper-1.21.8-60.jar";
+        fs.writeFileSync(path.join(dir, activeJar), JAR_BODY);
+        if (backup !== null) {
+          fs.mkdirSync(path.join(dir, "oldjars"));
+          fs.writeFileSync(path.join(dir, "oldjars", activeJar), backup);
+        }
+        const activationError = new Error("activation failed");
+        const rename = fs.renameSync;
+        jest
+          .spyOn(fs, "renameSync")
+          .mockImplementation((source, destination) => {
+            if (String(source).endsWith(".download")) throw activationError;
+            rename(source, destination);
+          });
+
+        await expect(
+          installPaperJar(dir, { version: "1.21.8", build: 70 })
+        ).rejects.toBe(activationError);
+
+        expect(fs.readFileSync(path.join(dir, activeJar), "utf8")).toBe(
+          JAR_BODY
+        );
+        expect(
+          fs.readdirSync(dir).filter((file) => file.endsWith(".jar"))
+        ).toEqual([activeJar]);
+        if (backup === "different backup")
+          expect(
+            fs.readFileSync(path.join(dir, "oldjars", activeJar), "utf8")
+          ).toBe(backup);
+      }
+    );
 
     it("keeps existing jars when the checksum does not match", async () => {
       mockApi({ "1.21.8": [build("1.21.8", 70, "STABLE", "0".repeat(64))] });
@@ -507,6 +607,24 @@ describe("paper", () => {
       ]);
       expect(listOldJars(dir)).toEqual(["b.jar"]);
       expect(fs.readFileSync(path.join(dir, "a.jar"), "utf8")).toBe("A");
+    });
+
+    it("preserves colliding custom backups while restoring a jar", () => {
+      fs.mkdirSync(path.join(dir, "oldjars"));
+      fs.writeFileSync(path.join(dir, "oldjars", "a.jar"), "restore");
+      fs.writeFileSync(path.join(dir, "oldjars", "b.jar"), "backup");
+      fs.writeFileSync(path.join(dir, "b.jar"), "current");
+
+      restoreOldJar(dir, "a.jar");
+
+      expect(fs.readFileSync(path.join(dir, "a.jar"), "utf8")).toBe("restore");
+      expect(
+        listOldJars(dir)
+          .map((file) =>
+            fs.readFileSync(path.join(dir, "oldjars", file), "utf8")
+          )
+          .sort()
+      ).toEqual(["backup", "current"]);
     });
 
     it("rejects files outside oldjars", () => {

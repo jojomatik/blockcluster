@@ -221,12 +221,13 @@ const backend = app.listen(port, () =>
  * By default its value is the directory `servers/` relative to the root directory of blockcluster.
  */
 export const basePath: string = ((): string => {
-  let basePath: string = process.env.SERVER_PATH;
+  let basePath: string = process.env.SERVER_PATH ?? "";
   if (!basePath)
     try {
-      basePath = PropertiesReader("./settings.properties")
-        .get("server-path")
-        .toString();
+      const configuredPath =
+        PropertiesReader("./settings.properties").get("server-path");
+      if (configuredPath == null) throw new Error("Missing server-path");
+      basePath = configuredPath.toString();
     } catch (error) {
       basePath = "servers";
     }
@@ -274,7 +275,7 @@ async function measureUsage(measuringTime?: number) {
     systemUsage.push(new ResourceUsage(measuringTime, 0, 0));
     console.error(
       "Couldn't retrieve resource usage for the main pid " +
-        this.proc.pid +
+        process.pid +
         ".",
       e
     );

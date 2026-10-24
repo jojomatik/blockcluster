@@ -42,7 +42,7 @@ export default class ServerConfig {
   /**
    * The path to the java runtime used to run the server.
    */
-  public javaPath: string;
+  public javaPath: string | null;
 
   /**
    * Creates a new {@link ServerConfig}
@@ -58,7 +58,7 @@ export default class ServerConfig {
       enable: false,
       timeout: 300,
     },
-    javaPath: string = getDefaultRuntime(getJavaRuntimes()).path
+    javaPath: string | null = getDefaultRuntime(getJavaRuntimes()).path
   ) {
     this.flags = flags;
     this.autostart = autostart;

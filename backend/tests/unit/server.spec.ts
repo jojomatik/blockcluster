@@ -1,4 +1,7 @@
 import fs from "fs";
+import childProcess from "child_process";
+import commandExists from "command-exists";
+import mc from "minecraft-protocol";
 const mockIoEmit = jest.fn();
 const mockGetJavaRuntimes = jest.fn();
 
@@ -130,6 +133,37 @@ describe("backend Server", () => {
     } finally {
       writeFile.mockRestore();
       update.mockRestore();
+    }
+  });
+
+  it("launches Java and checks status using the same allocated port", async () => {
+    const server = new Server({ _name: "new-server", _javaPath: "/java" });
+    server.port = 25568;
+    const readdir = jest
+      .spyOn(fs, "readdirSync")
+      .mockReturnValue(["paper.jar"] as never);
+    const command = jest.spyOn(commandExists, "sync").mockReturnValue(false);
+    const spawn = jest.spyOn(childProcess, "spawn").mockReturnValue({
+      stdout: { on: jest.fn() },
+      stderr: { on: jest.fn() },
+    } as never);
+    const ping = jest.spyOn(mc, "ping").mockResolvedValue({} as never);
+
+    try {
+      await server.start();
+      await server.getServerInfo();
+
+      expect(spawn).toHaveBeenCalledWith(
+        '"/java/bin/java"',
+        ["-jar", "paper.jar", "nogui", "--port", "25568"],
+        { cwd: "/servers/new-server", shell: true }
+      );
+      expect(ping).toHaveBeenCalledWith({ port: 25568 });
+    } finally {
+      readdir.mockRestore();
+      command.mockRestore();
+      spawn.mockRestore();
+      ping.mockRestore();
     }
   });
 

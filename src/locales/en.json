@@ -45,6 +45,16 @@
         "title": "About {name}"
       },
       "home": {
+        "create_server": {
+          "button": "Create server",
+          "title": "Create a new server",
+          "name": "Server directory name",
+          "name_hint": "1–64 characters: A–Z, a–z, 0–9, spaces, _, . or -. Names cannot be . or ..",
+          "version": "Paper version",
+          "create": "Create",
+          "cancel": "Cancel",
+          "error": "Could not load Paper versions or create the server."
+        },
         "resource_usage": {
           "total": "Total resource usage"
         },

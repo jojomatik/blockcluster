@@ -8,7 +8,7 @@
   },
   "scripts": {
     "start": "nodemon dist/backend/src/backend.js",
-    "build": "tsc",
+    "build": "tsc -p tsconfig.build.json",
     "test:unit": "jest --runInBand"
   },
   "devDependencies": {

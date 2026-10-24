@@ -47,6 +47,17 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
           :loading="loadingVersions"
           :disabled="loadingVersions || creating"
         />
+        <v-text-field
+          v-model="port"
+          type="number"
+          :label="$t('gui.views.home.create_server.port')"
+          :hint="$t('gui.views.home.create_server.port_hint')"
+          persistent-hint
+          :rules="[
+            () => validPort || $t('gui.views.home.create_server.port_invalid'),
+          ]"
+          :disabled="creating"
+        />
       </v-card-text>
       <v-card-actions class="justify-end">
         <v-btn text :disabled="creating" @click="close">
@@ -54,7 +65,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </v-btn>
         <v-btn
           color="secondary"
-          :disabled="!validName || !version || loadingVersions || creating"
+          :disabled="
+            !validName || !validPort || !version || loadingVersions || creating
+          "
           :loading="creating"
           @click="create"
         >
@@ -74,9 +87,16 @@ export default class CreateServerDialogComponent extends Vue {
   private versions: string[] = [];
   private name = "";
   private version: string | null = null;
+  private port = "";
   private loadingVersions = false;
   private creating = false;
   private error = false;
+
+  private get validPort(): boolean {
+    const port = String(this.port).trim();
+    if (port === "") return true;
+    return /^\d+$/.test(port) && +port >= 1024 && +port <= 65535;
+  }
 
   private get validName(): boolean {
     const name = this.name.trim();
@@ -89,6 +109,7 @@ export default class CreateServerDialogComponent extends Vue {
     this.dialog = true;
     this.name = "";
     this.version = null;
+    this.port = "";
     this.error = false;
     this.loadingVersions = true;
     try {
@@ -106,6 +127,7 @@ export default class CreateServerDialogComponent extends Vue {
     const name = this.name.trim();
     if (
       !this.validName ||
+      !this.validPort ||
       !this.version ||
       this.loadingVersions ||
       this.creating
@@ -117,7 +139,11 @@ export default class CreateServerDialogComponent extends Vue {
       const response = await fetch("/api/servers", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, version: this.version }),
+        body: JSON.stringify({
+          name,
+          version: this.version,
+          ...(String(this.port).trim() !== "" && { port: +this.port }),
+        }),
       });
       if (!response.ok) throw new Error("Could not create Paper server");
       this.$emit("created");

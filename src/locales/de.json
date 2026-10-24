@@ -51,6 +51,9 @@
           "name": "Serververzeichnisname",
           "name_hint": "1–64 Zeichen: A–Z, a–z, 0–9, Leerzeichen, _, . oder -. Der Name darf nicht . oder .. sein.",
           "version": "Paper-Version",
+          "port": "Port",
+          "port_hint": "Optional. Leer lassen für den nächsten freien Port (1024–65535).",
+          "port_invalid": "Gib einen Port zwischen 1024 und 65535 ein.",
           "create": "Erstellen",
           "cancel": "Abbrechen",
           "error": "Paper-Versionen konnten nicht geladen oder der Server nicht erstellt werden."

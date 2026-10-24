@@ -400,6 +400,69 @@ describe("backend API", () => {
     );
   });
 
+  it.each([[80], [70000], [25570.5], ["25570"]])(
+    "rejects the invalid port %j",
+    async (port) => {
+      jest.mocked(listPaperVersions).mockClear();
+
+      expect(
+        await invoke("POST", "/api/servers", {
+          body: { name: "Port Server", version: "1.21.8", port },
+        })
+      ).toEqual({ status: 400, body: { error: "Invalid port" } });
+      expect(listPaperVersions).not.toHaveBeenCalled();
+    }
+  );
+
+  it("rejects a port that is already used by a server", async () => {
+    const used = mockServerInstances[0].port;
+
+    expect(
+      await invoke("POST", "/api/servers", {
+        body: { name: "Port Server", version: "1.21.8", port: used },
+      })
+    ).toEqual({ status: 409, body: { error: "Port is already in use" } });
+  });
+
+  it("creates a server with the requested free port", async () => {
+    jest.mocked(listPaperVersions).mockResolvedValue(["1.21.8"]);
+    jest
+      .mocked(listPaperBuilds)
+      .mockResolvedValue([{ build: 9, time: "2025-01-01T00:00:00Z" }]);
+    jest.mocked(installPaperJar).mockResolvedValue("paper-1.21.8-9.jar");
+
+    const result = await invoke("POST", "/api/servers", {
+      body: { name: "Custom Port", version: "1.21.8", port: 30123 },
+    });
+
+    expect(result.status).toBe(201);
+    expect(mockServerInstances[mockServerInstances.length - 1].port).toBe(
+      30123
+    );
+    expect(
+      fs.existsSync(path.join(serversPath, "Custom Port", "server.properties"))
+    ).toBe(false);
+  });
+
+  it("rejects concurrent creations that request the same port", async () => {
+    jest.mocked(listPaperVersions).mockResolvedValue(["1.21.8"]);
+    jest
+      .mocked(listPaperBuilds)
+      .mockResolvedValue([{ build: 9, time: "2025-01-01T00:00:00Z" }]);
+    jest.mocked(installPaperJar).mockResolvedValue("paper-1.21.8-9.jar");
+
+    const results = await Promise.all([
+      invoke("POST", "/api/servers", {
+        body: { name: "Same Port A", version: "1.21.8", port: 30200 },
+      }),
+      invoke("POST", "/api/servers", {
+        body: { name: "Same Port B", version: "1.21.8", port: 30200 },
+      }),
+    ]);
+
+    expect(results.map((result) => result.status).sort()).toEqual([201, 409]);
+  });
+
   it("reserves distinct ports for concurrent server creations", async () => {
     jest.mocked(listPaperVersions).mockResolvedValue(["1.21.8"]);
     jest

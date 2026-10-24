@@ -81,4 +81,39 @@ describe("CreateServerDialogComponent", () => {
     expect(wrapper.emitted("created")).toHaveLength(1);
     wrapper.destroy();
   });
+
+  it.each([
+    ["", true, undefined],
+    ["25570", true, 25570],
+    ["1023", false, undefined],
+    ["65536", false, undefined],
+    ["abc", false, undefined],
+    ["25.5", false, undefined],
+  ])("handles the port %j", async (port, valid, sent) => {
+    const fetch = jest.fn().mockResolvedValue({ ok: true });
+    global.fetch = fetch as unknown as typeof global.fetch;
+    const wrapper = shallowMount(CreateServerDialogComponent, {
+      mocks: { $t: (key: string) => key },
+      stubs: { VDialog: { template: "<div><slot /></div>" } },
+    });
+    await wrapper.setData({ name: "Server", version: "1.21.8", port });
+
+    expect(
+      wrapper.findAllComponents({ name: "VBtn" }).at(1).props("disabled")
+    ).toBe(!valid);
+
+    await (
+      wrapper.vm as typeof wrapper.vm & { create: () => Promise<void> }
+    ).create();
+    if (valid) {
+      expect(JSON.parse(fetch.mock.calls[0][1].body)).toEqual(
+        sent === undefined
+          ? { name: "Server", version: "1.21.8" }
+          : { name: "Server", version: "1.21.8", port: sent }
+      );
+    } else {
+      expect(fetch).not.toHaveBeenCalled();
+    }
+    wrapper.destroy();
+  });
 });

@@ -60,6 +60,7 @@ const version = getVersion();
 
 let servers: Server[] = [];
 const creatingServerNames = new Set<string>();
+const creatingServerPorts = new Set<number>();
 const systemUsage: ResourceUsage[] = [];
 
 function getAvailablePort(servers: Server[]): number {
@@ -119,6 +120,25 @@ app.post(
       return;
     }
 
+    const requestedPort = req.body?.port;
+    if (requestedPort !== undefined && requestedPort !== null) {
+      if (
+        !Number.isInteger(requestedPort) ||
+        requestedPort < 1024 ||
+        requestedPort > 65535
+      ) {
+        res.status(400).json({ error: "Invalid port" });
+        return;
+      }
+      if (
+        creatingServerPorts.has(requestedPort) ||
+        servers.some((server) => server.port === requestedPort)
+      ) {
+        res.status(409).json({ error: "Port is already in use" });
+        return;
+      }
+    }
+
     let builds: { build: number; time: string }[];
     try {
       const versions = await listPaperVersions();
@@ -147,6 +167,17 @@ app.post(
     }
 
     creatingServerNames.add(name);
+    if (requestedPort) {
+      if (
+        creatingServerPorts.has(requestedPort) ||
+        servers.some((server) => server.port === requestedPort)
+      ) {
+        creatingServerNames.delete(name);
+        res.status(409).json({ error: "Port is already in use" });
+        return;
+      }
+      creatingServerPorts.add(requestedPort);
+    }
     const serverPath = path.join(basePath, name);
     let createdDirectory = false;
     let registeredServer: Server | null = null;
@@ -159,7 +190,7 @@ app.post(
       });
 
       const server = new Server({ _name: name });
-      server.port = getAvailablePort(servers);
+      server.port = requestedPort ?? getAvailablePort(servers);
       servers.push(server);
       registeredServer = server;
       await server.update();
@@ -177,6 +208,7 @@ app.post(
       res.status(502).json({ error: "Could not create Paper server" });
     } finally {
       creatingServerNames.delete(name);
+      if (requestedPort) creatingServerPorts.delete(requestedPort);
     }
   })
 );

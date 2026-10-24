@@ -7,6 +7,9 @@ jobs:
   chromatic:
     name: Build storybook and publish to chromatic
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
@@ -38,7 +41,33 @@ jobs:
       - name: Install frontend dependencies
         if: steps.cache.outputs.cache-hit != 'true'
         run: npm ci --prefer-offline --no-audit
-      - name: Build storybook and publish to chromatic
+      - name: Build Storybook for coverage and Chromatic
+        run: npm run build-storybook
+        env:
+          STORY_COVERAGE: "true"
+      - name: Install Playwright browser
+        run: npx playwright install --with-deps chromium
+      - name: Test stories and collect coverage
+        run: |
+          python3 -m http.server 6006 --directory storybook-static >/tmp/storybook-http.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" || true' EXIT
+          for attempt in {1..30}; do
+            if curl --fail --silent http://127.0.0.1:6006/ >/dev/null; then
+              break
+            fi
+            sleep 1
+          done
+          curl --fail --silent http://127.0.0.1:6006/ >/dev/null
+          npm run test:storybook:report
+      - name: Upload storybook coverage to Codecov
+        uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7
+        with:
+          files: coverage/storybook/lcov.info
+          flags: storybook
+          use_oidc: true
+      - name: Publish to Chromatic
         uses: chromaui/action@882b4728513a3720bfcd27bd9ad1260c603c6090 # v18
         with:
           projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
+          storybookBuildDir: storybook-static

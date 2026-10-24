@@ -19,8 +19,8 @@
     "test:release-notes": "node scripts/check-release-notes.js",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
-    "test:storybook": "concurrently -k -s first -n SB,TEST \"http-server storybook-static --port 6006 --silent\" \"wait-on tcp:127.0.0.1:6006 && test-storybook\"",
-    "test:storybook:report": "cross-env STORY_COVERAGE=true storybook build && cross-env STORY_COVERAGE=true npm run test:storybook && nyc report -t .nyc_output --report-dir coverage/storybook",
+    "test:storybook": "test-storybook --coverage",
+    "test:storybook:report": "npm run test:storybook && nyc report --reporter=lcov --temp-dir coverage/storybook --report-dir coverage/storybook && node scripts/normalize-storybook-coverage.js",
     "chromatic": "npx chromatic"
   },
   "dependencies": {
@@ -80,8 +80,8 @@
     "eslint-plugin-prettier": "4.2.5",
     "eslint-plugin-storybook": "0.12.0",
     "eslint-plugin-vue": "8.7.1",
-    "http-server": "14.1.1",
     "license-checker-webpack-plugin": "^0.2.1",
+    "nyc": "15.1.0",
     "prettier": "2.8.8",
     "sass": "1.105.2",
     "sass-loader": "17.0.1",
@@ -92,8 +92,7 @@
     "typescript": "~6.0.0",
     "vue-cli-plugin-vuetify": "2.5.8",
     "vue-template-compiler": "2.7.16",
-    "vuetify-loader": "1.9.2",
-    "wait-on": "9.5.1"
+    "vuetify-loader": "1.9.2"
   },
   "bugs": {
     "url": "https://github.com/jojomatik/blockcluster/issues",

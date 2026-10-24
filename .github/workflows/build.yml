@@ -43,6 +43,8 @@ jobs:
       - name: Install frontend dependencies
         if: steps.cache.outputs.cache-hit != 'true'
         run: npm ci --prefer-offline --no-audit
+      - name: Check release notes
+        run: npm run test:release-notes
       - name: Build frontend
         run: npm run build
       - name: Lint

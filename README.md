@@ -11,6 +11,7 @@ An in-browser manager for your minecraft servers.
 - View current status and online players
 - Show resource usage
 - View console log and send commands
+- Create servers and download server jars
 - Select different java runtimes (See also: ["Adding custom java runtimes"](#adding-custom-java-runtimes))
 - Change start flags
 - Start servers with backend
@@ -18,7 +19,6 @@ An in-browser manager for your minecraft servers.
 
 ## Roadmap for future releases
 - Authentication
-- Create servers and download server jars
 
 ## Breaking changes
 blockcluster has been migrated to [Nuxt 4](https://nuxt.com) (Vue 3 and Vuetify 3). The frontend and the backend are now a single Nuxt server. If you run the docker image, the user interface changes (first two points) are the only ones that affect you.
@@ -43,18 +43,17 @@ Prerequisites:
 
 Customize `/path/to/servers/on/host/machine` and the port directives `-p port:port` to your liking and run:
 ```sh
-docker run -d -v /path/to/servers/on/host/machine:/usr/games/blockcluster/servers -p 8081:8081 25565-25569:25565-25569 jojomatik/blockcluster:latest
+docker run -d -v /path/to/servers/on/host/machine:/usr/games/blockcluster/servers -p 8081:8081 -p 25565-25569:25565-25569 jojomatik/blockcluster:latest
 ```
 Open `http://[your ip]:8081` in your browser.
 
-### Setup with `docker-compose` (also recommended)
+### Setup with Docker Compose (also recommended)
 Prerequisites:
 - Docker
 - Docker Compose
 
 Download [`docker-compose.yml`](docker-compose.yml) and customize it to your liking and add a volume mount to your servers on the host machine. E.g.:
 ```
-version: "3.9"
 services:
   manager:
     ports:
@@ -67,7 +66,7 @@ services:
 
 Then run the following command:
 ```sh
-docker-compose up
+docker compose up
 ```
 Open `http://[your ip]:8081` in your browser.
 
@@ -94,11 +93,10 @@ Mount additional java runtimes in the `/opt/java-xx` directory.
 
 With the `docker run` command:
 ```sh
-docker run -d -v /path/to/servers/on/host/machine:/usr/games/blockcluster/servers -v /path/to/java-xx/on/host/machine:/opt/java-xx -p 8081:8081 25565-25569:25565-25569 jojomatik/blockcluster:latest
+docker run -d -v /path/to/servers/on/host/machine:/usr/games/blockcluster/servers -v /path/to/java-xx/on/host/machine:/opt/java-xx -p 8081:8081 -p 25565-25569:25565-25569 jojomatik/blockcluster:latest
 ```
-or with `docker-compose`
+or with Docker Compose
 ```
-version: "3.9"
 services:
   manager:
     ports:
@@ -110,11 +108,11 @@ services:
       - /path/to/java-xx/on/host/machine:/opt/java-xx
 ```
 ```sh
-docker-compose up
+docker compose up
 ```
 
 ## Building
-### Building with `docker-compose` (recommended)
+### Building with Docker Compose (recommended)
 Prerequisites:
 - Git
 - Docker
@@ -128,19 +126,19 @@ cd blockcluster
 
 **To build for production**, run the following command:
 ```sh
-docker-compose up
+docker compose up
 ```
 Open `http://[your ip]:8081` in your browser.
 
 **To enable hot reloads**, run the following command:
 ```sh
-docker-compose -f docker-compose.yml -f docker-compose.dev.yml up
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up
 ```
 Open `http://[your ip]:8081` in your browser.
 
 To make sure that the container is recreated and the image rebuilt, use either command with additional options, e.g.:
 ```sh
-docker-compose up --force-recreate --build
+docker compose up --force-recreate --build
 ```
 
 ### Building manually

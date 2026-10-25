@@ -3,5 +3,17 @@
   "extends": "./.nuxt/tsconfig.json",
   "compilerOptions": {
     "experimentalDecorators": true
-  }
+  },
+  "include": [
+    ".nuxt/nuxt.d.ts",
+    ".storybook/**/*",
+    "app/**/*",
+    "scripts/**/*",
+    "server/**/*",
+    "shared/**/*",
+    "tests/**/*",
+    "*.js",
+    "*.ts"
+  ],
+  "exclude": ["coverage", "dist", "node_modules", ".output"]
 }

@@ -13,15 +13,41 @@ import {
 } from "vitest";
 import { createApp, createRouter, toNodeListener } from "h3";
 
+interface MockServerData {
+  _name: string;
+  _properties?: { serverPort?: number };
+}
+
+interface MockServer {
+  name: string;
+  port: number;
+  status: number;
+  autostart: boolean;
+  updateStatus: () => void;
+  update: () => Promise<void>;
+  getRecentMessages: () => Array<{ text: string }>;
+  strip: () => { _name: string };
+  start: () => Promise<void>;
+  acceptEula: () => Promise<void>;
+  stop: () => Promise<void>;
+  pause: () => Promise<void>;
+  restart: () => Promise<void>;
+  deleteWorld: () => Promise<void>;
+  executeCommand: () => Promise<void>;
+  updateConfig: () => Promise<void>;
+  measureUsage: () => Promise<void>;
+  sendServerData: () => void;
+}
+
 const mocks = vi.hoisted(() => {
-  const instances: any[] = [];
+  const instances: MockServer[] = [];
   const io = {
     emit: vi.fn(),
     close: vi.fn((callback?: () => void) => callback?.()),
   };
   const server = Object.assign(
-    vi.fn(function (data: any) {
-      const instance: any = {
+    vi.fn(function (data: MockServerData): MockServer {
+      const instance: MockServer = {
         name: data._name,
         port: data._properties?.serverPort ?? 0,
         status: 0,
@@ -44,7 +70,11 @@ const mocks = vi.hoisted(() => {
       instances.push(instance);
       return instance;
     }),
-    { strip: vi.fn((items: any[]) => items.map((entry) => entry.strip())) },
+    {
+      strip: vi.fn((items: MockServer[]) =>
+        items.map((entry) => entry.strip()),
+      ),
+    },
   );
   return {
     instances,
@@ -66,7 +96,7 @@ const mocks = vi.hoisted(() => {
 
 vi.mock("fs", async (importOriginal) => {
   const actual = await importOriginal<typeof import("node:fs")>();
-  const writeFileSync = (...args: any[]) => {
+  const writeFileSync: typeof actual.default.writeFileSync = (...args) => {
     if (mocks.failNextWrite) {
       mocks.failNextWrite = false;
       throw new Error("disk full");
@@ -75,7 +105,7 @@ vi.mock("fs", async (importOriginal) => {
       mocks.failWritePath = "";
       throw mocks.failWriteError;
     }
-    return actual.default.writeFileSync(...args);
+    return Reflect.apply(actual.default.writeFileSync, actual.default, args);
   };
   const defaultExport = {
     ...actual.default,
@@ -102,11 +132,9 @@ vi.mock("../../../server/utils/dependency_info", () => ({
   default: mocks.getDependencyInfo,
 }));
 vi.mock("socket.io", () => ({
-  Server: class {
-    constructor() {
-      return mocks.io;
-    }
-  },
+  Server: vi.fn(function () {
+    return mocks.io;
+  }),
 }));
 vi.mock("pidusage", () => ({ default: mocks.pidusage }));
 vi.mock("nitropack/runtime", () => ({

@@ -55,7 +55,7 @@ function isJavaDir(path: string): boolean {
   const hasBin = fs.readdirSync(path).includes(bin);
   const hasJava: boolean = fs
     .readdirSync(path + "/" + bin)
-    .map((file) => file.substr(0, 4)) // ignore file type
+    .map((file) => file.slice(0, 4)) // ignore file type
     .includes(java);
   return isDir && hasBin && hasJava;
 }

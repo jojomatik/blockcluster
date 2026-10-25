@@ -51,9 +51,10 @@ interface PaperBuild {
  */
 export function parsePaperJar(file: string | null): PaperJarInfo | null {
   const match = /^paper-(\d+(?:\.\d+){1,2})-(\d+)\.jar$/.exec(file ?? "");
-  return match && parsePaperVersion(match[1])
-    ? { version: match[1], build: parseInt(match[2], 10) }
-    : null;
+  const version = match?.[1];
+  const build = match?.[2];
+  if (!version || !build || !parsePaperVersion(version)) return null;
+  return { version, build: parseInt(build, 10) };
 }
 
 /**

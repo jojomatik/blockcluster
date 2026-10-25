@@ -12,11 +12,9 @@ import { useI18n } from "vue-i18n";
 import { watch } from "vue";
 
 const i18n = useI18n();
+type AppLocale = typeof i18n.locale.value;
 
-const props = defineProps({
-  themeName: { type: String, required: true },
-  locale: { type: String, required: true },
-});
+const props = defineProps<{ themeName: string; locale: AppLocale }>();
 
 watch(
   () => props.locale,

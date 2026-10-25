@@ -1,45 +1,55 @@
 import { vi } from "vitest";
-import { flushPromises, shallowMount } from "@vue/test-utils";
+import { flushPromises, mount } from "@vue/test-utils";
 import { mockNuxtImport } from "@nuxt/test-utils/runtime";
+import { defineComponent, h, Suspense } from "vue";
 import ResourceUsage from "#shared/components/resource_usage";
 import AboutView from "@/pages/about.vue";
 import HomeView from "@/pages/index.vue";
 
-const { socket } = vi.hoisted(() => ({
+const { socket, fetchData } = vi.hoisted(() => ({
   socket: { on: vi.fn(), off: vi.fn() },
+  fetchData: vi.fn(),
 }));
 mockNuxtImport("useSocket", () => () => socket);
+mockNuxtImport("useRequestFetch", () => () => fetchData);
 
-const originalFetch = global.fetch;
 afterEach(() => {
-  global.fetch = originalFetch;
   socket.on.mockReset();
   socket.off.mockReset();
+  fetchData.mockReset();
 });
 
 function usage(time: number, cpu: number, memory: number) {
   return { time, cpu, memory };
 }
 
-function mountHome(fetch: typeof global.fetch) {
-  global.fetch = fetch;
-  return shallowMount(HomeView, {
-    global: {
-      stubs: {
-        ResourceChartComponent: {
-          name: "ResourceChartComponent",
-          props: ["resourceUsage"],
-          template: "<div />",
+function mountHome(fetch: (url: string) => Promise<unknown>) {
+  fetchData.mockImplementation(fetch);
+  return mount(
+    defineComponent({
+      setup: () => () =>
+        h(Suspense, null, {
+          default: () => h(HomeView),
+        }),
+    }),
+    {
+      global: {
+        stubs: {
+          ResourceChartComponent: {
+            name: "ResourceChartComponent",
+            props: ["resourceUsage"],
+            template: "<div />",
+          },
         },
       },
     },
-  });
+  );
 }
 
 describe("HomeView", () => {
   it("sums synchronized server usage and retains the last total until all servers synchronize", async () => {
     let serverRequest = 0;
-    const fetch = vi.fn((url: string) => {
+    const fetch = async (url: string) => {
       if (url === "/api/servers") {
         serverRequest++;
         const servers =
@@ -52,12 +62,10 @@ describe("HomeView", () => {
                 { _name: "one", _resourceUsage: [usage(2000, 20, 200)] },
                 { _name: "two", _resourceUsage: [usage(1000, 30, 300)] },
               ];
-        return Promise.resolve({ json: () => Promise.resolve(servers) });
+        return servers;
       }
-      return Promise.resolve({
-        json: () => Promise.resolve([usage(1000, 10, 100)]),
-      });
-    }) as unknown as typeof global.fetch;
+      return [usage(1000, 10, 100)];
+    };
     const wrapper = mountHome(fetch);
     await flushPromises();
     const chart = wrapper.findComponent({ name: "ResourceChartComponent" });
@@ -77,12 +85,8 @@ describe("HomeView", () => {
     socket.on.mockImplementation((event, callback) => {
       if (event === "SYSTEM_USAGE") onSystemUsage = callback;
     });
-    const fetch = vi.fn((url: string) =>
-      Promise.resolve({
-        json: () =>
-          Promise.resolve(url === "/api/servers" ? [] : [usage(1000, 5, 50)]),
-      }),
-    ) as unknown as typeof global.fetch;
+    const fetch = async (url: string) =>
+      url === "/api/servers" ? [] : [usage(1000, 5, 50)];
     const wrapper = mountHome(fetch);
     await flushPromises();
     const chart = wrapper.findComponent({ name: "ResourceChartComponent" });
@@ -101,36 +105,35 @@ describe("HomeView", () => {
 
 describe("AboutView", () => {
   it("loads project, backend, and parsed frontend notices", async () => {
-    const fetch = vi.fn((url: string) => {
+    fetchData.mockImplementation((url: string) => {
       if (url === "/api/dependencies")
-        return Promise.resolve({
-          json: () =>
-            Promise.resolve({ dependencies: [{ name: "backend-lib" }] }),
-        });
-      return Promise.resolve({
-        json: () =>
-          Promise.resolve([
-            {
-              name: "library",
-              version: "1.2.3",
-              author: { name: "Example Author" },
-              repository: "https://github.com/example/library",
-              license: "MIT",
-              licenseText: "MIT license\nAll rights reserved",
-            },
-          ]),
-      });
-    }) as unknown as typeof global.fetch;
-    global.fetch = fetch;
-    const wrapper = shallowMount(AboutView, {
-      global: { stubs: ["NoticeComponent"] },
+        return Promise.resolve({ dependencies: [{ name: "backend-lib" }] });
+      return Promise.resolve([
+        {
+          name: "library",
+          version: "1.2.3",
+          author: { name: "Example Author" },
+          repository: "https://github.com/example/library",
+          license: "MIT",
+          licenseText: "MIT license\nAll rights reserved",
+        },
+      ]);
     });
+    const wrapper = mount(
+      defineComponent({
+        setup: () => () =>
+          h(Suspense, null, {
+            default: () => h(AboutView),
+          }),
+      }),
+      { global: { stubs: ["NoticeComponent"] } },
+    );
     await flushPromises();
     const notices = wrapper
       .findAllComponents({ name: "NoticeComponent" })
       .map((component) => component.props("notice"));
-    expect(fetch).toHaveBeenCalledWith("/api/dependencies");
-    expect(fetch).toHaveBeenCalledWith("/dependencies.json");
+    expect(fetchData).toHaveBeenCalledWith("/api/dependencies");
+    expect(fetchData).toHaveBeenCalledWith("/dependencies.json");
     expect(notices).toHaveLength(3);
     expect(notices.map((notice) => notice.name)).toEqual([
       "blockcluster",

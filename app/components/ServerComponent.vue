@@ -190,30 +190,18 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
           <v-card-actions class="px-4">
             <ToggleButtonComponent
               :status="server.status"
-              :disabled="
-                !javaRuntimes
-                  .map((runtime) => runtime.path)
-                  .includes(server.javaPath)
-              "
+              :disabled="!hasJavaRuntime"
               @start="handleAction('start')"
               @stop="handleAction('stop')"
             />
             <RestartButtonComponent
               :status="server.status"
-              :disabled="
-                !javaRuntimes
-                  .map((runtime) => runtime.path)
-                  .includes(server.javaPath)
-              "
+              :disabled="!hasJavaRuntime"
               @restart="handleAction('restart')"
             />
             <PauseButtonComponent
               :status="server.status"
-              :disabled="
-                !javaRuntimes
-                  .map((runtime) => runtime.path)
-                  .includes(server.javaPath)
-              "
+              :disabled="!hasJavaRuntime"
               @pause="handleAction('pause')"
               @unpause="handleAction('start')"
             />
@@ -318,7 +306,13 @@ const socket = useSocket();
 /**
  * The list of available {@link JavaRuntime}s.
  */
-const javaRuntimes = ref<JavaRuntime[]>([]);
+const javaRuntimes = shallowRef<JavaRuntime[]>([]);
+
+const hasJavaRuntime = computed(
+  () =>
+    server.javaPath !== null &&
+    javaRuntimes.value.some((runtime) => runtime.path === server.javaPath),
+);
 
 /**
  * The available jar updates, or `null` if unknown or not applicable.

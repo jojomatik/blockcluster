@@ -135,6 +135,7 @@ const GIT_ROOT = "https://github.com/jojomatik/blockcluster";
 const { t, te, locale, availableLocales, setLocale } = useI18n();
 const theme = useTheme();
 const config = useRuntimeConfig();
+type AppLocale = typeof locale.value;
 
 useHead({ htmlAttrs: { lang: locale } });
 
@@ -156,8 +157,7 @@ const dark = computed(() => theme.current.value.dark);
 onMounted(() => {
   theme.change(localStorage.getItem("dark") === "true" ? "dark" : "light");
   const lang = localStorage.getItem("lang");
-  if (lang && availableLocales.includes(lang))
-    void setLocale(lang as typeof locale.value);
+  if (lang && isAvailableLocale(lang)) void setLocale(lang);
 });
 
 /**
@@ -171,9 +171,13 @@ function setDark(value: boolean | null) {
 /**
  * Applies and stores the selected language in local storage.
  */
-function setLanguage(value: string) {
-  void setLocale(value as typeof locale.value);
+function setLanguage(value: AppLocale) {
+  void setLocale(value);
   localStorage.setItem("lang", value);
+}
+
+function isAvailableLocale(value: string): value is AppLocale {
+  return availableLocales.some((availableLocale) => availableLocale === value);
 }
 </script>
 

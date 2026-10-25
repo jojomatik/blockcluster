@@ -23,7 +23,7 @@ import Server from "@/lib/components/server";
 /**
  * A view that shows one server.
  */
-const server = reactive(new Server({}));
+const server = shallowReactive(new Server({}));
 
 useHead({ title: () => server.name });
 </script>

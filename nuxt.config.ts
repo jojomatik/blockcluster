@@ -15,6 +15,9 @@ export default defineNuxtConfig({
     restructureDir: ".",
     langDir: "locales",
   },
+  sitemap: {
+    zeroRuntime: true,
+  },
   vuetify: {
     vuetifyOptions,
   },

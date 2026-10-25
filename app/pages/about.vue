@@ -18,6 +18,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 <template>
   <v-container class="home" fluid>
+    <v-alert v-if="loadError" class="mb-4" type="error">
+      {{ loadError.message }}
+    </v-alert>
     <v-row>
       <v-col cols="12">
         <v-card>
@@ -114,19 +117,27 @@ import { getVersion } from "#shared/version";
 import Notice from "#shared/components/software_notice";
 import licenseText from "../../LICENSE?raw";
 
+interface FrontendLicense {
+  name: string;
+  version: string;
+  author: { name: string } | null;
+  license: string;
+  licenseText: string | null;
+  repository: { url: string } | string | null;
+}
+
 /**
  * A view that shows an about section.
  */
 const { t } = useI18n();
 const config = useRuntimeConfig();
+const requestFetch = useRequestFetch();
 
 useHead({ title: "About" });
 
 /**
  * A variable that shows whether loading is done or not.
  */
-const loading = ref(true);
-
 /**
  * The name of the project.
  */
@@ -135,27 +146,28 @@ const projectName = "blockcluster";
 /**
  * The notice block for this project.
  */
-const projectNotice = ref<Notice>();
+const projectNotice = getBlockclusterNotice();
 
 /**
  * The notice blocks of all backend dependencies.
  */
-const backendNotices = ref<Notice[]>([]);
+const {
+  data: notices,
+  pending: loading,
+  error: loadError,
+} = await useAsyncData("about-dependency-notices", async () => {
+  const [backendResponse, frontendLicenses] = await Promise.all([
+    requestFetch<{ dependencies: Notice[] }>("/api/dependencies"),
+    requestFetch<FrontendLicense[]>("/dependencies.json"),
+  ]);
 
-/**
- * The notice blocks of all frontend dependencies.
- */
-const frontendNotices = ref<Notice[]>([]);
-
-/**
- * Loads the dependency info and licenses.
- */
-onMounted(async () => {
-  projectNotice.value = getBlockclusterNotice();
-  backendNotices.value = await getBackendNotices();
-  frontendNotices.value = await getFrontEndNotices();
-  loading.value = false;
+  return {
+    backend: backendResponse.dependencies,
+    frontend: parseFrontendNotices(frontendLicenses),
+  };
 });
+const backendNotices = computed(() => notices.value?.backend ?? []);
+const frontendNotices = computed(() => notices.value?.frontend ?? []);
 
 /**
  * Returns the notice block for the current project.
@@ -171,26 +183,9 @@ function getBlockclusterNotice(): Notice {
 }
 
 /**
- * Returns the notice blocks for all backend dependencies.
- */
-async function getBackendNotices(): Promise<Notice[]> {
-  return (await (await fetch("/api/dependencies")).json())["dependencies"];
-}
-
-/**
  * Returns the notice blocks for all frontend dependencies.
  */
-async function getFrontEndNotices(): Promise<Notice[]> {
-  // Fetch the license information generated at build time by the license module.
-  const licenses: {
-    name: string;
-    version: string;
-    author: { name: string } | null;
-    license: string;
-    licenseText: string | null;
-    repository: { url: string } | string | null;
-  }[] = await (await fetch("/dependencies.json")).json();
-
+function parseFrontendNotices(licenses: FrontendLicense[]): Notice[] {
   return licenses
     .sort((a, b) => a.name.localeCompare(b.name))
     .map((license) => {
@@ -206,7 +201,7 @@ async function getFrontEndNotices(): Promise<Notice[]> {
           .replace(/.+?(github.com\/)/, "")
           .replace(".git", "");
         repositoryLink = "https://github.com/" + repositoryCoordinates;
-        repositoryOwner = repositoryCoordinates.split("/")[0];
+        repositoryOwner = repositoryCoordinates.split("/")[0] ?? "";
       }
 
       return new Notice(

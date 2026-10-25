@@ -1,15 +1,4 @@
-import {
-  afterAll,
-  afterEach,
-  beforeAll,
-  beforeEach,
-  describe,
-  expect,
-  it,
-  vi,
-  type Mock,
-  type MockInstance,
-} from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
 import { getVersion } from "#shared/version";
 
 describe("getVersion", () => {

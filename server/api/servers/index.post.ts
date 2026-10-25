@@ -64,7 +64,8 @@ export default defineEventHandler(async (event) => {
   } catch {
     return errorResponse(event, 502, "Could not load Paper versions");
   }
-  if (builds.length === 0) {
+  const latestBuild = builds[0];
+  if (!latestBuild) {
     return errorResponse(event, 409, "No stable Paper build is available");
   }
 
@@ -99,7 +100,7 @@ export default defineEventHandler(async (event) => {
     createdDirectory = true;
     await installPaperJar(serverPath, {
       version,
-      build: builds[0].build,
+      build: latestBuild.build,
     });
 
     const server = new Server({ _name: name });

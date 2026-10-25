@@ -76,7 +76,7 @@ export default class Notice {
       this.repositoryLink = "https://github.com/" + repositoryCoordinates;
 
       // If author is not set, retrieve author from repository coordinates.
-      if (!this.author) this.author = repositoryCoordinates.split("/")[0];
+      if (!this.author) this.author = repositoryCoordinates.split("/")[0] ?? "";
     }
 
     this.notice = notice;

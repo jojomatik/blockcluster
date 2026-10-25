@@ -264,14 +264,14 @@ export async function startBackend(): Promise<void> {
 export async function stopBackend(): Promise<void> {
   await Promise.all(
     servers.map((server) => {
-      if (server.status == ServerStatus.Started) return server.stop();
+      if (server.status === ServerStatus.Started) return server.stop();
       return;
     }),
   );
 
   watchedFiles.forEach((file) => fs.unwatchFile(file));
   watchedFiles.length = 0;
-  clearTimeout(usageInterval);
+  clearInterval(usageInterval);
   await io.close();
   console.log("Websocket stopped.");
 }

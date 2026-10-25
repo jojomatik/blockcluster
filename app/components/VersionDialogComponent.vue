@@ -88,7 +88,7 @@
           class="mb-4"
           :disabled="installing || !version || build === null"
           :loading="installing"
-          @click="run(() => server.installVersion(version, build, encodedName))"
+          @click="run(installSelectedVersion)"
         >
           {{ t("gui.views.server.version_dialog.install") }}
         </v-btn>
@@ -116,7 +116,7 @@
             variant="outlined"
             :disabled="installing || !oldJar"
             :loading="installing"
-            @click="run(() => server.installExistingJar(oldJar, encodedName))"
+            @click="run(installSelectedJar)"
           >
             {{ t("gui.views.server.version_dialog.install") }}
           </v-btn>
@@ -207,12 +207,29 @@ async function loadBuilds(selectedVersion: string): Promise<void> {
     const fetchedBuilds = await props.server.fetchPaperBuilds(selectedVersion);
     if (version.value !== selectedVersion) return;
     builds.value = fetchedBuilds;
-    if (fetchedBuilds.length > 0) build.value = fetchedBuilds[0].build;
+    const latestBuild = fetchedBuilds[0];
+    if (latestBuild) build.value = latestBuild.build;
   } catch {
     if (version.value === selectedVersion) error.value = true;
   } finally {
     if (version.value === selectedVersion) loadingBuilds.value = false;
   }
+}
+
+function installSelectedVersion(): Promise<Response> {
+  if (version.value === null || build.value === null)
+    return Promise.reject(new Error("Select a Paper version and build first."));
+  return props.server.installVersion(
+    version.value,
+    build.value,
+    encodedName.value,
+  );
+}
+
+function installSelectedJar(): Promise<Response> {
+  if (oldJar.value === null)
+    return Promise.reject(new Error("Select an existing server jar first."));
+  return props.server.installExistingJar(oldJar.value, encodedName.value);
 }
 
 function formatBuild(item: { build: number; time: string }): string {

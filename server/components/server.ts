@@ -115,7 +115,7 @@ export default class Server extends CommonServer {
   async updateStatus(): Promise<void> {
     try {
       const serverInfo = await this.getServerInfo();
-      if (this.proc != null) {
+      if (this.proc !== null) {
         if ("players" in serverInfo) {
           // `serverInfo` is instance of `mc.NewPingResult`
           this.favicon = serverInfo.favicon ?? "";
@@ -137,7 +137,7 @@ export default class Server extends CommonServer {
           };
         }
 
-        if (this.status != ServerStatus.Stopping) {
+        if (this.status !== ServerStatus.Stopping) {
           this.status = ServerStatus.Started;
           if (this.safeStartPromise) {
             this.safeStartPromise.resolve(this.status);
@@ -147,10 +147,10 @@ export default class Server extends CommonServer {
       }
     } catch {
       if (
-        this.status != ServerStatus.Starting &&
-        this.status != ServerStatus.Queued &&
-        this.status != ServerStatus.Paused &&
-        this.proc == null
+        this.status !== ServerStatus.Starting &&
+        this.status !== ServerStatus.Queued &&
+        this.status !== ServerStatus.Paused &&
+        this.proc === null
       )
         this.status = ServerStatus.Stopped;
       if (this.proc && this.proc.exitCode !== null) {
@@ -294,7 +294,7 @@ export default class Server extends CommonServer {
    */
   private async getFlags(): Promise<string[]> {
     try {
-      if (this.config.flags.length == 0) {
+      if (this.config.flags.length === 0) {
         this.config.flags = String(
           fs.readFileSync(this.getPath() + "/flags.txt"),
         ).split(" ");
@@ -347,12 +347,12 @@ export default class Server extends CommonServer {
     io.emit("server_" + encodeURIComponent(this.name), {
       serverInfo: this.strip(),
     });
-    if (this.status === ServerStatus.Starting && this.timeout == null) {
+    if (this.status === ServerStatus.Starting && this.timeout === null) {
       this.timeout = setInterval(async () => {
         await this.updateStatus();
-        if (this.status != ServerStatus.Starting) this.sendServerData();
+        if (this.status !== ServerStatus.Starting) this.sendServerData();
       }, 1000);
-    } else if (this.timeout != null) {
+    } else if (this.timeout !== null) {
       clearInterval(this.timeout);
       this.timeout = null;
     }
@@ -499,7 +499,7 @@ export default class Server extends CommonServer {
    */
   public async stop(): Promise<void> {
     this.stopPauseTimeout();
-    if (this.status == ServerStatus.Paused) {
+    if (this.status === ServerStatus.Paused) {
       this.wakeUpListener?.close();
       this.status = ServerStatus.Stopped;
       await this.update();
@@ -746,7 +746,7 @@ export default class Server extends CommonServer {
   /**
    * Returns the flags from the config.
    */
-  get flags(): string[] {
+  override get flags(): string[] {
     return this.config.flags;
   }
 
@@ -754,7 +754,7 @@ export default class Server extends CommonServer {
    * Sets a new value for {@link #flags}.
    * @param value the new value.
    */
-  set flags(value: string[]) {
+  override set flags(value: string[]) {
     super.flags = value;
     this.config.flags = value;
   }
@@ -762,7 +762,7 @@ export default class Server extends CommonServer {
   /**
    * Returns {@link #autostart}.
    */
-  get autostart(): boolean {
+  override get autostart(): boolean {
     return this.config.autostart;
   }
 
@@ -770,7 +770,7 @@ export default class Server extends CommonServer {
    * Sets a new value for {@link #autostart}.
    * @param value the new value.
    */
-  set autostart(value: boolean) {
+  override set autostart(value: boolean) {
     super.autostart = value;
     this.config.autostart = value;
   }
@@ -778,7 +778,7 @@ export default class Server extends CommonServer {
   /**
    * Returns {@link #_pauseOnIdle}.
    */
-  get pauseOnIdle(): PauseOnIdleType {
+  override get pauseOnIdle(): PauseOnIdleType {
     return this.config.pauseOnIdle;
   }
 
@@ -786,7 +786,7 @@ export default class Server extends CommonServer {
    * Sets a new value for {@link #_pauseOnIdle}.
    * @param value the new value.
    */
-  set pauseOnIdle(value: PauseOnIdleType) {
+  override set pauseOnIdle(value: PauseOnIdleType) {
     super.pauseOnIdle = value;
     this.config.pauseOnIdle = value;
   }
@@ -794,7 +794,7 @@ export default class Server extends CommonServer {
   /**
    * Returns {@link #_javaPath}.
    */
-  get javaPath(): string | null {
+  override get javaPath(): string | null {
     return this.config.javaPath;
   }
 
@@ -802,7 +802,7 @@ export default class Server extends CommonServer {
    * Sets a new value for {@link #_javaPath}.
    * @param value the new value.
    */
-  set javaPath(value: string | null) {
+  override set javaPath(value: string | null) {
     super.javaPath = value;
     this.config.javaPath = value;
   }

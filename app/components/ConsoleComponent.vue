@@ -196,7 +196,7 @@ function addDatetimeMessage(
 
 function hasMessage(uuid: string): boolean {
   for (let index = 0; index < messages.value.length; index++) {
-    if (messages.value[index].uuid === uuid) return true;
+    if (messages.value[index]?.uuid === uuid) return true;
   }
   return false;
 }

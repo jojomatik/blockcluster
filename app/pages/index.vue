@@ -18,6 +18,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 <template>
   <v-container class="home" fluid>
+    <v-alert v-if="loadError" class="mb-4" type="error">
+      {{ loadError }}
+    </v-alert>
     <v-row>
       <v-col cols="12">
         <v-card>
@@ -59,16 +62,39 @@ import Player from "#shared/components/player";
 
 const { t } = useI18n();
 const socket = useSocket();
+const requestFetch = useRequestFetch();
 
 useHead({ title: "Home" });
 
+type ServerData = ConstructorParameters<typeof Server>[0];
+type ResourceUsageData = Pick<ResourceUsage, "time" | "cpu" | "memory">;
+
+const { data: initialData, error: initialLoadError } = await useAsyncData(
+  "home-dashboard",
+  async () => {
+    const [serverData, systemUsageData] = await Promise.all([
+      requestFetch<ServerData[]>("/api/servers"),
+      requestFetch<ResourceUsageData[]>("/api/system-usage"),
+    ]);
+    return { serverData, systemUsageData };
+  },
+);
+
 // noinspection JSMismatchedCollectionQueryUpdate
-const servers = ref<Server[]>([]);
+const servers = shallowRef<Server[]>(
+  (initialData.value?.serverData ?? []).map(createServer),
+);
 
 /**
  * The {@link ResourceUsage} of the blockcluster backend.
  */
-const systemUsage = ref<ResourceUsage[]>([]);
+const systemUsage = ref(
+  (initialData.value?.systemUsageData ?? []).map(createResourceUsage),
+);
+const refreshError = ref<string | null>(null);
+const loadError = computed(
+  () => initialLoadError.value?.message ?? refreshError.value,
+);
 
 /**
  * Cached version of the total resource usage.
@@ -77,19 +103,10 @@ const systemUsage = ref<ResourceUsage[]>([]);
  */
 let totalUsage: ResourceUsage[] = [];
 
-onMounted(async () => {
-  socket.on("SYSTEM_USAGE", (data: Record<string, unknown>[]) => {
-    systemUsage.value = [];
-    data.forEach((elem: Record<string, unknown>) => {
-      systemUsage.value.push(Object.assign(new ResourceUsage(), elem));
-    });
+onMounted(() => {
+  socket.on("SYSTEM_USAGE", (data: ResourceUsageData[]) => {
+    systemUsage.value = data.map(createResourceUsage);
   });
-  void updateServers();
-  const response = await fetch("/api/system-usage");
-  const data: Record<string, unknown>[] = await response.json();
-  systemUsage.value = data.map((elem) =>
-    Object.assign(new ResourceUsage(), elem),
-  );
 });
 
 /**
@@ -100,15 +117,26 @@ onUnmounted(() => {
 });
 
 async function updateServers(): Promise<void> {
-  const response = await fetch("/api/servers");
-  const data: Record<string, unknown>[] = await response.json();
-  servers.value = data.map((elem) => {
-    const server = new Server(elem);
-    server.players.sample = server.players.sample.map((player) =>
-      Object.assign(new Player(), player),
-    );
-    return server;
-  });
+  try {
+    const data = await requestFetch<ServerData[]>("/api/servers");
+    servers.value = data.map(createServer);
+    refreshError.value = null;
+  } catch (error) {
+    refreshError.value =
+      error instanceof Error ? error.message : "Failed to refresh servers.";
+  }
+}
+
+function createServer(data: ServerData): Server {
+  const server = new Server(data);
+  server.players.sample = server.players.sample.map((player) =>
+    Object.assign(new Player(), player),
+  );
+  return server;
+}
+
+function createResourceUsage(data: ResourceUsageData): ResourceUsage {
+  return Object.assign(new ResourceUsage(), data);
 }
 
 /**
@@ -123,30 +151,40 @@ function getTotalUsage(): ResourceUsage[] {
   const len = systemUsage.value.length;
 
   // Return empty cached usage if length is 0.
-  if (len == 0) return totalUsage;
+  if (len === 0) return totalUsage;
 
   // Return system usage, if no servers are available.
-  if (servers.value.length == 0) return systemUsage.value;
-  const time = systemUsage.value[0].time;
-  for (let i = 0; i < servers.value.length; i++) {
-    if (
-      servers.value[i].resourceUsage.length != len ||
-      servers.value[i].resourceUsage[0].time != time
-    )
+  if (servers.value.length === 0) return systemUsage.value;
+  const firstSystemUsage = systemUsage.value[0];
+  if (!firstSystemUsage) return totalUsage;
+  const time = firstSystemUsage.time;
+  for (const server of servers.value) {
+    const firstServerUsage = server.resourceUsage[0];
+    if (server.resourceUsage.length !== len || firstServerUsage?.time !== time)
       return totalUsage;
   }
 
   const usages: ResourceUsage[] = [];
   for (let i = 0; i < len; i++) {
-    let cpu = systemUsage.value[i].cpu;
-    let memory = systemUsage.value[i].memory;
-    servers.value.forEach((server) => {
-      cpu += server.resourceUsage[i].cpu;
-      memory += server.resourceUsage[i].memory;
-    });
-    usages.push(
-      new ResourceUsage(servers.value[0].resourceUsage[i].time, cpu, memory),
+    const systemSample = systemUsage.value[i];
+    const serverSamples = servers.value.map(
+      (server) => server.resourceUsage[i],
     );
+    const firstServerSample = serverSamples[0];
+    if (
+      !systemSample ||
+      !firstServerSample ||
+      serverSamples.some((sample) => !sample)
+    )
+      return totalUsage;
+    let cpu = systemSample.cpu;
+    let memory = systemSample.memory;
+    for (const sample of serverSamples) {
+      if (!sample) return totalUsage;
+      cpu += sample.cpu;
+      memory += sample.memory;
+    }
+    usages.push(new ResourceUsage(firstServerSample.time, cpu, memory));
   }
   return (totalUsage = usages);
 }

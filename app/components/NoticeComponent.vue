@@ -73,7 +73,7 @@ import type Notice from "#shared/components/software_notice";
 /**
  * A component that renders a single third party notice.
  */
-defineProps<{ notice?: Notice }>();
+defineProps<{ notice: Notice }>();
 
 const { t } = useI18n();
 </script>

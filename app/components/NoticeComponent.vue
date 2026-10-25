@@ -95,7 +95,7 @@ code {
   border-radius: 3px;
   background-color: rgba(var(--v-theme-on-surface), 0.05);
   font-size: 85%;
-  white-space: pre-wrap;
+  white-space: normal;
 }
 
 .notice-card

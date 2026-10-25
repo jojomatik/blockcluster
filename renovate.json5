@@ -8,6 +8,8 @@
   ],
   "labels": ["type:build"],
   "separateMultipleMajor": true,
+  "minimumReleaseAge": "7 days",
+  "internalChecksFilter": "strict",
   "packageRules": [
     {
       "matchDepTypes": ["devDependencies", "dev-dependencies", "dev"],
@@ -33,13 +35,20 @@
       "matchCurrentVersion": "!/^0/",
       "automerge": true,
       "automergeStrategy": "rebase",
-      "minimumReleaseAge": "7 days",
     },
     {
       "matchUpdateTypes": ["digest"],
       "automerge": true,
       "automergeStrategy": "rebase",
-      "minimumReleaseAge": "7 days",
+    },
+    {
+      "matchUpdateTypes": ["major"],
+      "automerge": false,
+    },
+    {
+      "matchDatasources": ["npm"],
+      "matchPackageNames": ["nuxt"],
+      "separateMultipleMinor": true,
     },
     {
       "matchDatasources": ["docker"],
@@ -81,61 +90,27 @@
     },
     {
       "matchDatasources": ["npm"],
-      "matchPackageNames": [
-        "storybook",
-        "@storybook/*",
-        "chromatic",
-        "eslint-plugin-storybook",
-      ],
-      "groupName": "storybook monorepo",
-      "separateMultipleMajor": false,
-    },
-    {
-      "matchDatasources": ["npm"],
-      "matchPackageNames": [
-        "semantic-release",
-        "@semantic-release/*",
-        "conventional-changelog-conventionalcommits",
-      ],
-      "groupName": "semantic-release monorepo",
-      "separateMultipleMajor": false,
-    },
-    {
-      "matchDatasources": ["npm"],
       "matchPackageNames": ["apexcharts", "vue3-apexcharts"],
       "groupName": "apexcharts",
       "separateMultipleMajor": false,
     },
     {
       "matchDatasources": ["npm"],
-      "matchPackageNames": ["vuetify", "vuetify-nuxt-module"],
-      "groupName": "vuetify",
-      "separateMultipleMajor": false,
-    },
-    {
-      "matchDatasources": ["npm"],
       "matchPackageNames": [
-        "@nuxt/eslint",
-        "typescript-eslint",
-        "@typescript-eslint/*",
-        "@vue/eslint-config-*",
-        "eslint",
-        "eslint-config-prettier",
-        "eslint-plugin-prettier",
-        "eslint-plugin-vue",
-        "prettier",
-      ],
-      "groupName": "eslint",
-      "separateMultipleMajor": false,
-    },
-    {
-      "matchDatasources": ["npm"],
-      "matchPackageNames": [
-        "/^(@types/)?(pidusage|properties-reader|uuid)$/",
+        "/^(@types/)?(pidusage|properties-reader|semver|uuid)$/",
       ],
       "groupName": "{{{replace '^@types/' '' depName}}}",
       // Related packages can have different major version numbers.
       "separateMultipleMajor": false,
+    },
+    {
+      "matchDatasources": ["npm"],
+      "matchPackageNames": ["@jojomatik/nuxt-bundle"],
+      "automerge": true,
+      "automergeStrategy": "rebase",
+      "minimumReleaseAge": null,
+      "separateMultipleMajor": true,
+      "separateMultipleMinor": true,
     },
   ],
   "lockFileMaintenance": {

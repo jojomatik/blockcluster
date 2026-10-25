@@ -19,6 +19,10 @@ export default function themeLocaleDecorator(
   state.locale = context.globals.locale as AppLocale;
   state.theme = context.globals.theme;
 
+  // Resolve the story component once; calling story() on every render creates a
+  // new component each time and remounts the story, discarding its state.
+  const storyComponent = story();
+
   return () => {
     return h(
       StoryWrapper,
@@ -27,7 +31,7 @@ export default function themeLocaleDecorator(
         locale: state.locale,
       },
       {
-        story: () => h(story(), { ...context.args }),
+        story: () => h(storyComponent, { ...context.args }),
       },
     );
   };

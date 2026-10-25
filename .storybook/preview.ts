@@ -39,20 +39,6 @@ const preview: Preview = {
   },
   parameters: {
     actions: { argTypesRegex: "^on[A-Z].*" },
-    layout: "fullscreen",
-    viewport: {
-      viewports: {
-        mobile: { name: "Mobile", styles: { width: "360px", height: "720px" } },
-        tablet: {
-          name: "Tablet",
-          styles: { width: "1024px", height: "768px" },
-        },
-        desktop: {
-          name: "Desktop",
-          styles: { width: "1920px", height: "1080px" },
-        },
-      },
-    },
   },
   decorators: [themeLocaleDecorator],
   tags: ["autodocs"],

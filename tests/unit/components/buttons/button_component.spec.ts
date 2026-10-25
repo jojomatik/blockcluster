@@ -16,6 +16,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 import { shallowMount } from "@vue/test-utils";
+import { mdiCheck } from "@mdi/js";
 import ButtonComponent from "@/components/buttons/ButtonComponent.vue";
 
 describe("ButtonComponent", () => {
@@ -23,7 +24,7 @@ describe("ButtonComponent", () => {
     const wrapper = shallowMount(ButtonComponent, {
       props: {
         color: "primary",
-        icon: "mdi-check",
+        icon: mdiCheck,
       },
       slots: {
         default: "Save",
@@ -49,7 +50,7 @@ describe("ButtonComponent", () => {
     expect(button.exists()).toBe(true);
     expect(button.text()).toContain("Save");
     expect(button.props("color")).toBe("primary");
-    expect(wrapper.findComponent({ name: "VIcon" }).text()).toBe("mdi-check");
+    expect(wrapper.findComponent({ name: "VIcon" }).text()).toBe(mdiCheck);
 
     await button.trigger("click");
 

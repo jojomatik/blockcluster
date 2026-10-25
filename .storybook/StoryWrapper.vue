@@ -8,8 +8,23 @@
 
 <script setup lang="ts">
 import { VApp, VMain } from "vuetify/components";
+import { useTheme } from "vuetify";
 import { useI18n } from "vue-i18n";
-import { ref, watch } from "vue";
+import { ref, watch, watchEffect } from "vue";
+
+// Vuetify hands its theme stylesheet to unhead, which Storybook never flushes
+// to the DOM. Without this, all theme colors (--v-theme-*) would be missing.
+const THEME_STYLE_ID = "vuetify-theme-stylesheet";
+const vuetifyTheme = useTheme();
+watchEffect(() => {
+  let style = document.getElementById(THEME_STYLE_ID);
+  if (!style) {
+    style = document.createElement("style");
+    style.id = THEME_STYLE_ID;
+    document.head.appendChild(style);
+  }
+  style.textContent = vuetifyTheme.styles.value;
+});
 
 const i18n = useI18n();
 type AppLocale = typeof i18n.locale.value;

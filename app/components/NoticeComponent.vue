@@ -17,7 +17,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 -->
 
 <template>
-  <v-card variant="outlined">
+  <v-card variant="outlined" class="notice-card">
     <v-card-title>
       <a
         v-if="notice.repositoryLink"
@@ -29,7 +29,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
           {{ notice.name }}
           <code class="mx-1">{{ notice.version }}</code>
         </h5>
-        <v-icon :icon="mdiGithub" />
+        <v-icon :icon="mdiGithub" class="text-medium-emphasis" />
       </a>
       <h5 v-else>
         {{ notice.name }}
@@ -81,7 +81,24 @@ const { t } = useI18n();
 <style scoped>
 .v-application a {
   margin: 10px;
-  color: rgb(var(--v-theme-accent));
+  color: inherit;
   text-decoration: none;
+}
+
+.notice-card {
+  border-color: rgba(var(--v-border-color), var(--v-border-opacity));
+}
+
+code {
+  padding: 0 0.4em;
+  border-radius: 3px;
+  background-color: rgba(var(--v-theme-on-surface), 0.05);
+  font-size: 85%;
+  white-space: pre-wrap;
+}
+
+.notice-card
+  :deep(.v-expansion-panel-title--active > .v-expansion-panel-title__overlay) {
+  opacity: 0;
 }
 </style>

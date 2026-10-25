@@ -1,3 +1,4 @@
+import { mdiCog } from "@mdi/js";
 import ButtonComponent from "@/components/buttons/ButtonComponent.vue";
 
 export default {
@@ -18,7 +19,7 @@ export default {
 export const Default = {
   args: {
     color: "red",
-    icon: "mdi-cog",
+    icon: mdiCog,
     disabled: false,
     default: "Click me",
   },
@@ -27,7 +28,7 @@ export const Default = {
 export const Disabled = {
   args: {
     color: "red",
-    icon: "mdi-cog",
+    icon: mdiCog,
     disabled: true,
     default: "Click me",
   },

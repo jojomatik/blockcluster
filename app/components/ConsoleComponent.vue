@@ -32,7 +32,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         flex-direction: column;
         overflow: hidden;
       "
-      class="pb-4 pt-4"
+      class="console-text pb-4 pt-4"
     >
       <v-row ref="consoleRow" class="mt-0 mb-0" style="overflow: auto">
         <v-col>
@@ -329,8 +329,16 @@ async function sendCommand(): Promise<void> {
 </script>
 
 <style scoped>
+.console-text {
+  color: rgba(255, 255, 255, 0.7);
+  line-height: 1.375rem;
+}
+
+.console-text :deep(input) {
+  color: #fff;
+}
+
 .blockcluster-message {
-  color: rgb(var(--v-theme-accent)) !important;
-  filter: brightness(1.3);
+  color: rgb(var(--v-theme-accent-lighten-2)) !important;
 }
 </style>

@@ -1,4 +1,4 @@
-// The prebuilt bundle is used because the nested package.json files of the ESM builds do not specify a license, which the license check of the build can not handle.
+// The ESM builds have nested package.json files without a license, which the build's license check rejects.
 import { io } from "socket.io-client/dist/socket.io.js";
 
 /**

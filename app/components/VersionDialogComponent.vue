@@ -178,13 +178,17 @@ const loadingVersions = ref(false);
 const loadingBuilds = ref(false);
 const installing = ref(false);
 const error = ref(false);
+let openingGeneration = 0;
 
 async function open(): Promise<void> {
+  const generation = ++openingGeneration;
   dialog.value = true;
   error.value = false;
+  versions.value = [];
   version.value = null;
   build.value = null;
   builds.value = [];
+  oldJars.value = [];
   oldJar.value = null;
   loadingVersions.value = true;
   loadingOldJars.value = true;
@@ -192,6 +196,7 @@ async function open(): Promise<void> {
     props.server.fetchPaperVersions(),
     props.server.fetchOldJars(encodedName.value),
   ]);
+  if (generation !== openingGeneration) return;
   if (fetchedVersions.status === "fulfilled")
     versions.value = fetchedVersions.value;
   else error.value = true;

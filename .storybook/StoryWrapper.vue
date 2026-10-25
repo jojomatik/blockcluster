@@ -36,10 +36,14 @@ const localeReady = ref(false);
 watch(
   () => props.locale,
   async (newLocale) => {
-    if (newLocale !== i18n.locale.value) {
-      await i18n.setLocale(newLocale);
+    localeReady.value = false;
+    try {
+      if (newLocale !== i18n.locale.value) {
+        await i18n.setLocale(newLocale);
+      }
+    } finally {
+      localeReady.value = true;
     }
-    localeReady.value = true;
   },
   { immediate: true },
 );

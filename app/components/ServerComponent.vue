@@ -492,8 +492,10 @@ function setPauseEnabled(value: boolean | null) {
  * @param value the `timeout` property of the `pauseOnIdle` option to be sent to the server.
  */
 function setPauseTimeout(value: string | number) {
+  const timeout = parseInt(String(value));
+  if (!Number.isFinite(timeout)) return;
   const newPauseOnIdle = { ...pauseOnIdle.value };
-  newPauseOnIdle.timeout = parseInt(String(value));
+  newPauseOnIdle.timeout = timeout;
   pauseOnIdle.value = newPauseOnIdle;
 }
 

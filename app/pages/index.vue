@@ -119,7 +119,15 @@ onUnmounted(() => {
 async function updateServers(): Promise<void> {
   try {
     const data = await requestFetch<ServerData[]>("/api/servers");
-    servers.value = data.map(createServer);
+    const existingServers = new Map(
+      servers.value.map((server) => [server.name, server]),
+    );
+    servers.value = data.map((serverData) => {
+      const existingServer = existingServers.get(serverData._name);
+      if (!existingServer) return createServer(serverData);
+      Object.assign(existingServer, createServer(serverData));
+      return existingServer;
+    });
     refreshError.value = null;
   } catch (error) {
     refreshError.value =
@@ -132,7 +140,7 @@ function createServer(data: ServerData): Server {
   server.players.sample = server.players.sample.map((player) =>
     Object.assign(new Player(), player),
   );
-  return server;
+  return shallowReactive(server);
 }
 
 function createResourceUsage(data: ResourceUsageData): ResourceUsage {

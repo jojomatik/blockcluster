@@ -45,7 +45,7 @@ COPY --from=jdk-21 /opt/jre-21 /opt/java-21
 COPY --from=jdk-17 /opt/jre-17 /opt/java-17
 COPY --from=jdk-11 /opt/jre-11 /opt/java-11
 RUN ln -s /opt/java-25 /opt/java
-RUN apk add --update nodejs yarn
+RUN apk add --no-cache nodejs
 # Set working directory.
 WORKDIR /usr/games/blockcluster
 COPY LICENSE README.md ./
@@ -59,11 +59,12 @@ FROM base AS base-develop
 COPY package.json yarn.lock ./
 COPY nuxt.config.ts vuetify-options.ts tsconfig.json ./
 COPY locales ./locales/
+RUN apk add --no-cache yarn
 RUN yarn install --frozen-lockfile
 
 # Create cache and build directories with the blockcluster user as the owner.
 RUN mkdir -p node_modules/.cache .nuxt .data
-RUN chown 1080:1080 node_modules/.cache .nuxt .data
+RUN chown -R 1080:1080 node_modules/.cache .nuxt .data
 
 FROM base-${ENVIRONMENT}
 COPY --from=builder /usr/games/blockcluster/.output .output

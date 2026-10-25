@@ -16,34 +16,32 @@ You should have received a copy of the GNU Affero General Public License
 along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 import { shallowMount } from "@vue/test-utils";
-import { ServerStatus } from "../../../../common/components/server";
-import ToggleButtonComponent from "../../../../src/components/buttons/ToggleButtonComponent.vue";
+import { ServerStatus } from "#shared/components/server";
+import ToggleButtonComponent from "@/components/buttons/ToggleButtonComponent.vue";
 
 describe("ToggleButtonComponent", () => {
   it("emits start when clicked while stopped", () => {
     const wrapper = shallowMount(ToggleButtonComponent, {
-      propsData: { status: ServerStatus.Stopped },
-      mocks: { $t: (key: string) => key },
+      props: { status: ServerStatus.Stopped },
     });
 
     wrapper.findComponent({ name: "ButtonComponent" }).vm.$emit("click");
 
     expect(wrapper.emitted("start")).toHaveLength(1);
     expect(
-      wrapper.findComponent({ name: "ButtonComponent" }).props("disabled")
+      wrapper.findComponent({ name: "ButtonComponent" }).props("disabled"),
     ).toBe(false);
-    wrapper.destroy();
+    wrapper.unmount();
   });
 
   it("emits stop when clicked while started", () => {
     const wrapper = shallowMount(ToggleButtonComponent, {
-      propsData: { status: ServerStatus.Started },
-      mocks: { $t: (key: string) => key },
+      props: { status: ServerStatus.Started },
     });
 
     wrapper.findComponent({ name: "ButtonComponent" }).vm.$emit("click");
 
     expect(wrapper.emitted("stop")).toHaveLength(1);
-    wrapper.destroy();
+    wrapper.unmount();
   });
 });

@@ -63,41 +63,19 @@
     // Extend existing preset groups with their integrations.
     {
       "matchDatasources": ["npm"],
-      "matchPackageNames": [
-        "vue",
-        "vue-template-compiler",
-        "vue-class-component",
-        "vue-meta",
-        "vue-property-decorator",
-        "vue-router",
-        "@vue/test-utils",
-      ],
+      "matchPackageNames": ["vue", "vue-router", "@vue/test-utils"],
       "groupName": "vue",
       "separateMultipleMajor": false,
     },
     {
       "matchManagers": ["npm"],
-      "matchFileNames": ["package.json"],
-      "matchPackageNames": [
-        "@babel/preset-typescript",
-        "@types/jest",
-        "@vue/cli-plugin-unit-jest",
-        "@vue/vue2-jest",
-        "ts-jest",
-      ],
-      "groupName": "frontend jest",
-      "separateMultipleMajor": false,
-    },
-    {
-      "matchManagers": ["npm"],
-      "matchFileNames": ["backend/package.json"],
-      "matchPackageNames": ["@types/jest", "jest", "ts-jest"],
-      "groupName": "backend jest",
+      "matchPackageNames": ["vitest", "@vitest/*", "@nuxt/test-utils", "happy-dom"],
+      "groupName": "vitest",
       "separateMultipleMajor": false,
     },
     {
       "matchDatasources": ["npm"],
-      "matchPackageNames": ["socket.io", "socket.io-client", "vue-socket.io-extended"],
+      "matchPackageNames": ["socket.io", "socket.io-client", "engine.io"],
       "groupName": "socket.io",
       "separateMultipleMajor": false,
     },
@@ -124,26 +102,21 @@
     },
     {
       "matchDatasources": ["npm"],
-      "matchPackageNames": ["apexcharts", "vue-apexcharts"],
+      "matchPackageNames": ["apexcharts", "vue3-apexcharts"],
       "groupName": "apexcharts",
       "separateMultipleMajor": false,
     },
     {
       "matchDatasources": ["npm"],
-      "matchPackageNames": ["vuetify", "vuetify-loader", "vue-cli-plugin-vuetify"],
+      "matchPackageNames": ["vuetify", "vuetify-nuxt-module"],
       "groupName": "vuetify",
       "separateMultipleMajor": false,
     },
     {
       "matchDatasources": ["npm"],
-      "matchPackageNames": ["sass", "sass-loader"],
-      "groupName": "sass",
-      "separateMultipleMajor": false,
-    },
-    {
-      "matchDatasources": ["npm"],
       "matchPackageNames": [
-        "@rushstack/eslint-patch",
+        "@nuxt/eslint",
+        "typescript-eslint",
         "@typescript-eslint/*",
         "@vue/eslint-config-*",
         "eslint",
@@ -157,14 +130,8 @@
     },
     {
       "matchDatasources": ["npm"],
-      "matchPackageNames": ["dotenv", "dotenv-expand"],
-      "groupName": "dotenv",
-      "separateMultipleMajor": false,
-    },
-    {
-      "matchDatasources": ["npm"],
       "matchPackageNames": [
-        "/^(@types/)?(command-exists|express|pidusage|properties-reader|uuid)$/",
+        "/^(@types/)?(pidusage|properties-reader|uuid)$/",
       ],
       "groupName": "{{{replace '^@types/' '' depName}}}",
       // Related packages can have different major version numbers.

@@ -11,22 +11,22 @@ runs:
       uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
       with:
         node-version: "24.22.1"
-        cache: npm
-        cache-dependency-path: tests/smoke/package-lock.json
+        cache: yarn
+        cache-dependency-path: tests/smoke/yarn.lock
     - name: Install smoke test dependencies
       shell: bash
-      run: npm ci --prefix tests/smoke --no-audit --no-fund
+      run: yarn --cwd tests/smoke install --frozen-lockfile
     - name: Install Chromium system dependencies
       shell: bash
       working-directory: tests/smoke
-      run: npx playwright install-deps chromium
+      run: yarn playwright install-deps chromium
     - name: Install Chromium headless shell
       shell: bash
       working-directory: tests/smoke
       env:
         # Avoid the FFmpeg mirror whose DNS lookup fails before falling back here.
         PLAYWRIGHT_DOWNLOAD_HOST: https://cdn.playwright.dev
-      run: npx playwright install --only-shell chromium
+      run: yarn playwright install --only-shell chromium
     - name: Start container
       id: container
       shell: bash
@@ -47,7 +47,7 @@ runs:
         exit 1
     - name: Check backend and homepage
       shell: bash
-      run: npm --prefix tests/smoke test
+      run: yarn --cwd tests/smoke test
     - name: Show container logs
       if: ${{ always() && steps.container.outcome != 'skipped' }}
       shell: bash

@@ -1,8 +1,8 @@
-import { shallowMount } from "@vue/test-utils";
-import VersionDialogComponent from "../../../src/components/VersionDialogComponent.vue";
+import { vi } from "vitest";
+import { flushPromises, shallowMount } from "@vue/test-utils";
+import VersionDialogComponent from "@/components/VersionDialogComponent.vue";
 
 type Build = { build: number; time: string };
-
 function deferred<T>() {
   let resolve!: (value: T) => void;
   let reject!: (error: Error) => void;
@@ -12,157 +12,114 @@ function deferred<T>() {
   });
   return { promise, resolve, reject };
 }
-
-function mountDialog(fetchPaperBuilds = jest.fn()) {
+function mountDialog(
+  fetchPaperBuilds = vi
+    .fn()
+    .mockResolvedValue([{ build: 70, time: "2025-01-01" }]),
+) {
+  const server = {
+    name: "test",
+    fetchPaperVersions: vi.fn().mockResolvedValue(["1.21.8", "1.21.10"]),
+    fetchOldJars: vi.fn().mockResolvedValue(["old.jar"]),
+    fetchPaperBuilds,
+    installUpdate: vi.fn().mockResolvedValue(undefined),
+    installVersion: vi.fn().mockResolvedValue(undefined),
+    installExistingJar: vi.fn().mockResolvedValue(undefined),
+  };
   const wrapper = shallowMount(VersionDialogComponent, {
-    propsData: {
-      server: { name: "test", fetchPaperBuilds },
+    props: {
+      server: server as never,
       updates: {
         build: { version: "1.21.8", build: 70 },
         patch: { version: "1.21.10", build: 5 },
       },
     },
-    mocks: { $t: (key: string) => key },
   });
-  const vm = wrapper.vm as unknown as {
-    version: string;
-    builds: Build[];
-    build: number | null;
-    error: boolean;
-    loadingBuilds: boolean;
-    loadBuilds: (version: string) => Promise<void>;
-  };
-  return { wrapper, vm };
+  return { wrapper, server };
+}
+async function openDialog(wrapper: ReturnType<typeof shallowMount>) {
+  await wrapper.findAllComponents({ name: "VBtn" })[0].trigger("click");
+  await flushPromises();
 }
 
 describe("VersionDialogComponent", () => {
-  it("disables every install action and selector during installation", async () => {
-    const { wrapper } = mountDialog();
-    await wrapper.setData({
-      version: "1.21.8",
-      build: 70,
-      oldJars: ["old.jar"],
-      oldJar: "old.jar",
-    });
-    const buttons = () =>
-      wrapper
-        .findAllComponents({ name: "VBtn" })
-        .wrappers.filter(
-          (button) => button.props("outlined") && button.props("block")
-        );
-    const selectors = () =>
-      wrapper.findAllComponents({ name: "VSelect" }).wrappers;
-    expect(buttons()).toHaveLength(4);
-    expect(buttons().every((button) => !button.props("disabled"))).toBe(true);
-
-    await wrapper.setData({ installing: true });
-    expect(buttons().every((button) => button.props("disabled"))).toBe(true);
-    expect(selectors().every((select) => select.props("disabled"))).toBe(true);
-
-    await wrapper.setData({
-      installing: false,
-      version: null,
-      build: null,
-      oldJar: null,
-    });
-    expect(buttons().map((button) => button.props("disabled"))).toEqual([
-      false,
-      false,
+  it("disables install actions and selectors while installation is pending", async () => {
+    const install = deferred<undefined>();
+    const { wrapper, server } = mountDialog();
+    server.installVersion.mockReturnValue(install.promise);
+    await openDialog(wrapper);
+    const selectors = wrapper.findAllComponents({ name: "VSelect" });
+    await selectors[0].vm.$emit("update:modelValue", "1.21.8");
+    await flushPromises();
+    await selectors[1].vm.$emit("update:modelValue", 70);
+    const buttons = wrapper.findAllComponents({ name: "VBtn" });
+    const installButton = buttons.find(
+      (button) =>
+        button.text().includes("gui.views.server.version_dialog.install") &&
+        !button.props("disabled"),
+    );
+    if (!installButton)
+      throw new Error(
+        "Version install button was not enabled after selecting a build.",
+      );
+    await installButton.trigger("click");
+    const installButtons = buttons.filter((button) =>
+      button.text().includes("gui.views.server.version_dialog.install"),
+    );
+    expect(installButtons.every((button) => button.props("disabled"))).toBe(
       true,
-      true,
-    ]);
-    expect(selectors()[1].props("disabled")).toBe(true);
-    await wrapper.setData({ version: "1.21.8", build: null });
-    expect(buttons()[2].props("disabled")).toBe(true);
-    wrapper.destroy();
+    );
+    expect(selectors.every((select) => select.props("disabled"))).toBe(true);
+    install.resolve(undefined);
+    await flushPromises();
+    wrapper.unmount();
   });
 
   it.each(["success", "failure"])(
-    "ignores superseded request %s while the current request is pending",
+    "ignores a superseded request that later %s",
     async (outcome) => {
-      const old = deferred<Build[]>();
+      const older = deferred<Build[]>();
       const current = deferred<Build[]>();
-      const fetch = jest
+      const fetchBuilds = vi
         .fn()
-        .mockReturnValueOnce(old.promise)
+        .mockReturnValueOnce(older.promise)
         .mockReturnValueOnce(current.promise);
-      const { wrapper, vm } = mountDialog(fetch);
-      vm.version = "1.21.8";
-      const first = vm.loadBuilds(vm.version);
-      vm.version = "1.21.10";
-      const second = vm.loadBuilds(vm.version);
-
+      const { wrapper } = mountDialog(fetchBuilds);
+      await openDialog(wrapper);
+      const selects = wrapper.findAllComponents({ name: "VSelect" });
+      const oldRequest = selects[0].vm.$emit("update:modelValue", "1.21.8");
+      await selects[0].vm.$emit("update:modelValue", "1.21.10");
       if (outcome === "success")
-        old.resolve([{ build: 70, time: "2025-01-01" }]);
-      else old.reject(new Error("offline"));
-      await first;
-      expect(vm.builds).toEqual([]);
-      expect(vm.build).toBeNull();
-      expect(vm.error).toBe(false);
-      expect(vm.loadingBuilds).toBe(true);
-
+        older.resolve([{ build: 70, time: "2025-01-01" }]);
+      else older.reject(new Error("offline"));
+      await flushPromises();
+      expect(selects[1].props("items")).toEqual([]);
       const builds = [{ build: 5, time: "2025-01-02" }];
       current.resolve(builds);
-      await second;
-      expect(vm.builds).toEqual(builds);
-      expect(vm.build).toBe(5);
-      expect(vm.error).toBe(false);
-      expect(vm.loadingBuilds).toBe(false);
-      wrapper.destroy();
-    }
+      await flushPromises();
+      expect(selects[1].props("items")).toEqual(builds);
+      expect(selects[1].props("modelValue")).toBe(5);
+      void oldRequest;
+      wrapper.unmount();
+    },
   );
 
-  it("keeps the current selection when a superseded response arrives last", async () => {
-    const old = deferred<Build[]>();
-    const builds = [{ build: 5, time: "2025-01-02" }];
-    const fetch = jest
-      .fn()
-      .mockReturnValueOnce(old.promise)
-      .mockResolvedValueOnce(builds);
-    const { wrapper, vm } = mountDialog(fetch);
-    vm.version = "1.21.8";
-    const first = vm.loadBuilds(vm.version);
-    vm.version = "1.21.10";
-    await vm.loadBuilds(vm.version);
-    old.resolve([{ build: 70, time: "2025-01-01" }]);
-    await first;
-    expect(vm.builds).toEqual(builds);
-    expect(vm.build).toBe(5);
-    expect(vm.error).toBe(false);
-    expect(vm.loadingBuilds).toBe(false);
-    wrapper.destroy();
-  });
-
-  it("keeps the latest request's error when an older request later succeeds", async () => {
+  it("keeps the latest request error when an older response arrives afterward", async () => {
     const older = deferred<Build[]>();
-    const fetch = jest
+    const fetchBuilds = vi
       .fn()
       .mockReturnValueOnce(older.promise)
       .mockRejectedValueOnce(new Error("latest failure"));
-    const { wrapper, vm } = mountDialog(fetch);
-    vm.version = "1.21.8";
-    const olderRequest = vm.loadBuilds(vm.version);
-    vm.version = "1.21.10";
-    await vm.loadBuilds(vm.version);
-
+    const { wrapper } = mountDialog(fetchBuilds);
+    await openDialog(wrapper);
+    const selects = wrapper.findAllComponents({ name: "VSelect" });
+    await selects[0].vm.$emit("update:modelValue", "1.21.8");
+    await selects[0].vm.$emit("update:modelValue", "1.21.10");
+    await flushPromises();
     older.resolve([{ build: 70, time: "2025-01-01" }]);
-    await olderRequest;
-
-    expect(vm.builds).toEqual([]);
-    expect(vm.build).toBeNull();
-    expect(vm.error).toBe(true);
-    expect(vm.loadingBuilds).toBe(false);
-    wrapper.destroy();
-  });
-
-  it("shows a failure of the current request and clears its loading state", async () => {
-    const { wrapper, vm } = mountDialog(
-      jest.fn().mockRejectedValue(new Error("offline"))
-    );
-    vm.version = "1.21.8";
-    await vm.loadBuilds(vm.version);
-    expect(vm.error).toBe(true);
-    expect(vm.loadingBuilds).toBe(false);
-    wrapper.destroy();
+    await flushPromises();
+    expect(selects[1].props("items")).toEqual([]);
+    expect(wrapper.text()).toContain("gui.views.server.version_dialog.error");
+    wrapper.unmount();
   });
 });

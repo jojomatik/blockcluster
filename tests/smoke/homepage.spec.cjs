@@ -47,7 +47,7 @@ test("the backend answers the dependencies API", async ({ request }) => {
   expect(await response.json()).toEqual({
     dependencies: expect.arrayContaining([
       expect.objectContaining({
-        name: "express",
+        name: "h3",
         version: expect.stringMatching(/\S/),
         notice: expect.stringMatching(/\S/),
       }),
@@ -82,7 +82,9 @@ test("the container serves the about page with dependency notices", async ({
       exact: true,
     }),
   });
-  await expect(backend.getByRole("heading", { name: /^express\s/ })).toBeVisible();
-  await expect(frontend.getByRole("heading", { name: /^vue\s/ })).toBeVisible();
+  await expect(backend.getByRole("heading", { name: /^h3\s/ })).toBeVisible();
+  await expect(
+    frontend.getByRole("heading", { name: /^@vue\/runtime-dom\s/ })
+  ).toBeVisible();
   expect(errors).toEqual([]);
 });

@@ -1,10 +1,10 @@
-const assert = require("node:assert/strict");
-const { execFileSync } = require("node:child_process");
-const { mkdtempSync, rmSync } = require("node:fs");
-const { tmpdir } = require("node:os");
-const { join } = require("node:path");
-const { pathToFileURL } = require("node:url");
-const releaseConfig = require("../release.config");
+import assert from "node:assert/strict";
+import { execFileSync } from "node:child_process";
+import { mkdtempSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { pathToFileURL } from "node:url";
+import releaseConfig from "../release.config.js";
 
 async function checkReleaseNotes() {
   const { default: semanticRelease } = await import("semantic-release");
@@ -37,7 +37,7 @@ async function checkReleaseNotes() {
         [
           "@semantic-release/commit-analyzer",
           "@semantic-release/release-notes-generator",
-        ].includes(plugin[0])
+        ].includes(plugin[0]),
     );
     const result = await semanticRelease(
       {
@@ -48,7 +48,7 @@ async function checkReleaseNotes() {
         ci: false,
       },
       // Let semantic-release detect the fixture branch, independent of CI metadata.
-      { cwd, env: { PATH: process.env.PATH, HOME: process.env.HOME } }
+      { cwd, env: { PATH: process.env.PATH, HOME: process.env.HOME } },
     );
 
     assert.ok(result, "The dry run must produce a release");
@@ -65,12 +65,12 @@ async function checkReleaseNotes() {
     ]) {
       assert.ok(
         result.nextRelease.notes.includes(text),
-        `Missing notes: ${text}`
+        `Missing notes: ${text}`,
       );
     }
     assert.equal(git("tag", "--list"), "v0.14.0");
     console.log(
-      "Release notes dry run passed for feat, fix and breaking commits."
+      "Release notes dry run passed for feat, fix and breaking commits.",
     );
   } finally {
     rmSync(cwd, { recursive: true, force: true });

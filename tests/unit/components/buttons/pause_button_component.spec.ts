@@ -16,8 +16,8 @@ You should have received a copy of the GNU Affero General Public License
 along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 import { shallowMount } from "@vue/test-utils";
-import { ServerStatus } from "../../../../common/components/server";
-import PauseButtonComponent from "../../../../src/components/buttons/PauseButtonComponent.vue";
+import { ServerStatus } from "#shared/components/server";
+import PauseButtonComponent from "@/components/buttons/PauseButtonComponent.vue";
 
 describe("PauseButtonComponent", () => {
   it.each([
@@ -25,25 +25,23 @@ describe("PauseButtonComponent", () => {
     { status: ServerStatus.Paused, action: "unpause" },
   ])("emits $action when the server is $status", ({ status, action }) => {
     const wrapper = shallowMount(PauseButtonComponent, {
-      propsData: { status },
-      mocks: { $t: (key: string) => key },
+      props: { status },
     });
 
     wrapper.findComponent({ name: "ButtonComponent" }).vm.$emit("click");
 
     expect(wrapper.emitted(action)).toHaveLength(1);
-    wrapper.destroy();
+    wrapper.unmount();
   });
 
   it("disables pausing when the server is stopped", () => {
     const wrapper = shallowMount(PauseButtonComponent, {
-      propsData: { status: ServerStatus.Stopped },
-      mocks: { $t: (key: string) => key },
+      props: { status: ServerStatus.Stopped },
     });
 
     expect(
-      wrapper.findComponent({ name: "ButtonComponent" }).props("disabled")
+      wrapper.findComponent({ name: "ButtonComponent" }).props("disabled"),
     ).toBe(true);
-    wrapper.destroy();
+    wrapper.unmount();
   });
 });

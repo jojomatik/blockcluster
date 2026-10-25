@@ -1,0 +1,41 @@
+import { defineEventHandler, readBody } from "h3";
+import { emptyResponse, errorResponse, findServer } from "../../../utils/api";
+
+export default defineEventHandler(async (event) => {
+  const server = findServer(event);
+  const actions = ["start", "stop", "pause", "restart", "deleteWorld"];
+  if (!server) return errorResponse(event, 404, "Server not found");
+  const body = await readBody(event);
+  if (!actions.includes(body?.action)) {
+    return errorResponse(event, 400, "Invalid server action");
+  }
+
+  const runAction = async () => {
+    switch (body.action) {
+      case "start":
+        try {
+          await server.start();
+        } catch (error) {
+          console.log("Could not start server:", error);
+        }
+        break;
+      case "stop":
+        await server.stop();
+        break;
+      case "pause":
+        await server.pause();
+        break;
+      case "restart":
+        await server.restart();
+        break;
+      case "deleteWorld":
+        await server.deleteWorld();
+        break;
+    }
+    await server.update();
+    server.sendServerData();
+  };
+
+  void runAction().catch(console.error);
+  return emptyResponse(event, 202);
+});

@@ -16,27 +16,31 @@ You should have received a copy of the GNU Affero General Public License
 along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 import { shallowMount } from "@vue/test-utils";
-import ButtonComponent from "../../../../src/components/buttons/ButtonComponent.vue";
+import ButtonComponent from "@/components/buttons/ButtonComponent.vue";
 
 describe("ButtonComponent", () => {
   it("renders its slot content and emits click", async () => {
     const wrapper = shallowMount(ButtonComponent, {
-      propsData: {
+      props: {
         color: "primary",
         icon: "mdi-check",
       },
       slots: {
         default: "Save",
       },
-      stubs: {
-        "v-btn": {
-          name: "VBtn",
-          props: ["color", "disabled"],
-          template: '<button v-on="$listeners"><slot /></button>',
-        },
-        "v-icon": {
-          name: "VIcon",
-          template: "<i><slot /></i>",
+      global: {
+        stubs: {
+          "v-btn": {
+            name: "VBtn",
+            props: ["color", "disabled"],
+            template:
+              '<button @click="$emit($event.type, $event)"><slot /></button>',
+          },
+          "v-icon": {
+            name: "VIcon",
+            props: ["icon"],
+            template: "<i>{{ icon }}<slot /></i>",
+          },
         },
       },
     });
@@ -50,6 +54,6 @@ describe("ButtonComponent", () => {
     await button.trigger("click");
 
     expect(wrapper.emitted("click")).toHaveLength(1);
-    wrapper.destroy();
+    wrapper.unmount();
   });
 });

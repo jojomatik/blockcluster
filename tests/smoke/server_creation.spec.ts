@@ -1,20 +1,15 @@
-const { test, expect } = require("@playwright/test");
-const { execFileSync } = require("child_process");
+import { execFileSync } from "node:child_process";
+import { expect, test } from "@playwright/test";
 
 const container = process.env.SMOKE_CONTAINER || "blockcluster-smoke";
 const serversPath = "/usr/games/blockcluster/servers";
 const customPort = 25570;
 
-function inContainer(...command) {
+function inContainer(...command: string[]): string {
   return execFileSync("docker", ["exec", container, ...command], {
     encoding: "utf8",
   });
 }
-
-test.use({
-  baseURL: "http://127.0.0.1:8081/",
-  locale: "en-US",
-});
 
 test("accepts the EULA through the UI and starts a Paper server", async ({
   page,

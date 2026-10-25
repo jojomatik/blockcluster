@@ -1,9 +1,4 @@
-const { test, expect } = require("@playwright/test");
-
-test.use({
-  baseURL: "http://127.0.0.1:8081/",
-  locale: "en-US",
-});
+import { expect, test } from "@playwright/test";
 
 test("the backend answers the version API", async ({ request }) => {
   const response = await request.get("/api/version");
@@ -13,13 +8,13 @@ test("the backend answers the version API", async ({ request }) => {
 });
 
 test("the container serves the working homepage", async ({ page }) => {
-  const errors = [];
+  const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(error.message));
   page.on("console", (message) => {
     if (message.type() === "error") errors.push(message.text());
   });
   page.on("requestfailed", (request) =>
-    errors.push(`${request.url()}: ${request.failure().errorText}`)
+    errors.push(`${request.url()}: ${request.failure()?.errorText}`)
   );
   page.on("response", (response) => {
     if (response.status() >= 400) {
@@ -28,7 +23,7 @@ test("the container serves the working homepage", async ({ page }) => {
   });
 
   const response = await page.goto("/");
-  expect(response.status()).toBe(200);
+  expect(response?.status()).toBe(200);
   await expect(
     page.getByText("Total resource usage", { exact: true })
   ).toBeVisible();
@@ -58,7 +53,7 @@ test("the backend answers the dependencies API", async ({ request }) => {
 test("the container serves the about page with dependency notices", async ({
   page,
 }) => {
-  const errors = [];
+  const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(error.message));
   page.on("response", (response) => {
     if (response.status() >= 400) {
@@ -67,7 +62,7 @@ test("the container serves the about page with dependency notices", async ({
   });
 
   const response = await page.goto("/about");
-  expect(response.status()).toBe(200);
+  expect(response?.status()).toBe(200);
   await expect(
     page.getByText("About blockcluster", { exact: true })
   ).toBeVisible();

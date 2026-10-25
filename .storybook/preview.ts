@@ -3,7 +3,6 @@ import "@fontsource/roboto/400.css";
 import themeLocaleDecorator, {
   DEFAULT_THEME,
 } from "./theme-locale-decorator.decorator";
-import { themeLocaleModes } from "./modes";
 import type { Preview } from "@nuxtjs/storybook";
 
 const preview: Preview = {
@@ -53,9 +52,6 @@ const preview: Preview = {
           styles: { width: "1920px", height: "1080px" },
         },
       },
-    },
-    chromatic: {
-      modes: themeLocaleModes,
     },
   },
   decorators: [themeLocaleDecorator],

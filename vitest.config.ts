@@ -34,7 +34,7 @@ export default defineConfig({
             nuxt: {
               overrides: {
                 storybook: { enabled: false },
-              },
+              } as Record<string, unknown>,
             },
           },
         },

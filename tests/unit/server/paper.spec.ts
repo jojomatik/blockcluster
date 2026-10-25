@@ -48,7 +48,8 @@ function mockApi(builds: Record<string, unknown[]>) {
         }),
       );
     const match = /versions\/([^/]+)\/builds$/.exec(url);
-    if (match && builds[match[1]]) return json(builds[match[1]]);
+    const version = match?.[1];
+    if (version && builds[version]) return json(builds[version]);
     return new Response("", { status: 404 });
   }) as typeof fetch);
 }

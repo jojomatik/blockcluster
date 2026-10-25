@@ -2,10 +2,12 @@
   // https://v3.nuxtjs.org/concepts/typescript
   "extends": "./.nuxt/tsconfig.json",
   "compilerOptions": {
-    "experimentalDecorators": true
+    "experimentalDecorators": true,
+    "types": ["vitest/globals"]
   },
   "include": [
     ".nuxt/nuxt.d.ts",
+    ".nuxt/nuxt.node.d.ts",
     ".storybook/**/*",
     "app/**/*",
     "scripts/**/*",

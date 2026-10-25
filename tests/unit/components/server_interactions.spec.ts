@@ -52,10 +52,10 @@ describe("server interaction components", () => {
       props: { server, status: ServerStatus.Starting, buttonClass: "ml-auto" },
     });
     const buttons = wrapper.findAllComponents({ name: "VBtn" });
-    expect(buttons[0].props("disabled")).toBe(true);
+    expect(buttons[0]!.props("disabled")).toBe(true);
     await wrapper.setProps({ status: ServerStatus.Stopped });
-    expect(buttons[0].props("disabled")).toBe(false);
-    await buttons[0].trigger("click");
+    expect(buttons[0]!.props("disabled")).toBe(false);
+    await buttons[0]!.trigger("click");
     const input = wrapper.findComponent({ name: "VTextField" });
     await input.vm.$emit("update:modelValue", "my world");
     wrapper
@@ -113,8 +113,8 @@ describe("server interaction components", () => {
     });
     await flushPromises();
     const switches = wrapper.findAllComponents({ name: "VSwitch" });
-    await switches[0].vm.$emit("update:modelValue", true);
-    await switches[1].vm.$emit("update:modelValue", true);
+    await switches[0]!.vm.$emit("update:modelValue", true);
+    await switches[1]!.vm.$emit("update:modelValue", true);
     await flushPromises();
     expect(updateConfig).toHaveBeenNthCalledWith(1, { autostart: true });
     expect(updateConfig).toHaveBeenNthCalledWith(2, {
@@ -138,7 +138,7 @@ describe("server interaction components", () => {
     });
     await flushPromises();
     await wrapper
-      .findAllComponents({ name: "VSwitch" })[0]
+      .findAllComponents({ name: "VSwitch" })[0]!
       .vm.$emit("update:modelValue", true);
     await flushPromises();
     expect(server.autostart).toBe(false);

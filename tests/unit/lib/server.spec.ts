@@ -67,8 +67,8 @@ describe("client Server API", () => {
     await expect(server.sendAction("start")).rejects.toThrow(
       "Request failed (503 Unavailable)",
     );
-    expect(fetch.mock.calls[0][0]).toBe("/api/servers/test%20server");
-    expect(fetch.mock.calls[1][0]).toBe(
+    expect(fetch.mock.calls[0]![0]).toBe("/api/servers/test%20server");
+    expect(fetch.mock.calls[1]![0]).toBe(
       "/api/servers/explicit%20name/messages",
     );
   });

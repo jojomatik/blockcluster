@@ -3,7 +3,7 @@ import ButtonComponent from "@/components/buttons/ButtonComponent.vue";
 export default {
   title: "Atoms/ButtonComponent",
   component: ButtonComponent,
-  render: (args, { argTypes }) => ({
+  render: (_args: unknown, { argTypes }: { argTypes: object }) => ({
     props: Object.keys(argTypes),
     components: { ButtonComponent },
     template:

@@ -39,6 +39,8 @@ config.global.plugins = [
     legacy: false,
     locale: "en",
     messages: {
+      de: {},
+      fr: {},
       en: {
         gui: {
           views: {
@@ -63,7 +65,7 @@ config.global.plugins = [
         }
       ).$nuxt;
       if (!nuxtApp) return;
-      nuxtApp.$socket = nuxtMocks.socket;
+      nuxtApp.$socket = nuxtMocks.socket as never;
       Object.assign(nuxtApp.$config.public, nuxtMocks.runtimeConfig.public);
     },
   },

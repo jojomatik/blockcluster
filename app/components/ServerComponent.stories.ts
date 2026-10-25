@@ -21,7 +21,7 @@ const itspolderHead =
 
 /** A {@link Server} whose network calls are simulated in memory. */
 class MockServer extends Server {
-  async sendAction(action: string) {
+  override async sendAction(action: string) {
     const set = (status: ServerStatus) => (this.status = status);
     if (action === "start") {
       set(ServerStatus.Starting);
@@ -38,15 +38,15 @@ class MockServer extends Server {
     return new Response();
   }
 
-  async updateConfig() {
+  override async updateConfig() {
     return new Response();
   }
 
-  async fetchInfo() {
+  override async fetchInfo() {
     return {};
   }
 
-  async fetchMessages() {
+  override async fetchMessages() {
     return [
       {
         _timestamp: FIXTURE_TIME - 5000,
@@ -57,7 +57,7 @@ class MockServer extends Server {
     ];
   }
 
-  async fetchUpdates() {
+  override async fetchUpdates() {
     return {
       current: { version: "1.20.4", build: 400 },
       build: { version: "1.20.4", build: 497 },
@@ -65,35 +65,35 @@ class MockServer extends Server {
     };
   }
 
-  async installUpdate() {
+  override async installUpdate() {
     return new Response();
   }
 
-  async fetchPaperVersions() {
+  override async fetchPaperVersions() {
     return ["1.20.6", "1.20.4", "1.19.4"];
   }
 
-  async fetchPaperBuilds() {
+  override async fetchPaperBuilds() {
     return [{ build: 497, time: "2024-03-01T12:00:00.000Z" }];
   }
 
-  async fetchOldJars() {
+  override async fetchOldJars() {
     return ["paper-1.20.2-318.jar"];
   }
 
-  async installExistingJar() {
+  override async installExistingJar() {
     return new Response();
   }
 
-  async installVersion() {
+  override async installVersion() {
     return new Response();
   }
 
-  async sendCommand() {
+  override async sendCommand() {
     return new Response();
   }
 
-  async acceptEula() {
+  override async acceptEula() {
     this.status = ServerStatus.Starting;
     setTimeout(() => (this.status = ServerStatus.Started), 300);
     return new Response();
@@ -169,7 +169,6 @@ export default {
     () => {
       let originalFetch: typeof window.fetch;
       return {
-        router: new VueRouter({ mode: "abstract" }),
         beforeMount() {
           originalFetch = window.fetch;
           mockFetch();

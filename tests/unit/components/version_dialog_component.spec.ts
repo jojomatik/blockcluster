@@ -38,7 +38,7 @@ function mountDialog(
   return { wrapper, server };
 }
 async function openDialog(wrapper: ReturnType<typeof shallowMount>) {
-  await wrapper.findAllComponents({ name: "VBtn" })[0].trigger("click");
+  await wrapper.findAllComponents({ name: "VBtn" })[0]!.trigger("click");
   await flushPromises();
 }
 
@@ -49,9 +49,9 @@ describe("VersionDialogComponent", () => {
     server.installVersion.mockReturnValue(install.promise);
     await openDialog(wrapper);
     const selectors = wrapper.findAllComponents({ name: "VSelect" });
-    await selectors[0].vm.$emit("update:modelValue", "1.21.8");
+    await selectors[0]!.vm.$emit("update:modelValue", "1.21.8");
     await flushPromises();
-    await selectors[1].vm.$emit("update:modelValue", 70);
+    await selectors[1]!.vm.$emit("update:modelValue", 70);
     const buttons = wrapper.findAllComponents({ name: "VBtn" });
     const installButton = buttons.find(
       (button) =>
@@ -87,18 +87,18 @@ describe("VersionDialogComponent", () => {
       const { wrapper } = mountDialog(fetchBuilds);
       await openDialog(wrapper);
       const selects = wrapper.findAllComponents({ name: "VSelect" });
-      const oldRequest = selects[0].vm.$emit("update:modelValue", "1.21.8");
-      await selects[0].vm.$emit("update:modelValue", "1.21.10");
+      const oldRequest = selects[0]!.vm.$emit("update:modelValue", "1.21.8");
+      await selects[0]!.vm.$emit("update:modelValue", "1.21.10");
       if (outcome === "success")
         older.resolve([{ build: 70, time: "2025-01-01" }]);
       else older.reject(new Error("offline"));
       await flushPromises();
-      expect(selects[1].props("items")).toEqual([]);
+      expect(selects[1]!.props("items")).toEqual([]);
       const builds = [{ build: 5, time: "2025-01-02" }];
       current.resolve(builds);
       await flushPromises();
-      expect(selects[1].props("items")).toEqual(builds);
-      expect(selects[1].props("modelValue")).toBe(5);
+      expect(selects[1]!.props("items")).toEqual(builds);
+      expect(selects[1]!.props("modelValue")).toBe(5);
       void oldRequest;
       wrapper.unmount();
     },
@@ -113,12 +113,12 @@ describe("VersionDialogComponent", () => {
     const { wrapper } = mountDialog(fetchBuilds);
     await openDialog(wrapper);
     const selects = wrapper.findAllComponents({ name: "VSelect" });
-    await selects[0].vm.$emit("update:modelValue", "1.21.8");
-    await selects[0].vm.$emit("update:modelValue", "1.21.10");
+    await selects[0]!.vm.$emit("update:modelValue", "1.21.8");
+    await selects[0]!.vm.$emit("update:modelValue", "1.21.10");
     await flushPromises();
     older.resolve([{ build: 70, time: "2025-01-01" }]);
     await flushPromises();
-    expect(selects[1].props("items")).toEqual([]);
+    expect(selects[1]!.props("items")).toEqual([]);
     expect(wrapper.text()).toContain("gui.views.server.version_dialog.error");
     wrapper.unmount();
   });

@@ -13,10 +13,10 @@ async function fillForm(
   port?: string,
 ) {
   const fields = wrapper.findAllComponents({ name: "VTextField" });
-  await fields[0].vm.$emit("update:modelValue", name);
-  if (port !== undefined) await fields[1].vm.$emit("update:modelValue", port);
+  await fields[0]!.vm.$emit("update:modelValue", name);
+  if (port !== undefined) await fields[1]!.vm.$emit("update:modelValue", port);
   await wrapper
-    .findAllComponents({ name: "VSelect" })[0]
+    .findAllComponents({ name: "VSelect" })[0]!
     .vm.$emit("update:modelValue", "1.21.8");
   await wrapper.vm.$nextTick();
 }
@@ -67,10 +67,10 @@ describe("CreateServerDialogComponent", () => {
       .mockResolvedValueOnce({ ok: true });
     global.fetch = fetch as unknown as typeof global.fetch;
     const wrapper = shallowMount(CreateServerDialogComponent);
-    await wrapper.findAllComponents({ name: "VBtn" })[0].trigger("click");
+    await wrapper.findAllComponents({ name: "VBtn" })[0]!.trigger("click");
     await new Promise((resolve) => window.setTimeout(resolve, 0));
     expect(
-      wrapper.findAllComponents({ name: "VSelect" })[0].props("items"),
+      wrapper.findAllComponents({ name: "VSelect" })[0]!.props("items"),
     ).toEqual(["1.21.8", "1.21.7"]);
     await fillForm(wrapper, "  My Paper Server  ");
     await submit(wrapper);
@@ -101,7 +101,7 @@ describe("CreateServerDialogComponent", () => {
     await submit(wrapper);
     if (valid) {
       const body = JSON.parse(
-        (fetch.mock.calls[0][1] as RequestInit).body as string,
+        (fetch.mock.calls[0]![1] as RequestInit).body as string,
       );
       expect(body).toEqual(
         port === ""

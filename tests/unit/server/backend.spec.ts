@@ -11,6 +11,7 @@ import {
   it,
   vi,
 } from "vitest";
+import type { Mock } from "vitest";
 import { createApp, createRouter, toNodeListener } from "h3";
 
 interface MockServerData {
@@ -24,19 +25,19 @@ interface MockServer {
   status: number;
   autostart: boolean;
   updateStatus: () => void;
-  update: () => Promise<void>;
+  update: Mock<() => Promise<void>>;
   getRecentMessages: () => Array<{ text: string }>;
   strip: () => { _name: string };
-  start: () => Promise<void>;
-  acceptEula: () => Promise<void>;
-  stop: () => Promise<void>;
-  pause: () => Promise<void>;
-  restart: () => Promise<void>;
-  deleteWorld: () => Promise<void>;
-  executeCommand: () => Promise<void>;
-  updateConfig: () => Promise<void>;
-  measureUsage: () => Promise<void>;
-  sendServerData: () => void;
+  start: Mock<() => Promise<void>>;
+  acceptEula: Mock<() => Promise<void>>;
+  stop: Mock<() => Promise<void>>;
+  pause: Mock<() => Promise<void>>;
+  restart: Mock<() => Promise<void>>;
+  deleteWorld: Mock<() => Promise<void>>;
+  executeCommand: Mock<() => Promise<void>>;
+  updateConfig: Mock<() => Promise<void>>;
+  measureUsage: Mock<() => Promise<void>>;
+  sendServerData: Mock<() => void>;
 }
 
 const mocks = vi.hoisted(() => {
@@ -95,7 +96,9 @@ const mocks = vi.hoisted(() => {
 });
 
 vi.mock("fs", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("node:fs")>();
+  const actual = await importOriginal<
+    typeof import("node:fs") & { default: typeof import("node:fs") }
+  >();
   const writeFileSync: typeof actual.default.writeFileSync = (...args) => {
     if (mocks.failNextWrite) {
       mocks.failNextWrite = false;
@@ -322,7 +325,7 @@ describe("Nitro backend", () => {
         "update",
         "measureUsage",
         "sendServerData",
-      ])
+      ] as const)
         server[key].mockClear();
     }
   });
@@ -369,7 +372,7 @@ describe("Nitro backend", () => {
     );
     expect(mocks.instances).toHaveLength(3);
     expect(
-      mocks.instances.find((server) => server.name === "survival").port,
+      mocks.instances.find((server) => server.name === "survival")!.port,
     ).toBe(25565);
     expect(
       mocks.instances
@@ -394,7 +397,7 @@ describe("Nitro backend", () => {
       ["GET", "/api/servers/:name/updates"],
       ["POST", "/api/servers/:name/eula"],
       ["POST", "/api/servers/:name/actions"],
-    ])
+    ] as Array<[string, string]>)
       expect(
         await invoke(method, route, {
           params: { name: "missing" },
@@ -449,7 +452,7 @@ describe("Nitro backend", () => {
         })
       ).status,
     ).toBe(202);
-    const server = mocks.instances.find((entry) => entry.name === "survival");
+    const server = mocks.instances.find((entry) => entry.name === "survival")!;
     expect(server.executeCommand).toHaveBeenCalledWith("say hello");
     expect(server.updateConfig).toHaveBeenCalledWith({ autostart: true });
     await new Promise((resolve) => setTimeout(resolve, 0));
@@ -465,7 +468,7 @@ describe("Nitro backend", () => {
       ).status,
     ).toBe(202);
     expect(
-      mocks.instances.find((entry) => entry.name === "survival").acceptEula,
+      mocks.instances.find((entry) => entry.name === "survival")!.acceptEula,
     ).toHaveBeenCalled();
     const created = await invoke("POST", "/api/servers", {
       body: { name: "Survival Server", version: "1.21.8" },
@@ -561,9 +564,7 @@ describe("Nitro backend", () => {
         })
       ).status,
     ).toBe(201);
-    expect(mocks.instances[mocks.instances.length - 1].port).toBe(
-      requestedPort,
-    );
+    expect(mocks.instances.at(-1)!.port).toBe(requestedPort);
   });
 
   it("reserves requested ports during concurrent downloads and assigns distinct automatic ports", async () => {
@@ -636,9 +637,7 @@ describe("Nitro backend", () => {
       body: { name: "Automatic port", version: "1.21.8" },
     });
     expect(automatic.status).toBe(201);
-    expect(mocks.instances[mocks.instances.length - 1].port).toBe(
-      requestedPort + 1,
-    );
+    expect(mocks.instances.at(-1)!.port).toBe(requestedPort + 1);
     finishDownload();
     expect((await pending).status).toBe(201);
   });
@@ -675,7 +674,7 @@ describe("Nitro backend", () => {
   it("watches start files and launches servers configured for autostart", async () => {
     const watchedServer = mocks.instances.find(
       (entry) => entry.name === "survival",
-    );
+    )!;
     const startFile = path.join(serversPath, "survival", "start");
     fs.writeFileSync(startFile, "start");
     await watchCallbacks.get(startFile)?.({ isFile: () => true } as fs.Stats);
@@ -766,14 +765,14 @@ describe("Nitro backend", () => {
       await backend.startBackend();
       const restored = mocks.instances.slice(previousCount);
       expect(
-        restored.find((entry) => entry.name === "z-properties-port").port,
+        restored.find((entry) => entry.name === "z-properties-port")!.port,
       ).toBe(30125);
       for (const name of [
         "z-backend-conflict",
         "z-duplicate-conflict",
         "z-host-conflict",
       ]) {
-        const value = restored.find((entry) => entry.name === name).port;
+        const value = restored.find((entry) => entry.name === name)!.port;
         expect(value).toBeGreaterThanOrEqual(25565);
         expect(value).not.toBe(
           conflicts.find(([candidate]) => candidate === name)?.[1],

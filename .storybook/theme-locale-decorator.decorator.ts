@@ -5,8 +5,10 @@ import type { PartialStoryFn, StoryContext } from "storybook/internal/csf";
 export const DEFAULT_LOCALE = "en";
 export const DEFAULT_THEME = "light";
 
-const state = reactive({
-  locale: DEFAULT_LOCALE,
+type AppLocale = "de" | "en" | "fr";
+
+const state = reactive<{ locale: AppLocale; theme: string }>({
+  locale: DEFAULT_LOCALE as AppLocale,
   theme: DEFAULT_THEME,
 });
 
@@ -14,7 +16,7 @@ export default function themeLocaleDecorator(
   story: PartialStoryFn,
   context: StoryContext,
 ) {
-  state.locale = context.globals.locale;
+  state.locale = context.globals.locale as AppLocale;
   state.theme = context.globals.theme;
 
   return () => {

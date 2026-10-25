@@ -37,7 +37,7 @@ describe("Server", () => {
     expect(server.pauseOnIdle).toEqual({ enable: true, timeout: 120 });
     expect(server.javaPath).toBe("/opt/java");
     expect(server.players.online).toBe(1);
-    expect(server.resourceUsage[0].cpu).toBe(12);
+    expect(server.resourceUsage[0]!.cpu).toBe(12);
   });
 
   it("strips runtime-only fields and round-trips only public server data", () => {

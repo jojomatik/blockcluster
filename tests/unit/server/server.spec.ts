@@ -18,6 +18,7 @@ import { EventEmitter } from "events";
 import { PassThrough } from "stream";
 
 import * as paper from "../../../server/components/paper";
+import type { PaperUpdates } from "../../../server/components/paper";
 import { ServerStatus } from "#shared/components/server";
 import { getJavaRuntimes } from "../../../server/components/java_runtime";
 import Server from "../../../server/components/server";
@@ -133,7 +134,7 @@ describe("backend Server", () => {
 
     expect(server.status).toBe(ServerStatus.Stopped);
     expect(server.getRecentMessages()).toHaveLength(1);
-    expect(server.getRecentMessages()[0].text).toContain(
+    expect(server.getRecentMessages()[0]?.text).toContain(
       "Could not start server:",
     );
     expect(mockIoEmit).toHaveBeenCalledWith(
@@ -148,7 +149,7 @@ describe("backend Server", () => {
 
   it("writes updated settings to blockcluster.cfg", async () => {
     const server = new Server({ _name: "survival" });
-    const update = vi.spyOn(server, "update").mockResolvedValue();
+    const update = vi.spyOn(server, "update").mockResolvedValue(undefined);
     const settings = {
       flags: ["-Xmx2G"],
       autostart: true,
@@ -218,7 +219,7 @@ describe("backend Server", () => {
 
     beforeEach(() => {
       server = new Server({ _name: "survival" });
-      start = vi.spyOn(server, "start").mockResolvedValue();
+      start = vi.spyOn(server, "start").mockResolvedValue(undefined);
     });
 
     afterEach(() => vi.restoreAllMocks());
@@ -415,15 +416,15 @@ describe("backend Server", () => {
     await server.measureUsage(60);
 
     expect(server.resourceUsage).toHaveLength(60);
-    expect(server.resourceUsage[0].time).toBe(1);
-    expect(server.resourceUsage[59].time).toBe(60);
+    expect(server.resourceUsage[0]?.time).toBe(1);
+    expect(server.resourceUsage[59]?.time).toBe(60);
   });
 
   describe("installUpdate", () => {
     beforeEach(() => {
-      paper.getPaperUpdates.mockReset();
-      paper.installPaperJar.mockReset();
-      paper.restoreOldJar.mockReset();
+      vi.mocked(paper.getPaperUpdates).mockReset();
+      vi.mocked(paper.installPaperJar).mockReset();
+      vi.mocked(paper.restoreOldJar).mockReset();
     });
 
     it("refuses to update a running server", async () => {
@@ -440,8 +441,15 @@ describe("backend Server", () => {
         _name: "s",
         _status: ServerStatus.Stopped,
       });
-      vi.spyOn(server as never, "getJarFile").mockReturnValue(null as never);
-      paper.getPaperUpdates.mockResolvedValue({ build: null, patch: null });
+      vi.spyOn(
+        server as unknown as { getJarFile(): string | null },
+        "getJarFile",
+      ).mockReturnValue(null);
+      vi.mocked(paper.getPaperUpdates).mockResolvedValue({
+        current: null,
+        build: null,
+        patch: null,
+      });
       await expect(server.installUpdate("patch")).rejects.toThrow("No update");
     });
 
@@ -450,8 +458,8 @@ describe("backend Server", () => {
         _name: "s",
         _status: ServerStatus.Stopped,
       });
-      vi.spyOn(server, "update").mockResolvedValue();
-      vi.spyOn(server, "sendServerData").mockImplementation();
+      vi.spyOn(server, "update").mockResolvedValue(undefined);
+      vi.spyOn(server, "sendServerData").mockImplementation(() => undefined);
       const target = { version: "1.21.8", build: 5 };
       await server.installUpdate(target);
       expect(paper.getPaperUpdates).not.toHaveBeenCalled();
@@ -464,22 +472,22 @@ describe("backend Server", () => {
     it("rejects installs and starts throughout lookup, installation and refresh", async () => {
       const server = new Server({ _name: "s", _status: ServerStatus.Stopped });
       const target = { version: "1.21.8", build: 5 };
-      let resolveLookup!: (updates: { build: typeof target }) => void;
-      paper.getPaperUpdates.mockReturnValue(
+      let resolveLookup!: (updates: PaperUpdates) => void;
+      vi.mocked(paper.getPaperUpdates).mockReturnValue(
         new Promise((resolve) => (resolveLookup = resolve)),
       );
       let resolveInstall!: () => void;
-      paper.installPaperJar.mockReturnValue(
-        new Promise<void>((resolve) => (resolveInstall = resolve)),
+      vi.mocked(paper.installPaperJar).mockReturnValue(
+        new Promise<string>((resolve) => (resolveInstall = () => resolve(""))),
       );
       let resolveRefresh!: () => void;
       vi.spyOn(server, "update").mockReturnValue(
         new Promise<void>((resolve) => (resolveRefresh = resolve)),
       );
       vi.spyOn(server, "getUpdates").mockImplementation(() =>
-        paper.getPaperUpdates(),
+        paper.getPaperUpdates(null),
       );
-      vi.spyOn(server, "sendServerData").mockImplementation();
+      vi.spyOn(server, "sendServerData").mockImplementation(() => undefined);
       const installing = server.installUpdate("build");
 
       const expectLocked = async () => {
@@ -490,7 +498,7 @@ describe("backend Server", () => {
         expect(server.status).toBe(ServerStatus.Stopped);
       };
       await expectLocked();
-      resolveLookup({ build: target });
+      resolveLookup({ current: null, build: target, patch: null });
       await expectLocked();
       expect(paper.installPaperJar).toHaveBeenCalledTimes(1);
       resolveInstall();
@@ -511,14 +519,14 @@ describe("backend Server", () => {
         });
         const error = new Error("failed " + stage);
         const target = { version: "1.21.8", build: 5 };
-        vi.spyOn(server, "sendServerData").mockImplementation();
-        const refresh = vi.spyOn(server, "update").mockResolvedValue();
+        vi.spyOn(server, "sendServerData").mockImplementation(() => undefined);
+        const refresh = vi.spyOn(server, "update").mockResolvedValue(undefined);
         const lookup = vi.spyOn(server, "getUpdates");
         if (stage === "lookup") lookup.mockRejectedValueOnce(error);
         if (stage === "download")
-          paper.installPaperJar.mockRejectedValueOnce(error);
+          vi.mocked(paper.installPaperJar).mockRejectedValueOnce(error);
         if (stage === "restore")
-          paper.restoreOldJar.mockImplementationOnce(() => {
+          vi.mocked(paper.restoreOldJar).mockImplementationOnce(() => {
             throw error;
           });
         if (stage === "refresh") refresh.mockRejectedValueOnce(error);
@@ -538,15 +546,15 @@ describe("backend Server", () => {
 
     it("holds the guard while an archived jar is restored and refreshed", async () => {
       const server = new Server({ _name: "s", _status: ServerStatus.Stopped });
-      vi.spyOn(server, "sendServerData").mockImplementation();
+      vi.spyOn(server, "sendServerData").mockImplementation(() => undefined);
       let resolveRefresh!: () => void;
       vi.spyOn(server, "update")
-        .mockResolvedValue()
+        .mockResolvedValue(undefined)
         .mockReturnValueOnce(
           new Promise<void>((resolve) => (resolveRefresh = resolve)),
         );
       let starting!: Promise<unknown>;
-      paper.restoreOldJar.mockImplementationOnce(() => {
+      vi.mocked(paper.restoreOldJar).mockImplementationOnce(() => {
         starting = server.start();
       });
 

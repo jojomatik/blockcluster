@@ -1,5 +1,6 @@
 import { vi } from "vitest";
 import { shallowMount } from "@vue/test-utils";
+import Player from "#shared/components/player";
 import Notice from "#shared/components/software_notice";
 import { ServerStatus } from "#shared/components/server";
 import PlayerStatsComponent from "@/components/PlayerStatsComponent.vue";
@@ -57,7 +58,7 @@ describe("presentation components", () => {
         playerStats: {
           online: 1,
           max: 20,
-          sample: [{ uuid: "uuid-1", name: "Alex", head: "aGVhZA==" }],
+          sample: [new Player("uuid-1", "Alex", "aGVhZA==")],
         },
         width: 24,
       },

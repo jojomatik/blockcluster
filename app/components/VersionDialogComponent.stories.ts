@@ -3,30 +3,30 @@ import Server from "@/lib/components/server";
 import { expect, userEvent, waitFor, within } from "storybook/test";
 
 class MockServer extends Server {
-  async fetchPaperVersions() {
+  override async fetchPaperVersions() {
     return ["1.21.8", "1.21.7", "1.20.6"];
   }
 
-  async fetchPaperBuilds() {
+  override async fetchPaperBuilds() {
     return [
       { build: 60, time: "2025-09-06T21:50:11.982Z" },
       { build: 59, time: "2025-09-06T21:03:20.324Z" },
     ];
   }
 
-  async fetchOldJars() {
+  override async fetchOldJars() {
     return ["paper-1.20.4-400.jar", "custom.jar"];
   }
 
-  async installExistingJar() {
+  override async installExistingJar() {
     return new Response();
   }
 
-  async installUpdate() {
+  override async installUpdate() {
     return new Response();
   }
 
-  async installVersion() {
+  override async installVersion() {
     return new Response();
   }
 }

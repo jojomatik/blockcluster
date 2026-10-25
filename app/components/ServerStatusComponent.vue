@@ -17,7 +17,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 -->
 
 <template>
-  <v-chip :color="color" class="mx-2">
+  <v-chip variant="flat" :color="color" class="mx-2">
     {{ status_text }}
   </v-chip>
 </template>

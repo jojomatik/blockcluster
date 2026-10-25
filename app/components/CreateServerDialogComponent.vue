@@ -19,7 +19,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 <template>
   <v-dialog v-model="dialog" max-width="450px">
     <template #activator="{ props: activatorProps }">
-      <v-btn color="secondary" v-bind="activatorProps" @click="open">
+      <v-btn
+        variant="elevated"
+        color="secondary"
+        v-bind="activatorProps"
+        @click="open"
+      >
         <v-icon start :icon="mdiPlus" />
         {{ t("gui.views.home.create_server.button") }}
       </v-btn>
@@ -34,6 +39,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         </v-alert>
         <v-text-field
           v-model="name"
+          variant="underlined"
           :label="t('gui.views.home.create_server.name')"
           :hint="t('gui.views.home.create_server.name_hint')"
           persistent-hint
@@ -42,6 +48,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         />
         <v-select
           v-model="version"
+          variant="underlined"
           :items="versions"
           :label="t('gui.views.home.create_server.version')"
           :loading="loadingVersions"
@@ -52,6 +59,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         />
         <v-text-field
           v-model="port"
+          variant="underlined"
           type="number"
           :label="t('gui.views.home.create_server.port')"
           :hint="t('gui.views.home.create_server.port_hint')"
@@ -67,6 +75,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
           {{ t("gui.views.home.create_server.cancel") }}
         </v-btn>
         <v-btn
+          variant="elevated"
           color="secondary"
           :disabled="
             !validName || !validPort || !version || loadingVersions || creating

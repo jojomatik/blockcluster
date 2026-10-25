@@ -59,6 +59,7 @@
         </div>
         <v-select
           v-model="version"
+          variant="underlined"
           density="compact"
           :items="versions"
           :label="t('gui.views.server.version_dialog.version')"
@@ -71,6 +72,7 @@
         />
         <v-select
           v-model="build"
+          variant="underlined"
           density="compact"
           :items="builds"
           item-value="build"
@@ -106,6 +108,7 @@
         <template v-else>
           <v-select
             v-model="oldJar"
+            variant="underlined"
             density="compact"
             :items="oldJars"
             :loading="loadingOldJars"

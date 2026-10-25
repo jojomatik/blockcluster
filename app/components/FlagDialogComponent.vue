@@ -22,6 +22,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <td style="display: flex; flex-direction: row">
       <v-text-field
         v-model="flagString"
+        variant="underlined"
         hide-details
         density="compact"
         class="flagInput mt-2 pr-2"
@@ -30,6 +31,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         @update:model-value="input"
       />
       <v-btn
+        variant="elevated"
         class="mt-1"
         color="secondary"
         :disabled="!flagsChanged"

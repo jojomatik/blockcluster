@@ -25,6 +25,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
   >
     <template #activator="{ props: activatorProps }">
       <v-btn
+        variant="elevated"
         :class="'server-card-button ' + buttonClass"
         color="red-darken-4"
         v-bind="activatorProps"
@@ -54,6 +55,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <v-form v-model="isFormValid">
           <v-text-field
             v-model="currentTextInput"
+            variant="underlined"
             density="compact"
             :rules="[
               currentTextInput === server.name
@@ -80,6 +82,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
       </v-card-text>
       <v-card-actions class="justify-end">
         <v-btn
+          variant="elevated"
           class="server-card-button"
           color="red-darken-4"
           :disabled="!isFormValid"

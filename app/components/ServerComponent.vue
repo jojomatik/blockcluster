@@ -97,6 +97,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                       </td>
                       <td>
                         <v-text-field
+                          variant="underlined"
                           hide-details
                           density="compact"
                           single-line
@@ -114,6 +115,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                       <td style="display: flex; flex-direction: row">
                         <v-select
                           v-model="javaRuntime"
+                          variant="underlined"
                           hide-details
                           density="compact"
                           :items="javaRuntimes"
@@ -176,6 +178,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                     {{ t("gui.views.server.eula.cancel") }}
                   </v-btn>
                   <v-btn
+                    variant="elevated"
                     color="secondary"
                     :disabled="!eulaAccepted || eulaLoading"
                     :loading="eulaLoading"
@@ -205,7 +208,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
               @pause="handleAction('pause')"
               @unpause="handleAction('start')"
             />
-            <v-btn class="server-card-button" color="secondary" @click="update">
+            <v-btn
+              variant="elevated"
+              class="server-card-button"
+              color="secondary"
+              @click="update"
+            >
               <v-icon start :icon="mdiReload" />
               {{ t("gui.views.server.update_status") }}
             </v-btn>
@@ -234,7 +242,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
       />
       {{ server.name }}
       <ServerStatusComponent :status="server.status" />
-      <v-chip v-if="server.status === ServerStatus.Started">
+      <v-chip v-if="server.status === ServerStatus.Started" variant="flat">
         <PlayerStatsComponent :player-stats="server.players" :width="24" />
       </v-chip>
     </v-card-title>
@@ -256,7 +264,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
       </v-row>
     </v-card-text>
     <v-card-actions>
-      <v-btn :to="'/server/' + encodeURIComponent(server.name)">
+      <v-btn
+        variant="elevated"
+        :to="'/server/' + encodeURIComponent(server.name)"
+      >
         {{ t("gui.views.home.server.details") }}
       </v-btn>
     </v-card-actions>

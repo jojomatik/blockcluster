@@ -1,15 +1,6 @@
 import type { VOptions } from "vuetify-nuxt-module";
 
 const vuetifyOptions: VOptions = {
-  // Keep the look of Vuetify 2: filled chips and buttons (also inside
-  // v-card-actions) and underlined form fields.
-  defaults: {
-    VChip: { variant: "flat" },
-    VCardActions: { VBtn: { variant: "elevated" } },
-    VTextField: { variant: "underlined" },
-    VSelect: { variant: "underlined" },
-    VTextarea: { variant: "underlined" },
-  },
   theme: {
     defaultTheme: "light",
     // Used for the lightened accent color of console messages.

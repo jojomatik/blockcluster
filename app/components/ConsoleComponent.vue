@@ -67,6 +67,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
           <v-form style="flex-grow: 1" @submit.prevent="sendCommand()">
             <v-text-field
               v-model="command"
+              variant="underlined"
               density="compact"
               class="pt-0 mt-0 ml-2"
               hide-details

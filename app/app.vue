@@ -21,6 +21,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <v-app-bar scroll-behavior="hide" color="primary" class="text-secondary">
       <div class="d-flex align-center">
         <v-chip
+          variant="flat"
           theme="light"
           style="height: 40px; padding: 0"
           class="mr-2 rounded-pill"
@@ -109,7 +110,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <v-row class="justify-center">
           <span>
             {{ t("gui.footer.notice.link_description") }}
-            <v-chip id="gh-link" size="small" :href="GIT_ROOT" color="#24292e">
+            <v-chip
+              id="gh-link"
+              variant="flat"
+              size="small"
+              :href="GIT_ROOT"
+              color="#24292e"
+            >
               <v-icon class="pr-1" :icon="mdiGithub" />
               GitHub
             </v-chip>

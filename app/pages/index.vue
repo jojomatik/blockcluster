@@ -42,7 +42,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <v-row>
       <v-col cols="12">
         <CreateServerDialogComponent @created="updateServers" />
-        <v-btn color="secondary" @click="updateServers">
+        <v-btn variant="elevated" color="secondary" @click="updateServers">
           <v-icon start :icon="mdiReload"></v-icon>
           {{ t("gui.views.home.update_status") }}
         </v-btn>

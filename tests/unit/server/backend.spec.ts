@@ -378,6 +378,10 @@ describe("Nitro backend", () => {
     expect(
       await invoke("GET", "/api/paper/versions/1.21.8/builds"),
     ).toMatchObject({ status: 200 });
+    expect(await invoke("GET", "/api/paper/versions/latest/builds")).toEqual({
+      status: 400,
+      body: { error: "Invalid version" },
+    });
     for (const [method, route] of [
       ["GET", "/api/servers/:name"],
       ["GET", "/api/servers/:name/messages"],

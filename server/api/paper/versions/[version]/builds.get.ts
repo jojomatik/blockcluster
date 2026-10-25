@@ -1,10 +1,21 @@
-import { defineEventHandler, getRouterParam } from "h3";
+import { defineEventHandler, getValidatedRouterParams } from "h3";
+import { z } from "zod";
 import { listPaperBuilds } from "../../../../components/paper";
 import { errorResponse } from "../../../../utils/api";
 
+const versionParamsSchema = z.object({
+  version: z.string().regex(/^\d+(?:\.\d+)+$/),
+});
+
 export default defineEventHandler(async (event) => {
-  const version = getRouterParam(event, "version", { decode: true });
-  if (typeof version !== "string" || !/^\d+(\.\d+)+$/.test(version)) {
+  let version: string;
+  try {
+    ({ version } = await getValidatedRouterParams(
+      event,
+      (params) => versionParamsSchema.parse(params),
+      { decode: true },
+    ));
+  } catch {
     return errorResponse(event, 400, "Invalid version");
   }
   try {

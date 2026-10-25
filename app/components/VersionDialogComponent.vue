@@ -177,6 +177,7 @@ const installing = ref(false);
 const error = ref(false);
 
 async function open(): Promise<void> {
+  dialog.value = true;
   error.value = false;
   version.value = null;
   build.value = null;

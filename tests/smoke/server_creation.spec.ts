@@ -25,10 +25,7 @@ test("accepts the EULA through the UI and starts a Paper server", async ({
   await page.locator(".v-dialog .v-select").click();
   // Pin the major version: a new major can require a newer Java runtime than
   // the image provides. Update this deliberately when bumping the Java runtimes.
-  const availableVersion = page
-    .locator(".v-menu__content.menuable__content__active .v-list-item")
-    .filter({ hasText: /^\s*26\./ })
-    .first();
+  const availableVersion = page.getByRole("option", { name: /^26\./ }).first();
   await expect(availableVersion).toBeVisible({ timeout: 30_000 });
   await availableVersion.click();
   await page.getByRole("button", { name: /^create$/i }).click();

@@ -53,9 +53,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
           :label="t('gui.views.home.create_server.version')"
           :loading="loadingVersions"
           :disabled="loadingVersions || creating"
-          :menu-props="{
-            contentClass: 'v-menu__content menuable__content__active',
-          }"
         />
         <v-text-field
           v-model="port"

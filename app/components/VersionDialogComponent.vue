@@ -65,9 +65,6 @@
           :label="t('gui.views.server.version_dialog.version')"
           :loading="loadingVersions"
           :disabled="installing"
-          :menu-props="{
-            contentClass: 'v-menu__content menuable__content__active',
-          }"
           @update:model-value="loadBuilds"
         />
         <v-select

@@ -43,55 +43,56 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <v-tab to="/about">{{ t("gui.appbar.navigation.about.title") }}</v-tab>
       </v-tabs>
 
-      <v-spacer></v-spacer>
-      <v-switch
-        :model-value="dark"
-        hide-details
-        color="secondary"
-        @update:model-value="setDark"
-      >
-        <template #label>
-          <span style="white-space: nowrap" class="text-secondary">
-            {{ t("gui.appbar.dark_mode") }}
-          </span>
-        </template>
-      </v-switch>
-      <v-select
-        :items="availableLanguages"
-        hide-details
-        :model-value="locale"
-        density="compact"
-        :menu-icon="''"
-        style="width: 112px"
-        variant="solo"
-        flat
-        bg-color="primary"
-        color="secondary"
-        @update:model-value="setLanguage"
-      >
-        <template #item="{ item, props: itemProps }">
-          <v-list-item v-bind="itemProps" :title="undefined">
-            <div class="d-flex align-center justify-start">
-              {{
-                te("gui.appbar.language_select." + item.value)
-                  ? t("gui.appbar.language_select." + item.value) +
-                    " (" +
-                    item.value +
-                    ")"
-                  : item.value
-              }}
+      <div class="d-flex align-center ml-auto">
+        <v-switch
+          :model-value="dark"
+          hide-details
+          color="secondary"
+          @update:model-value="setDark"
+        >
+          <template #label>
+            <span style="white-space: nowrap" class="text-secondary">
+              {{ t("gui.appbar.dark_mode") }}
+            </span>
+          </template>
+        </v-switch>
+        <v-select
+          :items="availableLanguages"
+          hide-details
+          :model-value="locale"
+          density="compact"
+          :menu-icon="''"
+          style="width: 112px"
+          variant="solo"
+          flat
+          bg-color="primary"
+          color="secondary"
+          @update:model-value="setLanguage"
+        >
+          <template #item="{ item, props: itemProps }">
+            <v-list-item v-bind="itemProps" :title="undefined">
+              <div class="d-flex align-center justify-start">
+                {{
+                  te("gui.appbar.language_select." + item.value)
+                    ? t("gui.appbar.language_select." + item.value) +
+                      " (" +
+                      item.value +
+                      ")"
+                    : item.value
+                }}
+              </div>
+            </v-list-item>
+          </template>
+          <template #selection="{ item }">
+            <div
+              class="d-flex align-center justify-start text-secondary font-weight-medium"
+            >
+              <v-icon class="mr-1" color="secondary" :icon="mdiTranslate" />
+              {{ item.value.toUpperCase() }}
             </div>
-          </v-list-item>
-        </template>
-        <template #selection="{ item }">
-          <div
-            class="d-flex align-center justify-start text-secondary font-weight-medium"
-          >
-            <v-icon class="mr-1" color="secondary" :icon="mdiTranslate" />
-            {{ item.value.toUpperCase() }}
-          </div>
-        </template>
-      </v-select>
+          </template>
+        </v-select>
+      </div>
     </v-app-bar>
 
     <v-main>

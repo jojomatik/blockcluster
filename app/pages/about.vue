@@ -50,7 +50,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
               <v-container fluid class="pa-0">
                 <v-row>
                   <v-col
-                    v-for="notice in frontendNotices"
+                    v-for="notice in libraryNotices"
                     :key="notice.name"
                     cols="12"
                     lg="6"
@@ -74,7 +74,7 @@ import { getVersion } from "#shared/version";
 import Notice from "#shared/components/software_notice";
 import licenseText from "../../LICENSE?raw";
 
-interface FrontendLicense {
+interface LibraryLicense {
   name: string;
   version: string;
   author: { name: string } | null;
@@ -106,21 +106,20 @@ const projectName = "blockcluster";
 const projectNotice = getBlockclusterNotice();
 
 /**
- * The notice blocks of all frontend dependencies.
+ * The notice blocks of all libraries.
  */
 const {
   data: notices,
   pending: loading,
   error: loadError,
 } = await useAsyncData("about-dependency-notices", async () => {
-  const frontendLicenses =
-    await requestFetch<FrontendLicense[]>("/dependencies.json");
+  const licenses = await requestFetch<LibraryLicense[]>("/dependencies.json");
   // Plain objects, since class instances can not be serialized into the SSR payload.
-  return parseFrontendNotices(frontendLicenses).map((notice) => ({
+  return parseLibraryNotices(licenses).map((notice) => ({
     ...notice,
   }));
 });
-const frontendNotices = computed(() => notices.value ?? []);
+const libraryNotices = computed(() => notices.value ?? []);
 
 /**
  * Returns the notice block for the current project.
@@ -136,9 +135,9 @@ function getBlockclusterNotice(): Notice {
 }
 
 /**
- * Returns the notice blocks for all frontend dependencies.
+ * Returns the notice blocks for all libraries.
  */
-function parseFrontendNotices(licenses: FrontendLicense[]): Notice[] {
+function parseLibraryNotices(licenses: LibraryLicense[]): Notice[] {
   return licenses
     .sort((a, b) => a.name.localeCompare(b.name))
     .map((license) => {

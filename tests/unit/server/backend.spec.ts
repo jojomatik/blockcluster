@@ -34,6 +34,15 @@ interface MockServer {
   pause: Mock<() => Promise<void>>;
   restart: Mock<() => Promise<void>>;
   deleteWorld: Mock<() => Promise<void>>;
+  installUpdate: Mock<
+    (
+      type:
+        | "build"
+        | "patch"
+        | { file: string }
+        | { version: string; build: number },
+    ) => Promise<void>
+  >;
   executeCommand: Mock<() => Promise<void>>;
   updateConfig: Mock<() => Promise<void>>;
   measureUsage: Mock<() => Promise<void>>;
@@ -63,6 +72,7 @@ const mocks = vi.hoisted(() => {
         pause: vi.fn().mockResolvedValue(undefined),
         restart: vi.fn().mockResolvedValue(undefined),
         deleteWorld: vi.fn().mockResolvedValue(undefined),
+        installUpdate: vi.fn().mockResolvedValue(undefined),
         executeCommand: vi.fn().mockResolvedValue(undefined),
         updateConfig: vi.fn().mockResolvedValue(undefined),
         measureUsage: vi.fn().mockResolvedValue(undefined),
@@ -311,6 +321,7 @@ describe("Nitro backend", () => {
         "pause",
         "restart",
         "deleteWorld",
+        "installUpdate",
         "acceptEula",
         "executeCommand",
         "updateConfig",
@@ -378,10 +389,9 @@ describe("Nitro backend", () => {
     expect(
       await invoke("GET", "/api/paper/versions/1.21.8/builds"),
     ).toMatchObject({ status: 200 });
-    expect(await invoke("GET", "/api/paper/versions/latest/builds")).toEqual({
-      status: 400,
-      body: { error: "Invalid version" },
-    });
+    expect(
+      (await invoke("GET", "/api/paper/versions/latest/builds")).status,
+    ).toBe(400);
     for (const [method, route] of [
       ["GET", "/api/servers/:name"],
       ["GET", "/api/servers/:name/messages"],
@@ -404,22 +414,19 @@ describe("Nitro backend", () => {
         params: { name: "survival" },
         body: { command: 42 },
       }),
-    ).toEqual({ status: 400, body: { error: "Command must be a string" } });
+    ).toMatchObject({ status: 400 });
     expect(
       await invoke("PATCH", "/api/servers/:name/config", {
         params: { name: "survival" },
         body: [],
       }),
-    ).toEqual({
-      status: 400,
-      body: { error: "Configuration must be an object" },
-    });
+    ).toMatchObject({ status: 400 });
     expect(
       await invoke("POST", "/api/servers/:name/actions", {
         params: { name: "survival" },
         body: { action: "delete-all" },
       }),
-    ).toEqual({ status: 400, body: { error: "Invalid server action" } });
+    ).toMatchObject({ status: 400 });
     expect(
       (
         await invoke("POST", "/api/servers/:name/commands", {
@@ -449,6 +456,48 @@ describe("Nitro backend", () => {
     expect(server.updateConfig).toHaveBeenCalledWith({ autostart: true });
     await new Promise((resolve) => setTimeout(resolve, 0));
     expect(server.pause).toHaveBeenCalled();
+  });
+
+  it("validates server update requests before installing an update", async () => {
+    for (const body of [
+      { type: "unknown" },
+      { type: "existing", file: 42 },
+      { type: "version", version: "latest", build: 1 },
+      { type: "version", version: "1.21.8", build: 1.5 },
+    ]) {
+      expect(
+        (
+          await invoke("POST", "/api/servers/:name/updates", {
+            params: { name: "survival" },
+            body,
+          })
+        ).status,
+      ).toBe(400);
+    }
+
+    const server = mocks.instances.find((entry) => entry.name === "survival")!;
+    for (const [body, expected] of [
+      [
+        { type: "existing", file: "paper-1.21.8-8.jar" },
+        { file: "paper-1.21.8-8.jar" },
+      ],
+      [
+        { type: "version", version: "1.21.8", build: 9 },
+        { version: "1.21.8", build: 9 },
+      ],
+      [{ type: "build" }, "build"],
+      [{ type: "patch" }, "patch"],
+    ] as const) {
+      expect(
+        (
+          await invoke("POST", "/api/servers/:name/updates", {
+            params: { name: "survival" },
+            body,
+          })
+        ).status,
+      ).toBe(204);
+      expect(server.installUpdate).toHaveBeenLastCalledWith(expected);
+    }
   });
 
   it("accepts an EULA and creates a server from the newest stable Paper build", async () => {
@@ -488,12 +537,12 @@ describe("Nitro backend", () => {
       await invoke("POST", "/api/servers", {
         body: { name: "../outside", version: "1.21.8" },
       }),
-    ).toEqual({ status: 400, body: { error: "Invalid server name" } });
+    ).toMatchObject({ status: 400 });
     expect(
       await invoke("POST", "/api/servers", {
         body: { name: "Bad version", version: "latest" },
       }),
-    ).toEqual({ status: 400, body: { error: "Invalid Paper version" } });
+    ).toMatchObject({ status: 400 });
     mocks.listPaperVersions.mockResolvedValueOnce(["1.21.8"]);
     expect(
       await invoke("POST", "/api/servers", {

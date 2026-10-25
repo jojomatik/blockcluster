@@ -1,11 +1,14 @@
 import {
-  getRouterParam,
+  getValidatedRouterParams,
   sendNoContent,
   setResponseStatus,
   type H3Event,
 } from "h3";
+import { z } from "zod";
 import { servers } from "../backend";
 import type Server from "../components/server";
+
+const serverNameParamsSchema = z.object({ name: z.string().min(1) });
 
 /**
  * Sets the given status on the response and returns a JSON error body.
@@ -34,7 +37,11 @@ export function emptyResponse(event: H3Event, status: number) {
  *
  * @param event the current request event.
  */
-export function findServer(event: H3Event): Server | undefined {
-  const name = getRouterParam(event, "name", { decode: true });
+export async function findServer(event: H3Event): Promise<Server | undefined> {
+  const { name } = await getValidatedRouterParams(
+    event,
+    serverNameParamsSchema.parse,
+    { decode: true },
+  );
   return servers.find((entry) => entry.name === name);
 }

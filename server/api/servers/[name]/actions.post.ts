@@ -1,17 +1,18 @@
-import { defineEventHandler, readBody } from "h3";
+import { defineEventHandler, readValidatedBody } from "h3";
+import { z } from "zod";
 import { emptyResponse, errorResponse, findServer } from "../../../utils/api";
 
+const actionBodySchema = z.object({
+  action: z.enum(["start", "stop", "pause", "restart", "deleteWorld"]),
+});
+
 export default defineEventHandler(async (event) => {
-  const server = findServer(event);
-  const actions = ["start", "stop", "pause", "restart", "deleteWorld"];
+  const server = await findServer(event);
   if (!server) return errorResponse(event, 404, "Server not found");
-  const body = await readBody(event);
-  if (!actions.includes(body?.action)) {
-    return errorResponse(event, 400, "Invalid server action");
-  }
+  const { action } = await readValidatedBody(event, actionBodySchema.parse);
 
   const runAction = async () => {
-    switch (body.action) {
+    switch (action) {
       case "start":
         try {
           await server.start();

@@ -33,8 +33,8 @@ describe("server API helpers", () => {
     const router = createRouter();
     router.get(
       "/api/servers/:name",
-      defineEventHandler((event) => {
-        const found = findServer(event);
+      defineEventHandler(async (event) => {
+        const found = await findServer(event);
         return found
           ? { name: found.name }
           : errorResponse(event, 404, "Server not found");

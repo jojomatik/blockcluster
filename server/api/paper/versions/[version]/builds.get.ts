@@ -8,16 +8,11 @@ const versionParamsSchema = z.object({
 });
 
 export default defineEventHandler(async (event) => {
-  let version: string;
-  try {
-    ({ version } = await getValidatedRouterParams(
-      event,
-      (params) => versionParamsSchema.parse(params),
-      { decode: true },
-    ));
-  } catch {
-    return errorResponse(event, 400, "Invalid version");
-  }
+  const { version } = await getValidatedRouterParams(
+    event,
+    versionParamsSchema.parse,
+    { decode: true },
+  );
   try {
     return await listPaperBuilds(version);
   } catch {

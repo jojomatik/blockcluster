@@ -1,6 +1,7 @@
-import { defineEventHandler, readBody, setResponseStatus } from "h3";
+import { defineEventHandler, readValidatedBody, setResponseStatus } from "h3";
 import fs from "fs";
 import path from "path";
+import { z } from "zod";
 import {
   basePath,
   creatingServerNames,
@@ -18,32 +19,30 @@ import {
 } from "../../components/paper";
 import { errorResponse } from "../../utils/api";
 
-export default defineEventHandler(async (event) => {
-  const body = await readBody(event);
-  const version = body?.version;
-  const requestedName = body?.name;
-  if (typeof version !== "string" || !/^\d+(\.\d+)+$/.test(version)) {
-    return errorResponse(event, 400, "Invalid Paper version");
-  }
-  if (
-    typeof requestedName !== "string" ||
-    requestedName.trim() !== requestedName ||
-    !/^[A-Za-z0-9 _.-]{1,64}$/.test(requestedName) ||
-    requestedName === "." ||
-    requestedName === ".."
-  ) {
-    return errorResponse(event, 400, "Invalid server name");
-  }
+const createServerBodySchema = z.object({
+  version: z
+    .string()
+    .regex(/^\d+(?:\.\d+)+$/, { error: "Invalid Paper version" }),
+  name: z
+    .string()
+    .refine(
+      (name) =>
+        name.trim() === name &&
+        /^[A-Za-z0-9 _.-]{1,64}$/.test(name) &&
+        name !== "." &&
+        name !== "..",
+      { error: "Invalid server name" },
+    ),
+  port: z.number().int().min(1024).max(65535).nullable().optional(),
+});
 
-  const requestedPort = body?.port;
+export default defineEventHandler(async (event) => {
+  const {
+    version,
+    name: requestedName,
+    port: requestedPort,
+  } = await readValidatedBody(event, createServerBodySchema.parse);
   if (requestedPort !== undefined && requestedPort !== null) {
-    if (
-      !Number.isInteger(requestedPort) ||
-      requestedPort < 1024 ||
-      requestedPort > 65535
-    ) {
-      return errorResponse(event, 400, "Invalid port");
-    }
     if (
       !(await isPortAvailable(requestedPort)) ||
       requestedPort === port ||

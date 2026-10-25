@@ -48,6 +48,7 @@
     {
       "matchDatasources": ["npm"],
       "matchPackageNames": ["nuxt"],
+      "automerge": false,
       "separateMultipleMinor": true,
     },
     {

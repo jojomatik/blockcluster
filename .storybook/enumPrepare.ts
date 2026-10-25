@@ -3,7 +3,7 @@
  *
  * @param usedEnum the given enum.
  */
-export default function prepareEnum(usedEnum: Record<string, any>) {
+export default function prepareEnum(usedEnum: Record<string, string | number>) {
   return Object.entries(usedEnum)
     .filter(([, value]) => typeof value !== "string")
     .reduce((acc, [key, value]) => ({ ...acc, [key]: value }), {});

@@ -1,14 +1,17 @@
-version: "3.9"
 services:
   manager:
     volumes:
-    - ./common:/usr/games/blockcluster/common
-    - ./src:/usr/games/blockcluster/src
-    - ./backend/dist:/usr/games/blockcluster/backend/dist
+    - ./app:/usr/games/blockcluster/app
+    - ./server:/usr/games/blockcluster/server
+    - ./shared:/usr/games/blockcluster/shared
+    - ./locales:/usr/games/blockcluster/locales
     - ./public:/usr/games/blockcluster/public
-    command: npm run serve
+    - ./nuxt.config.ts:/usr/games/blockcluster/nuxt.config.ts
+    - ./vuetify-options.ts:/usr/games/blockcluster/vuetify-options.ts
+    command: yarn dev --host 0.0.0.0
     environment:
       - CHOKIDAR_USEPOLLING=true
+      - GIT_SHA=develop
     build:
       args:
         - ENVIRONMENT=develop

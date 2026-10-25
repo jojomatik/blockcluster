@@ -1,15 +1,16 @@
-import Server from "../../../src/lib/components/server";
+import { vi } from "vitest";
+import Server from "@/lib/components/server";
 
 describe("client Server API", () => {
   const originalFetch = global.fetch;
 
   afterEach(() => {
     global.fetch = originalFetch;
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   it("encodes server names and sends action, command, and config payloads", async () => {
-    const fetch = jest.fn().mockResolvedValue({ ok: true });
+    const fetch = vi.fn().mockResolvedValue({ ok: true });
     global.fetch = fetch;
     const server = new Server({ _name: "my server/#1" });
 
@@ -46,8 +47,8 @@ describe("client Server API", () => {
   });
 
   it("returns JSON payloads and reports unsuccessful HTTP responses", async () => {
-    const json = jest.fn().mockResolvedValue({ _name: "test" });
-    const fetch = jest
+    const json = vi.fn().mockResolvedValue({ _name: "test" });
+    const fetch = vi
       .fn()
       .mockResolvedValueOnce({ ok: true, json })
       .mockResolvedValueOnce({ ok: true, json })
@@ -64,11 +65,11 @@ describe("client Server API", () => {
       _name: "test",
     });
     await expect(server.sendAction("start")).rejects.toThrow(
-      "Request failed (503 Unavailable)"
+      "Request failed (503 Unavailable)",
     );
-    expect(fetch.mock.calls[0][0]).toBe("/api/servers/test%20server");
-    expect(fetch.mock.calls[1][0]).toBe(
-      "/api/servers/explicit%20name/messages"
+    expect(fetch.mock.calls[0]![0]).toBe("/api/servers/test%20server");
+    expect(fetch.mock.calls[1]![0]).toBe(
+      "/api/servers/explicit%20name/messages",
     );
   });
 });

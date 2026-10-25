@@ -1,30 +1,50 @@
-import type { Decorator } from "@storybook/vue";
-import vuetify from "./vuetify_storybook";
-import i18n from "@/i18n";
+import "@fontsource/roboto/400.css";
 
-export const decorators: Decorator[] = [
-  () => ({
-    i18n,
-    vuetify,
-    template: `
-    <v-app>
-      <v-main>
-        <story/>
-      </v-main>
-    </v-app>
-    `,
-  }),
-];
+import themeLocaleDecorator, {
+  DEFAULT_THEME,
+} from "./theme-locale-decorator.decorator";
+import type { Preview } from "@nuxtjs/storybook";
 
-export const parameters = {
-  options: {
-    storySort: { order: ["Blockcluster", "Atoms", "Molecules", "Organisms"] },
+const preview: Preview = {
+  initialGlobals: {
+    locale: "en",
+    theme: DEFAULT_THEME,
   },
-  actions: { argTypesRegex: "^on[A-Z].*" },
-  controls: {
-    matchers: {
-      color: /(background|color)$/i,
-      date: /Date$/,
+  globalTypes: {
+    locale: {
+      name: "Locale",
+      description: "Internationalization locale",
+      toolbar: {
+        icon: "globe",
+        items: [
+          { value: "en", title: "English" },
+          { value: "de", title: "Deutsch" },
+        ],
+      },
+    },
+    theme: {
+      name: "Theme",
+      description: "Global theme for components",
+      toolbar: {
+        icon: "circlehollow",
+        // Array of plain string values or MenuItem shape (see below)
+        items: [
+          { value: "light", title: "Light", icon: "circlehollow" },
+          { value: "dark", title: "Dark", icon: "circle" },
+        ],
+        // Change title based on selected value
+        dynamicTitle: true,
+      },
     },
   },
+  parameters: {
+    options: {
+      storySort: { order: ["Blockcluster", "Atoms", "Molecules", "Organisms"] },
+    },
+    actions: { argTypesRegex: "^on[A-Z].*" },
+  },
+  decorators: [themeLocaleDecorator],
+  tags: ["autodocs"],
 };
+
+export default preview;

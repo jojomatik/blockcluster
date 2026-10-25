@@ -1,7 +1,9 @@
 node_modules
-backend/node_modules
-proxy/node_modules
+.nuxt
+.output
+.data
+dist
+coverage
+storybook-static
 npm-debug.log
-backend/dist
-proxy/dist
-src/**/*.stories.ts
+**/*.stories.ts

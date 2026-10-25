@@ -1,4 +1,4 @@
-module.exports = {
+export default {
   plugins: [
     [
       "@semantic-release/commit-analyzer",
@@ -58,13 +58,13 @@ module.exports = {
       "@semantic-release/exec",
       {
         prepareCmd:
-          "npm version ${nextRelease.version} --allow-same-version --no-git-tag-version && cd backend && npm version ${nextRelease.version} --allow-same-version --no-git-tag-version",
+          "yarn version --new-version ${nextRelease.version} --no-git-tag-version",
       },
     ],
     [
       "@semantic-release/git",
       {
-        assets: [["**/package*.json", "!node_modules/**"]],
+        assets: ["package.json"],
         message: "release: ${nextRelease.version}",
       },
     ],

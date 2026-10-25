@@ -1,0 +1,140 @@
+{
+  "gui": {
+    "appbar": {
+      "dark_mode": "Mode foncé",
+      "language_select": {
+        "de": "Allemand",
+        "en": "Anglais",
+        "fr": "Français"
+      },
+      "navigation": {
+        "home": {
+          "title": "Accueil"
+        }
+      }
+    },
+    "footer": {
+      "notice": {
+        "license": "Le code source de blockcluster est sous licence AGPL-3.0.",
+        "link_description": "Regarde le code source et la licence sur"
+      }
+    },
+    "views": {
+      "about": {
+        "description": "blockcluster - Un manager de serveurs minecraft pour le navigateur.",
+        "libraries": {
+          "description": "Bibliothèques utilisées en production par blockcluster.",
+          "title": "Bibliothèques"
+        },
+        "notice": {
+          "author": {
+            "by_author": "de {author}",
+            "not_specified": "Auteur pas spécifié"
+          },
+          "license": "Licence"
+        },
+        "title": "Sur {name}"
+      },
+      "home": {
+        "create_server": {
+          "button": "Créer un serveur",
+          "title": "Créer un nouveau serveur",
+          "name": "Nom du répertoire du serveur",
+          "name_hint": "1 à 64 caractères : A–Z, a–z, 0–9, espaces, _, . ou -. Le nom ne peut pas être . ou ..",
+          "version": "Version de Paper",
+          "port": "Port",
+          "port_hint": "Facultatif. Laissez vide pour utiliser le prochain port libre (1024–65535).",
+          "port_invalid": "Saisissez un port entre 1024 et 65535.",
+          "create": "Créer",
+          "cancel": "Annuler",
+          "error": "Impossible de charger les versions de Paper ou de créer le serveur."
+        },
+        "resource_usage": {
+          "total": "Utilisation totale des ressources"
+        },
+        "server": {
+          "details": "Détails"
+        },
+        "update_status": "Actualiser le statut"
+      },
+      "server": {
+        "autostart": "Autostart",
+        "console": {
+          "title": "Console"
+        },
+        "eula": {
+          "title": "Contrat de licence utilisateur final Minecraft",
+          "description": "Le serveur ne peut pas démarrer tant que vous n'avez pas accepté le contrat de licence utilisateur final Minecraft.",
+          "link": "Lire le contrat de licence Minecraft",
+          "accept": "J'accepte le contrat de licence Minecraft",
+          "start": "Démarrer le serveur",
+          "cancel": "Annuler"
+        },
+        "delete_world": {
+          "dialog": {
+            "cancel": "Annuler",
+            "confirm": "Supprimer le monde",
+            "description": "Cette opération arrêtera le serveur, supprimera le monde défini dans %%file%% et redémarrera ensuite le serveur.",
+            "errors": {
+              "no_match_name": "Entrée ne correspond pas au nom du serveur."
+            },
+            "prompt": "Entre %%name%% pour supprimer ce monde :",
+            "question": "Tu es sûr de vouloir supprimer le monde ?"
+          },
+          "text": "Supprimer le monde"
+        },
+        "executable": "JAR-fichier du serveur",
+        "version_dialog": {
+          "choose": "Changer de version",
+          "version": "Version",
+          "build": "Build",
+          "install": "Installer",
+          "cancel": "Annuler",
+          "error": "Impossible de charger les données de l'API Paper.",
+          "warning": "L'installation d'une autre version remplace le JAR actuel, qui est archivé. Sauvegardez votre monde avant de rétrograder.",
+          "main_title": "Choisir la version de Paper",
+          "update_build": "Mettre à jour vers le build {build} ({version})",
+          "update_patch": "Mettre à jour vers {version}",
+          "download_new": "Télécharger une nouvelle version de Paper",
+          "select_existing": "Sélectionner une version existante",
+          "no_existing": "Aucune version précédente trouvée."
+        },
+        "favicon": {
+          "alt": "favicon of {name}"
+        },
+        "flags": {
+          "save": "Sauver"
+        },
+        "java_runtime": "Java Runtime",
+        "players": {
+          "heads": {
+            "alt": "Tête de {name}"
+          },
+          "title": "Joueurs"
+        },
+        "port": "Port",
+        "resource_usage": {
+          "cpu": "processeur",
+          "memory": "mémoire"
+        },
+        "state_change": {
+          "pause": "Pauser",
+          "restart": "Relancer",
+          "start": "Lancer",
+          "stop": "Arrêter",
+          "unpause": "Continuer"
+        },
+        "status": {
+          "paused": "Pausé",
+          "queued": "En attente",
+          "started": "Lancé",
+          "starting": "Lançant",
+          "stopped": "Arrêté",
+          "stopping": "Arrêtant",
+          "unknown": "Inconnu"
+        },
+        "update_status": "Actualiser le statut"
+      }
+    }
+  }
+}

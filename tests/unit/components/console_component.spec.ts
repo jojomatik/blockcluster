@@ -1,8 +1,15 @@
-import { shallowMount } from "@vue/test-utils";
-import Message, { MessageType } from "../../../common/components/message";
-import { ServerStatus } from "../../../common/components/server";
-import ConsoleComponent from "../../../src/components/ConsoleComponent.vue";
-import Server from "../../../src/lib/components/server";
+import { vi } from "vitest";
+import { flushPromises, shallowMount } from "@vue/test-utils";
+import { mockNuxtImport } from "@nuxt/test-utils/runtime";
+import { MessageType } from "#shared/components/message";
+import { ServerStatus } from "#shared/components/server";
+import ConsoleComponent from "@/components/ConsoleComponent.vue";
+import Server from "@/lib/components/server";
+
+const { socketMock } = vi.hoisted(() => ({
+  socketMock: { on: vi.fn(), off: vi.fn() },
+}));
+mockNuxtImport("useSocket", () => () => socketMock);
 
 type MessageData = {
   _uuid: string;
@@ -15,7 +22,7 @@ function createMessage(
   uuid: string,
   timestamp: number,
   text: string,
-  type = MessageType.Default
+  type = MessageType.Default,
 ): MessageData {
   return { _uuid: uuid, _timestamp: timestamp, _text: text, _type: type };
 }
@@ -27,31 +34,16 @@ describe("ConsoleComponent", () => {
       resolveHistory = resolve;
     });
     const server = new Server({ _name: "a server" });
-    server.fetchMessages = jest.fn().mockReturnValue(history);
+    server.fetchMessages = vi.fn().mockReturnValue(history);
     let onMessage: ((data: Record<string, unknown>) => void) | undefined;
-    const socket = {
-      on: jest.fn(
-        (_event: string, callback: (data: Record<string, unknown>) => void) => {
-          onMessage = callback;
-        }
-      ),
-      off: jest.fn(),
-    };
+    socketMock.on.mockImplementation((_event, callback) => {
+      onMessage = callback;
+    });
     const wrapper = shallowMount(ConsoleComponent, {
-      propsData: { server, status: ServerStatus.Started },
-      mocks: {
-        $route: { params: { server: "route name" } },
-        $socket: { client: socket },
-        $t: (key: string) => key,
-      },
+      props: { server, status: ServerStatus.Started },
     });
     const firstDay = Date.UTC(2025, 0, 1, 23, 59);
     const nextDay = Date.UTC(2025, 0, 2, 0, 1);
-
-    wrapper.vm.$refs.console = {
-      offsetTop: 100,
-      offsetHeight: 20,
-    } as unknown as HTMLElement;
     if (!onMessage) {
       throw new Error("ConsoleComponent did not register its message handler.");
     }
@@ -67,52 +59,34 @@ describe("ConsoleComponent", () => {
     await new Promise((resolve) => window.setTimeout(resolve, 0));
     await wrapper.vm.$nextTick();
 
-    const messages = wrapper.vm.$data.messages as Message[];
-    expect(messages.map(({ text, type }) => [text, type])).toEqual([
-      ["2025-01-01", MessageType.DateChange],
-      ["history", MessageType.Default],
-      ["2025-01-02", MessageType.DateChange],
-      ["live event", MessageType.Default],
-    ]);
+    const messages = wrapper.text();
+    expect(messages).toContain("2025-01-01");
+    expect(messages).toContain("history");
+    expect(messages).toContain("2025-01-02");
+    expect(messages).toContain("live event");
     expect(server.fetchMessages).toHaveBeenCalledWith("a%20server");
-    wrapper.destroy();
-    expect(socket.off).toHaveBeenCalledWith("server_a%20server");
+    wrapper.unmount();
+    expect(socketMock.off).toHaveBeenCalledWith("server_a%20server");
   });
 
   it("reports history and command errors to the console message list", async () => {
     const server = new Server({ _name: "broken" });
-    server.fetchMessages = jest.fn().mockRejectedValue("offline");
-    server.sendCommand = jest.fn().mockRejectedValue(new Error("unavailable"));
-    const consoleElement = document.createElement("div");
-    Object.defineProperty(consoleElement, "offsetTop", { value: 0 });
-    Object.defineProperty(consoleElement, "offsetHeight", { value: 100 });
-    const consoleEnd = document.createElement("span");
-    Object.defineProperty(consoleEnd, "offsetTop", { value: 0 });
+    server.fetchMessages = vi.fn().mockRejectedValue("offline");
+    server.sendCommand = vi.fn().mockRejectedValue(new Error("unavailable"));
     const wrapper = shallowMount(ConsoleComponent, {
-      propsData: { server, status: ServerStatus.Started },
-      mocks: {
-        $route: { params: {} },
-        $socket: { client: { on: jest.fn(), off: jest.fn() } },
-        $t: (key: string) => key,
-      },
+      props: { server, status: ServerStatus.Started },
     });
-    wrapper.vm.$refs.console = consoleElement;
-    wrapper.vm.$refs.consoleEnd = consoleEnd;
     await new Promise((resolve) => window.setTimeout(resolve, 0));
     await wrapper.vm.$nextTick();
 
-    const sendCommand = wrapper.vm.$options.methods?.sendCommand;
-    if (typeof sendCommand !== "function") {
-      throw new Error("ConsoleComponent is missing its sendCommand method.");
-    }
-    await sendCommand.call(wrapper.vm);
-
-    const messages = wrapper.vm.$data.messages as Message[];
-    expect(messages.map(({ type, text }) => [type, text])).toEqual([
-      [MessageType.Error, "Could not load server messages: offline"],
-      [MessageType.Error, "Could not send command: unavailable"],
-    ]);
-    wrapper.destroy();
+    await wrapper
+      .findComponent({ name: "VTextField" })
+      .vm.$emit("update:modelValue", "say hello");
+    await wrapper.find("form").trigger("submit");
+    await flushPromises();
+    expect(wrapper.text()).toContain("Could not load server messages: offline");
+    expect(wrapper.text()).toContain("Could not send command: unavailable");
+    wrapper.unmount();
   });
 
   describe("EULA prompt", () => {
@@ -121,31 +95,14 @@ describe("ConsoleComponent", () => {
 
     async function mountWithHistory(history: MessageData[]) {
       const server = new Server({ _name: "eula" });
-      server.fetchMessages = jest.fn().mockResolvedValue(history);
+      server.fetchMessages = vi.fn().mockResolvedValue(history);
       let onMessage: ((data: Record<string, unknown>) => void) | undefined;
-      const wrapper = shallowMount(ConsoleComponent, {
-        propsData: { server, status: ServerStatus.Stopped },
-        mocks: {
-          $route: { params: {} },
-          $socket: {
-            client: {
-              on: (_event: string, callback: typeof onMessage) => {
-                onMessage = callback;
-              },
-              off: jest.fn(),
-            },
-          },
-          $t: (key: string) => key,
-        },
+      socketMock.on.mockImplementation((_event, callback) => {
+        onMessage = callback;
       });
-      // Keep the scrolling logic inert, as jsdom does not implement it.
-      const consoleElement = document.createElement("div");
-      Object.defineProperty(consoleElement, "offsetTop", { value: 0 });
-      Object.defineProperty(consoleElement, "offsetHeight", { value: 100 });
-      const consoleEnd = document.createElement("span");
-      Object.defineProperty(consoleEnd, "offsetTop", { value: 0 });
-      wrapper.vm.$refs.console = consoleElement;
-      wrapper.vm.$refs.consoleEnd = consoleEnd;
+      const wrapper = shallowMount(ConsoleComponent, {
+        props: { server, status: ServerStatus.Stopped },
+      });
       await new Promise((resolve) => window.setTimeout(resolve, 0));
       await wrapper.vm.$nextTick();
       if (!onMessage) throw new Error("Message handler was not registered.");
@@ -159,7 +116,7 @@ describe("ConsoleComponent", () => {
       ]);
 
       expect(wrapper.emitted("eula-required")).toHaveLength(1);
-      wrapper.destroy();
+      wrapper.unmount();
     });
 
     it("does not request the dialog for a EULA message that was followed by other messages", async () => {
@@ -170,7 +127,7 @@ describe("ConsoleComponent", () => {
       ]);
 
       expect(wrapper.emitted("eula-required")).toBeUndefined();
-      wrapper.destroy();
+      wrapper.unmount();
     });
 
     it("requests the dialog for a live EULA message and not once later messages arrive", async () => {
@@ -183,7 +140,7 @@ describe("ConsoleComponent", () => {
 
       onMessage({ message: createMessage("3", 3000, "starting again") });
       expect(wrapper.emitted("eula-required")).toHaveLength(1);
-      wrapper.destroy();
+      wrapper.unmount();
     });
   });
 });

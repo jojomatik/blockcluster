@@ -8,6 +8,9 @@ const config: StorybookConfig = {
   ],
   addons: ["@storybook/addon-docs"],
   framework: "@storybook-vue/nuxt",
+  core: {
+    disableTelemetry: true,
+  },
 };
 
 export default config;

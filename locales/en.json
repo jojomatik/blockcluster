@@ -26,14 +26,8 @@
       "about": {
         "description": "blockcluster - An in-browser manager for your minecraft servers.",
         "libraries": {
-          "backend": {
-            "description": "This is a list of all production libraries used in the backend of {name}.",
-            "title": "Libraries used in the {name}-backend"
-          },
-          "frontend": {
-            "description": "This is a list of all production libraries used in the frontend of {name}.",
-            "title": "Libraries used in the {name}-frontend"
-          }
+          "description": "Production libraries used by blockcluster.",
+          "title": "Libraries"
         },
         "notice": {
           "author": {

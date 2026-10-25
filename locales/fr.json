@@ -23,14 +23,8 @@
       "about": {
         "description": "blockcluster - Un manager de serveurs minecraft pour le navigateur.",
         "libraries": {
-          "backend": {
-            "description": "C'est une liste de toutes les bibliothèques utilisées dans le backend de {name}.",
-            "title": "Bibliothèques dans le backend de {name}"
-          },
-          "frontend": {
-            "description": "C'est une liste de toutes les bibliothèques utilisées dans le frontend de {name}.",
-            "title": "Bibliothèques dans le frontend de {name}"
-          }
+          "description": "Bibliothèques utilisées en production par blockcluster.",
+          "title": "Bibliothèques"
         },
         "notice": {
           "author": {

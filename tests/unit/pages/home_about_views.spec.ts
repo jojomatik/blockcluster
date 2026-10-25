@@ -104,11 +104,9 @@ describe("HomeView", () => {
 });
 
 describe("AboutView", () => {
-  it("loads project, backend, and parsed frontend notices", async () => {
-    fetchData.mockImplementation((url: string) => {
-      if (url === "/api/dependencies")
-        return Promise.resolve({ dependencies: [{ name: "backend-lib" }] });
-      return Promise.resolve([
+  it("loads project and parsed library notices", async () => {
+    fetchData.mockImplementation(() =>
+      Promise.resolve([
         {
           name: "library",
           version: "1.2.3",
@@ -117,8 +115,8 @@ describe("AboutView", () => {
           license: "MIT",
           licenseText: "MIT license\nAll rights reserved",
         },
-      ]);
-    });
+      ]),
+    );
     const wrapper = mount(
       defineComponent({
         setup: () => () =>
@@ -132,17 +130,15 @@ describe("AboutView", () => {
     const notices = wrapper
       .findAllComponents({ name: "NoticeComponent" })
       .map((component) => component.props("notice"));
-    expect(fetchData).toHaveBeenCalledWith("/api/dependencies");
     expect(fetchData).toHaveBeenCalledWith("/dependencies.json");
-    expect(notices).toHaveLength(3);
+    expect(notices).toHaveLength(2);
     expect(notices.map((notice) => notice.name)).toEqual([
       "blockcluster",
-      "backend-lib",
       "library",
     ]);
     expect(notices[0].version).toBe("develop");
     expect(notices[0].notice).toContain("GNU Affero General Public License");
-    expect(notices[2]).toMatchObject({
+    expect(notices[1]).toMatchObject({
       name: "library",
       version: "1.2.3",
       author: "Example Author",

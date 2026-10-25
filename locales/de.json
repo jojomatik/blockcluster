@@ -26,14 +26,8 @@
       "about": {
         "description": "blockcluster - Ein Minecraft-Server-Manager für den Browser.",
         "libraries": {
-          "backend": {
-            "description": "Die folgende Liste beinhaltet alle Bibliotheken, die im Backend von {name} produktiv verwendet werden.",
-            "title": "Bibliotheken im {name}-Backend"
-          },
-          "frontend": {
-            "description": "Die folgende Liste beinhaltet alle Bibliotheken, die im Frontend von {name} produktiv verwendet werden.",
-            "title": "Bibliotheken im {name}-Frontend"
-          }
+          "description": "Produktiv verwendete Bibliotheken von blockcluster.",
+          "title": "Bibliotheken"
         },
         "notice": {
           "author": {

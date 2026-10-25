@@ -86,7 +86,6 @@ const mocks = vi.hoisted(() => {
     listPaperBuilds: vi.fn(),
     installPaperJar: vi.fn(),
     getJavaRuntimes: vi.fn(),
-    getDependencyInfo: vi.fn(),
     pidusage: vi.fn(),
     watchFile: vi.fn(),
     failNextWrite: false,
@@ -131,9 +130,6 @@ vi.mock("../../../server/components/paper", () => ({
 vi.mock("../../../server/components/java_runtime", () => ({
   getJavaRuntimes: mocks.getJavaRuntimes,
 }));
-vi.mock("../../../server/utils/dependency_info", () => ({
-  default: mocks.getDependencyInfo,
-}));
 vi.mock("socket.io", () => ({
   Server: vi.fn(function () {
     return mocks.io;
@@ -160,7 +156,6 @@ let baseUrl: string;
 async function register(router: ReturnType<typeof createRouter>) {
   const [
     version,
-    dependencies,
     javaRuntimes,
     systemUsage,
     serversGet,
@@ -178,7 +173,6 @@ async function register(router: ReturnType<typeof createRouter>) {
     eulaPost,
   ] = await Promise.all([
     import("../../../server/api/version.get"),
-    import("../../../server/api/dependencies.get"),
     import("../../../server/api/java-runtimes.get"),
     import("../../../server/api/system-usage.get"),
     import("../../../server/api/servers/index.get"),
@@ -196,7 +190,6 @@ async function register(router: ReturnType<typeof createRouter>) {
     import("../../../server/api/servers/[name]/eula.post"),
   ]);
   router.get("/api/version", version.default);
-  router.get("/api/dependencies", dependencies.default);
   router.get("/api/java-runtimes", javaRuntimes.default);
   router.get("/api/system-usage", systemUsage.default);
   router.get("/api/servers", serversGet.default);
@@ -284,7 +277,6 @@ describe("Nitro backend", () => {
     );
     mocks.pidusage.mockResolvedValue({ cpu: 5, memory: 10 });
     mocks.getJavaRuntimes.mockReturnValue([{ path: "/java" }]);
-    mocks.getDependencyInfo.mockReturnValue([{ name: "backend-lib" }]);
     mocks.listPaperVersions.mockResolvedValue(["1.21.8"]);
     mocks.listPaperBuilds.mockResolvedValue([
       { build: 9, time: "2025-01-01T00:00:00Z" },
@@ -352,10 +344,6 @@ describe("Nitro backend", () => {
     expect(await invoke("GET", "/api/version")).toEqual({
       status: 200,
       body: { version: "abcdef0" },
-    });
-    expect(await invoke("GET", "/api/dependencies")).toEqual({
-      status: 200,
-      body: { dependencies: [{ name: "backend-lib" }] },
     });
     expect(await invoke("GET", "/api/java-runtimes")).toEqual({
       status: 200,

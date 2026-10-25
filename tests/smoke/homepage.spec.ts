@@ -35,21 +35,6 @@ test("the container serves the working homepage", async ({ page }) => {
   expect(errors).toEqual([]);
 });
 
-test("the backend answers the dependencies API", async ({ request }) => {
-  const response = await request.get("/api/dependencies");
-  expect(response.status()).toBe(200);
-  expect(response.headers()["content-type"]).toContain("application/json");
-  expect(await response.json()).toEqual({
-    dependencies: expect.arrayContaining([
-      expect.objectContaining({
-        name: "h3",
-        version: expect.stringMatching(/\S/),
-        notice: expect.stringMatching(/\S/),
-      }),
-    ]),
-  });
-});
-
 test("the container serves the about page with dependency notices", async ({
   page,
 }) => {
@@ -67,19 +52,11 @@ test("the container serves the about page with dependency notices", async ({
     page.getByText("About blockcluster", { exact: true })
   ).toBeVisible();
   // Wait for notices, since the section titles render before the data loads.
-  const backend = page.locator(".v-card").filter({
-    has: page.getByText("Libraries used in the blockcluster-backend", {
-      exact: true,
-    }),
+  const libraries = page.locator(".v-card").filter({
+    has: page.getByText("Libraries", { exact: true }),
   });
-  const frontend = page.locator(".v-card").filter({
-    has: page.getByText("Libraries used in the blockcluster-frontend", {
-      exact: true,
-    }),
-  });
-  await expect(backend.getByRole("heading", { name: /^h3\s/ })).toBeVisible();
   await expect(
-    frontend.getByRole("heading", { name: /^@vue\/runtime-dom\s/ })
+    libraries.getByRole("heading", { name: /^@vue\/runtime-dom\s/ })
   ).toBeVisible();
   expect(errors).toEqual([]);
 });

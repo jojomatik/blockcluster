@@ -42,53 +42,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
       <v-col>
         <v-card>
           <v-card-title>
-            {{
-              t("gui.views.about.libraries.backend.title", {
-                name: projectName,
-              })
-            }}
+            {{ t("gui.views.about.libraries.title") }}
           </v-card-title>
           <v-card-text>
-            {{
-              t("gui.views.about.libraries.backend.description", {
-                name: projectName,
-              })
-            }}
-            <div v-if="!loading" class="mt-4">
-              <v-container fluid class="pa-0">
-                <v-row>
-                  <v-col
-                    v-for="notice in backendNotices"
-                    :key="notice.name"
-                    cols="12"
-                    lg="6"
-                    xl="4"
-                  >
-                    <NoticeComponent :notice="notice" />
-                  </v-col>
-                </v-row>
-              </v-container>
-            </div>
-          </v-card-text>
-        </v-card>
-      </v-col>
-    </v-row>
-    <v-row>
-      <v-col>
-        <v-card>
-          <v-card-title>
-            {{
-              t("gui.views.about.libraries.frontend.title", {
-                name: projectName,
-              })
-            }}
-          </v-card-title>
-          <v-card-text>
-            {{
-              t("gui.views.about.libraries.frontend.description", {
-                name: projectName,
-              })
-            }}
+            {{ t("gui.views.about.libraries.description") }}
             <div v-if="!loading" class="mt-4">
               <v-container fluid class="pa-0">
                 <v-row>
@@ -149,28 +106,21 @@ const projectName = "blockcluster";
 const projectNotice = getBlockclusterNotice();
 
 /**
- * The notice blocks of all backend dependencies.
+ * The notice blocks of all frontend dependencies.
  */
 const {
   data: notices,
   pending: loading,
   error: loadError,
 } = await useAsyncData("about-dependency-notices", async () => {
-  const [backendResponse, frontendLicenses] = await Promise.all([
-    requestFetch<{ dependencies: Notice[] }>("/api/dependencies"),
-    requestFetch<FrontendLicense[]>("/dependencies.json"),
-  ]);
-
-  return {
-    backend: backendResponse.dependencies,
-    // Plain objects, since class instances can not be serialized into the SSR payload.
-    frontend: parseFrontendNotices(frontendLicenses).map((notice) => ({
-      ...notice,
-    })),
-  };
+  const frontendLicenses =
+    await requestFetch<FrontendLicense[]>("/dependencies.json");
+  // Plain objects, since class instances can not be serialized into the SSR payload.
+  return parseFrontendNotices(frontendLicenses).map((notice) => ({
+    ...notice,
+  }));
 });
-const backendNotices = computed(() => notices.value?.backend ?? []);
-const frontendNotices = computed(() => notices.value?.frontend ?? []);
+const frontendNotices = computed(() => notices.value ?? []);
 
 /**
  * Returns the notice block for the current project.

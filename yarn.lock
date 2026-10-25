@@ -13178,7 +13178,7 @@ vue3-apexcharts@1.11.3:
   resolved "https://registry.yarnpkg.com/vue3-apexcharts/-/vue3-apexcharts-1.11.3.tgz#ed01b5ecc521b0e1053d6401440dfb9d4c9f2bba"
   integrity sha512-YmXi+cslU5XYg3uNF30R3B2MS7TfHsx1bcemi389GipELpzS4jGCs/iZjeXm8R3Brgrlp/ZqOpwemd39AmGWVQ==
 
-vue@^3.5.26, vue@^3.5.35, vue@~3.5.34:
+vue@3.5.44, vue@^3.5.35, vue@~3.5.34:
   version "3.5.44"
   resolved "https://registry.yarnpkg.com/vue/-/vue-3.5.44.tgz#de7828ab2cf53757ecb920564b7b6c36bf187aca"
   integrity sha512-dvvmaOCG7lAMkJTPqPwWeGMsPS6DIsFsfZDUgBp9V6mHf9b3+/wyVwYR4Es+WV6uJC0FKRxp81Obcq0ZwUcGFQ==

@@ -24,7 +24,7 @@ import Server from "../../../server/components/server";
 import ResourceUsage from "#shared/components/resource_usage";
 import ServerConfig from "../../../server/components/server_config";
 const serverMocks = vi.hoisted(() => ({
-  basePath: "/workspaces/blockcluster/.test-server-components",
+  basePath: `${process.cwd()}/.test-server-components`,
   mockIoEmit: vi.fn(),
   mockGetJavaRuntimes: vi.fn(),
   commandExists: vi.fn(),

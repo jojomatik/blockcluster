@@ -163,7 +163,10 @@ const {
 
   return {
     backend: backendResponse.dependencies,
-    frontend: parseFrontendNotices(frontendLicenses),
+    // Plain objects, since class instances can not be serialized into the SSR payload.
+    frontend: parseFrontendNotices(frontendLicenses).map((notice) => ({
+      ...notice,
+    })),
   };
 });
 const backendNotices = computed(() => notices.value?.backend ?? []);

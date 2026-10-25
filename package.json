@@ -16,8 +16,8 @@
     "lint": "eslint . --max-warnings 0",
     "semantic-release": "semantic-release",
     "test:release-notes": "node scripts/check-release-notes.js",
-    "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build",
+    "storybook": "storybook dev -p 6006 --disable-telemetry",
+    "build-storybook": "storybook build --disable-telemetry",
     "chromatic": "chromatic"
   },
   "dependencies": {

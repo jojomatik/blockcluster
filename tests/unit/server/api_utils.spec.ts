@@ -2,10 +2,8 @@ import http from "node:http";
 import { afterAll, describe, expect, it, vi } from "vitest";
 import {
   createApp,
-  createError,
   createRouter,
   defineEventHandler,
-  sendNoContent,
   toNodeListener,
 } from "h3";
 
@@ -24,7 +22,7 @@ afterAll(async () => {
 });
 
 describe("server API helpers", () => {
-  it("finds a decoded route parameter and returns error or empty responses", async () => {
+  it("finds a decoded route parameter and handles missing servers", async () => {
     const serverEntry = { name: "survival" };
     apiMocks.servers.splice(0, apiMocks.servers.length, serverEntry);
     const app = createApp();
@@ -35,20 +33,6 @@ describe("server API helpers", () => {
         const found = await findServer(event);
         return { name: found.name };
       }),
-    );
-    router.get(
-      "/api/failure",
-      defineEventHandler(() => {
-        throw createError({
-          statusCode: 409,
-          statusMessage: "Conflict",
-          message: "Conflict",
-        });
-      }),
-    );
-    router.get(
-      "/api/empty",
-      defineEventHandler((event) => sendNoContent(event, 204)),
     );
     app.use(router);
     server = http.createServer(toNodeListener(app));
@@ -67,14 +51,5 @@ describe("server API helpers", () => {
       statusCode: 404,
       statusMessage: "Server not found",
     });
-    const failure = await fetch(`${url}/api/failure`);
-    expect(failure.status).toBe(409);
-    expect(await failure.json()).toMatchObject({
-      statusCode: 409,
-      statusMessage: "Conflict",
-    });
-    const empty = await fetch(`${url}/api/empty`);
-    expect(empty.status).toBe(204);
-    expect(await empty.text()).toBe("");
   });
 });

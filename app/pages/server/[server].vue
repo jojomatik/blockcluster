@@ -16,6 +16,12 @@ You should have received a copy of the GNU Affero General Public License
 along with this program. If not, see <https://www.gnu.org/licenses/>.
 -->
 
+<template>
+  <div class="server">
+    <ServerComponent :detailed="true" :server="server" />
+  </div>
+</template>
+
 <script setup lang="ts">
 import ServerComponent from "@/components/ServerComponent.vue";
 import Server from "@/lib/components/server";
@@ -27,9 +33,3 @@ const server = shallowReactive(new Server({}));
 
 useHead({ title: () => server.name });
 </script>
-
-<template>
-  <div class="server">
-    <ServerComponent :detailed="true" :server="server" />
-  </div>
-</template>

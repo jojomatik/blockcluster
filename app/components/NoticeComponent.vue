@@ -90,6 +90,7 @@ const { t } = useI18n();
 }
 
 code {
+  display: inline;
   padding: 0 0.4em;
   border-radius: 3px;
   background-color: rgba(var(--v-theme-on-surface), 0.05);

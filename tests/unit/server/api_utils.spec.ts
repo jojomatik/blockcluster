@@ -4,14 +4,11 @@ import {
   createApp,
   createRouter,
   defineEventHandler,
+  sendNoContent,
   toNodeListener,
 } from "h3";
 
-import {
-  emptyResponse,
-  findServer,
-  throwApiError,
-} from "../../../server/utils/api";
+import { findServer, throwApiError } from "../../../server/utils/api";
 
 const apiMocks = vi.hoisted(() => ({ servers: [] as Array<{ name: string }> }));
 vi.mock("../../../server/backend", () => ({ servers: apiMocks.servers }));
@@ -35,7 +32,6 @@ describe("server API helpers", () => {
       "/api/servers/:name",
       defineEventHandler(async (event) => {
         const found = await findServer(event);
-        if (!found) throwApiError(404, "Server not found");
         return { name: found.name };
       }),
     );
@@ -45,7 +41,7 @@ describe("server API helpers", () => {
     );
     router.get(
       "/api/empty",
-      defineEventHandler((event) => emptyResponse(event, 204)),
+      defineEventHandler((event) => sendNoContent(event, 204)),
     );
     app.use(router);
     server = http.createServer(toNodeListener(app));

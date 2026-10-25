@@ -1,11 +1,14 @@
-import { defineEventHandler } from "h3";
+import { createError, defineEventHandler } from "h3";
 import { listPaperVersions } from "../../../components/paper";
-import { throwApiError } from "../../../utils/api";
 
 export default defineEventHandler(async () => {
   try {
     return await listPaperVersions();
   } catch {
-    throwApiError(502, "Could not load Paper versions");
+    throw createError({
+      statusCode: 502,
+      statusMessage: "Could not load Paper versions",
+      message: "Could not load Paper versions",
+    });
   }
 });

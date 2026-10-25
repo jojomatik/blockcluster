@@ -1,4 +1,9 @@
-import { defineEventHandler, readValidatedBody, setResponseStatus } from "h3";
+import {
+  createError,
+  defineEventHandler,
+  readValidatedBody,
+  setResponseStatus,
+} from "h3";
 import fs from "fs";
 import path from "path";
 import { z } from "zod";
@@ -17,8 +22,6 @@ import {
   listPaperBuilds,
   listPaperVersions,
 } from "../../components/paper";
-import { throwApiError } from "../../utils/api";
-
 const createServerBodySchema = z.object({
   version: z
     .string()
@@ -49,7 +52,11 @@ export default defineEventHandler(async (event) => {
       creatingServerPorts.has(requestedPort) ||
       servers.some((server) => server.port === requestedPort)
     ) {
-      throwApiError(409, "Port is already in use");
+      throw createError({
+        statusCode: 409,
+        statusMessage: "Port is already in use",
+        message: "Port is already in use",
+      });
     }
   }
 
@@ -57,20 +64,36 @@ export default defineEventHandler(async (event) => {
   try {
     versions = await listPaperVersions();
   } catch {
-    throwApiError(502, "Could not load Paper versions");
+    throw createError({
+      statusCode: 502,
+      statusMessage: "Could not load Paper versions",
+      message: "Could not load Paper versions",
+    });
   }
   if (!versions.includes(version)) {
-    throwApiError(400, "Paper version is not available");
+    throw createError({
+      statusCode: 400,
+      statusMessage: "Paper version is not available",
+      message: "Paper version is not available",
+    });
   }
   let builds: { build: number; time: string }[];
   try {
     builds = await listPaperBuilds(version);
   } catch {
-    throwApiError(502, "Could not load Paper versions");
+    throw createError({
+      statusCode: 502,
+      statusMessage: "Could not load Paper versions",
+      message: "Could not load Paper versions",
+    });
   }
   const latestBuild = builds[0];
   if (!latestBuild) {
-    throwApiError(409, "No stable Paper build is available");
+    throw createError({
+      statusCode: 409,
+      statusMessage: "No stable Paper build is available",
+      message: "No stable Paper build is available",
+    });
   }
 
   const nameBase = requestedName;
@@ -92,7 +115,11 @@ export default defineEventHandler(async (event) => {
       servers.some((server) => server.port === requestedPort)
     ) {
       creatingServerNames.delete(name);
-      throwApiError(409, "Port is already in use");
+      throw createError({
+        statusCode: 409,
+        statusMessage: "Port is already in use",
+        message: "Port is already in use",
+      });
     }
     creatingServerPorts.add(requestedPort);
   }
@@ -129,7 +156,11 @@ export default defineEventHandler(async (event) => {
     if (createdDirectory)
       fs.rmSync(serverPath, { recursive: true, force: true });
     console.error("Could not create Paper server:", error);
-    throwApiError(502, "Could not create Paper server");
+    throw createError({
+      statusCode: 502,
+      statusMessage: "Could not create Paper server",
+      message: "Could not create Paper server",
+    });
   } finally {
     creatingServerNames.delete(name);
     if (requestedPort) creatingServerPorts.delete(requestedPort);

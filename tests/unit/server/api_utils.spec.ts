@@ -2,13 +2,14 @@ import http from "node:http";
 import { afterAll, describe, expect, it, vi } from "vitest";
 import {
   createApp,
+  createError,
   createRouter,
   defineEventHandler,
   sendNoContent,
   toNodeListener,
 } from "h3";
 
-import { findServer, throwApiError } from "../../../server/utils/api";
+import { findServer } from "../../../server/utils/api";
 
 const apiMocks = vi.hoisted(() => ({ servers: [] as Array<{ name: string }> }));
 vi.mock("../../../server/backend", () => ({ servers: apiMocks.servers }));
@@ -37,7 +38,13 @@ describe("server API helpers", () => {
     );
     router.get(
       "/api/failure",
-      defineEventHandler(() => throwApiError(409, "Conflict")),
+      defineEventHandler(() => {
+        throw createError({
+          statusCode: 409,
+          statusMessage: "Conflict",
+          message: "Conflict",
+        });
+      }),
     );
     router.get(
       "/api/empty",

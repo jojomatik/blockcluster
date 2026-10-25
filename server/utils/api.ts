@@ -6,20 +6,6 @@ import type Server from "../components/server";
 const serverNameParamsSchema = z.object({ name: z.string().min(1) });
 
 /**
- * Throws an HTTP error with the given status and message.
- *
- * @param status the HTTP status of the response.
- * @param message the error message.
- */
-export function throwApiError(status: number, message: string): never {
-  throw createError({
-    statusCode: status,
-    statusMessage: message,
-    message,
-  });
-}
-
-/**
  * Returns the server named by the `name` route parameter.
  *
  * @param event the current request event.

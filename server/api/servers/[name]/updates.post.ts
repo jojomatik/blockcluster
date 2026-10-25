@@ -1,6 +1,11 @@
-import { defineEventHandler, readValidatedBody, sendNoContent } from "h3";
+import {
+  createError,
+  defineEventHandler,
+  readValidatedBody,
+  sendNoContent,
+} from "h3";
 import { z } from "zod";
-import { findServer, throwApiError } from "../../../utils/api";
+import { findServer } from "../../../utils/api";
 
 const updateBodySchema = z.discriminatedUnion("type", [
   z.object({ type: z.literal("existing"), file: z.string() }),
@@ -36,6 +41,10 @@ export default defineEventHandler(async (event) => {
     await server.installUpdate(update);
     return sendNoContent(event, 204);
   } catch (error) {
-    throwApiError(409, (error as Error).message);
+    throw createError({
+      statusCode: 409,
+      statusMessage: (error as Error).message,
+      message: (error as Error).message,
+    });
   }
 });

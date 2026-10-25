@@ -1,7 +1,7 @@
 import {
+  createError,
   getValidatedRouterParams,
   sendNoContent,
-  setResponseStatus,
   type H3Event,
 } from "h3";
 import { z } from "zod";
@@ -11,15 +11,17 @@ import type Server from "../components/server";
 const serverNameParamsSchema = z.object({ name: z.string().min(1) });
 
 /**
- * Sets the given status on the response and returns a JSON error body.
+ * Throws an HTTP error with the given status and message.
  *
- * @param event the current request event.
  * @param status the HTTP status of the response.
  * @param message the error message.
  */
-export function errorResponse(event: H3Event, status: number, message: string) {
-  setResponseStatus(event, status);
-  return { error: message };
+export function throwApiError(status: number, message: string): never {
+  throw createError({
+    statusCode: status,
+    statusMessage: message,
+    message,
+  });
 }
 
 /**

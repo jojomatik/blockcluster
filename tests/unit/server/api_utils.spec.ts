@@ -9,8 +9,8 @@ import {
 
 import {
   emptyResponse,
-  errorResponse,
   findServer,
+  throwApiError,
 } from "../../../server/utils/api";
 
 const apiMocks = vi.hoisted(() => ({ servers: [] as Array<{ name: string }> }));
@@ -35,14 +35,13 @@ describe("server API helpers", () => {
       "/api/servers/:name",
       defineEventHandler(async (event) => {
         const found = await findServer(event);
-        return found
-          ? { name: found.name }
-          : errorResponse(event, 404, "Server not found");
+        if (!found) throwApiError(404, "Server not found");
+        return { name: found.name };
       }),
     );
     router.get(
       "/api/failure",
-      defineEventHandler((event) => errorResponse(event, 409, "Conflict")),
+      defineEventHandler(() => throwApiError(409, "Conflict")),
     );
     router.get(
       "/api/empty",
@@ -61,10 +60,16 @@ describe("server API helpers", () => {
     expect(await found.json()).toEqual({ name: "survival" });
     const missing = await fetch(`${url}/api/servers/missing`);
     expect(missing.status).toBe(404);
-    expect(await missing.json()).toEqual({ error: "Server not found" });
+    expect(await missing.json()).toMatchObject({
+      statusCode: 404,
+      statusMessage: "Server not found",
+    });
     const failure = await fetch(`${url}/api/failure`);
     expect(failure.status).toBe(409);
-    expect(await failure.json()).toEqual({ error: "Conflict" });
+    expect(await failure.json()).toMatchObject({
+      statusCode: 409,
+      statusMessage: "Conflict",
+    });
     const empty = await fetch(`${url}/api/empty`);
     expect(empty.status).toBe(204);
     expect(await empty.text()).toBe("");

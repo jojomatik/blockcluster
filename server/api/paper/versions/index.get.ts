@@ -1,11 +1,11 @@
 import { defineEventHandler } from "h3";
 import { listPaperVersions } from "../../../components/paper";
-import { errorResponse } from "../../../utils/api";
+import { throwApiError } from "../../../utils/api";
 
-export default defineEventHandler(async (event) => {
+export default defineEventHandler(async () => {
   try {
     return await listPaperVersions();
   } catch {
-    return errorResponse(event, 502, "Could not load Paper versions");
+    throwApiError(502, "Could not load Paper versions");
   }
 });

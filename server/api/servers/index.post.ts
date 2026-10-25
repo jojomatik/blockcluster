@@ -17,7 +17,7 @@ import {
   listPaperBuilds,
   listPaperVersions,
 } from "../../components/paper";
-import { errorResponse } from "../../utils/api";
+import { throwApiError } from "../../utils/api";
 
 const createServerBodySchema = z.object({
   version: z
@@ -49,23 +49,28 @@ export default defineEventHandler(async (event) => {
       creatingServerPorts.has(requestedPort) ||
       servers.some((server) => server.port === requestedPort)
     ) {
-      return errorResponse(event, 409, "Port is already in use");
+      throwApiError(409, "Port is already in use");
     }
   }
 
+  let versions: string[];
+  try {
+    versions = await listPaperVersions();
+  } catch {
+    throwApiError(502, "Could not load Paper versions");
+  }
+  if (!versions.includes(version)) {
+    throwApiError(400, "Paper version is not available");
+  }
   let builds: { build: number; time: string }[];
   try {
-    const versions = await listPaperVersions();
-    if (!versions.includes(version)) {
-      return errorResponse(event, 400, "Paper version is not available");
-    }
     builds = await listPaperBuilds(version);
   } catch {
-    return errorResponse(event, 502, "Could not load Paper versions");
+    throwApiError(502, "Could not load Paper versions");
   }
   const latestBuild = builds[0];
   if (!latestBuild) {
-    return errorResponse(event, 409, "No stable Paper build is available");
+    throwApiError(409, "No stable Paper build is available");
   }
 
   const nameBase = requestedName;
@@ -87,7 +92,7 @@ export default defineEventHandler(async (event) => {
       servers.some((server) => server.port === requestedPort)
     ) {
       creatingServerNames.delete(name);
-      return errorResponse(event, 409, "Port is already in use");
+      throwApiError(409, "Port is already in use");
     }
     creatingServerPorts.add(requestedPort);
   }
@@ -124,7 +129,7 @@ export default defineEventHandler(async (event) => {
     if (createdDirectory)
       fs.rmSync(serverPath, { recursive: true, force: true });
     console.error("Could not create Paper server:", error);
-    return errorResponse(event, 502, "Could not create Paper server");
+    throwApiError(502, "Could not create Paper server");
   } finally {
     creatingServerNames.delete(name);
     if (requestedPort) creatingServerPorts.delete(requestedPort);

@@ -1,6 +1,6 @@
 import { defineEventHandler, readValidatedBody } from "h3";
 import { z } from "zod";
-import { emptyResponse, errorResponse, findServer } from "../../../utils/api";
+import { emptyResponse, findServer, throwApiError } from "../../../utils/api";
 
 const actionBodySchema = z.object({
   action: z.enum(["start", "stop", "pause", "restart", "deleteWorld"]),
@@ -8,7 +8,7 @@ const actionBodySchema = z.object({
 
 export default defineEventHandler(async (event) => {
   const server = await findServer(event);
-  if (!server) return errorResponse(event, 404, "Server not found");
+  if (!server) throwApiError(404, "Server not found");
   const { action } = await readValidatedBody(event, actionBodySchema.parse);
 
   const runAction = async () => {

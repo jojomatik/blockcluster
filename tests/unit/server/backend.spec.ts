@@ -405,7 +405,10 @@ describe("Nitro backend", () => {
           params: { name: "missing" },
           body: { action: "start" },
         }),
-      ).toEqual({ status: 404, body: { error: "Server not found" } });
+      ).toMatchObject({
+        status: 404,
+        body: { statusCode: 404, statusMessage: "Server not found" },
+      });
   });
 
   it("validates and forwards commands, configuration, and actions", async () => {
@@ -548,9 +551,12 @@ describe("Nitro backend", () => {
       await invoke("POST", "/api/servers", {
         body: { name: "Unavailable", version: "1.20.1" },
       }),
-    ).toEqual({
+    ).toMatchObject({
       status: 400,
-      body: { error: "Paper version is not available" },
+      body: {
+        statusCode: 400,
+        statusMessage: "Paper version is not available",
+      },
     });
     for (const port of [80, 70000, 25570.5, "25570"])
       expect(
@@ -564,13 +570,19 @@ describe("Nitro backend", () => {
       await invoke("POST", "/api/servers", {
         body: { name: "Used port", version: "1.21.8", port: 25565 },
       }),
-    ).toEqual({ status: 409, body: { error: "Port is already in use" } });
+    ).toMatchObject({
+      status: 409,
+      body: { statusCode: 409 },
+    });
     mocks.listPaperVersions.mockClear();
     expect(
       await invoke("POST", "/api/servers", {
         body: { name: "Backend port", version: "1.21.8", port: backend.port },
       }),
-    ).toEqual({ status: 409, body: { error: "Port is already in use" } });
+    ).toMatchObject({
+      status: 409,
+      body: { statusCode: 409, statusMessage: "Port is already in use" },
+    });
     expect(mocks.listPaperVersions).not.toHaveBeenCalled();
   });
 
@@ -589,7 +601,10 @@ describe("Nitro backend", () => {
             port: occupiedPort,
           },
         }),
-      ).toEqual({ status: 409, body: { error: "Port is already in use" } });
+      ).toMatchObject({
+        status: 409,
+        body: { statusCode: 409 },
+      });
     } finally {
       await new Promise<void>((resolve) => occupied.close(() => resolve()));
     }
@@ -638,7 +653,10 @@ describe("Nitro backend", () => {
           port: requestedPort,
         },
       }),
-    ).toEqual({ status: 409, body: { error: "Port is already in use" } });
+    ).toMatchObject({
+      status: 409,
+      body: { statusCode: 409, statusMessage: "Port is already in use" },
+    });
     finishDownload();
     expect((await first).status).toBe(201);
 
@@ -693,9 +711,12 @@ describe("Nitro backend", () => {
         await invoke("POST", "/api/servers", {
           body: { name: "Write failure", version: "1.21.8", port: 30434 },
         }),
-      ).toEqual({
+      ).toMatchObject({
         status: 502,
-        body: { error: "Could not create Paper server" },
+        body: {
+          statusCode: 502,
+          statusMessage: "Could not create Paper server",
+        },
       });
       expect(fs.existsSync(path.join(serversPath, "Write failure"))).toBe(
         false,

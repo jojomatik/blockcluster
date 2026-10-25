@@ -1,6 +1,6 @@
 import { defineEventHandler, readValidatedBody } from "h3";
 import { z } from "zod";
-import { emptyResponse, errorResponse, findServer } from "../../../utils/api";
+import { emptyResponse, findServer, throwApiError } from "../../../utils/api";
 
 const configBodySchema = z.object({
   flags: z.array(z.string()).optional(),
@@ -13,7 +13,7 @@ const configBodySchema = z.object({
 
 export default defineEventHandler(async (event) => {
   const server = await findServer(event);
-  if (!server) return errorResponse(event, 404, "Server not found");
+  if (!server) throwApiError(404, "Server not found");
   const body = await readValidatedBody(event, configBodySchema.parse);
   await server.updateConfig(body);
   return emptyResponse(event, 204);

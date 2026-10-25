@@ -1,6 +1,6 @@
 import { defineEventHandler, readValidatedBody } from "h3";
 import { z } from "zod";
-import { emptyResponse, errorResponse, findServer } from "../../../utils/api";
+import { emptyResponse, findServer, throwApiError } from "../../../utils/api";
 
 const updateBodySchema = z.discriminatedUnion("type", [
   z.object({ type: z.literal("existing"), file: z.string() }),
@@ -14,7 +14,7 @@ const updateBodySchema = z.discriminatedUnion("type", [
 
 export default defineEventHandler(async (event) => {
   const server = await findServer(event);
-  if (!server) return errorResponse(event, 404, "Server not found");
+  if (!server) throwApiError(404, "Server not found");
   const body = await readValidatedBody(event, updateBodySchema.parse);
   let update:
     | "build"
@@ -37,6 +37,6 @@ export default defineEventHandler(async (event) => {
     await server.installUpdate(update);
     return emptyResponse(event, 204);
   } catch (error) {
-    return errorResponse(event, 409, (error as Error).message);
+    throwApiError(409, (error as Error).message);
   }
 });

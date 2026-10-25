@@ -144,6 +144,7 @@ vi.mock("nitropack/runtime", () => ({
 const watchCallbacks = new Map<string, (curr: fs.Stats) => Promise<void>>();
 const originalServerPath = process.env.SERVER_PATH;
 const originalNodeEnv = process.env.NODE_ENV;
+const originalNuxtPort = process.env.NUXT_PORT;
 const originalNitroPort = process.env.NITRO_PORT;
 const serversPath = path.join(
   process.cwd(),
@@ -269,8 +270,9 @@ describe("Nitro backend", () => {
       );
     }
     process.env.SERVER_PATH = serversPath;
-    process.env.NODE_ENV = "test";
-    process.env.NITRO_PORT = "3000";
+    process.env.NODE_ENV = "development";
+    delete process.env.NUXT_PORT;
+    delete process.env.NITRO_PORT;
 
     mocks.watchFile.mockImplementation(
       (file: string, listener: (curr: fs.Stats) => Promise<void>) => {
@@ -336,11 +338,14 @@ describe("Nitro backend", () => {
     else process.env.SERVER_PATH = originalServerPath;
     if (originalNodeEnv === undefined) delete process.env.NODE_ENV;
     else process.env.NODE_ENV = originalNodeEnv;
+    if (originalNuxtPort === undefined) delete process.env.NUXT_PORT;
+    else process.env.NUXT_PORT = originalNuxtPort;
     if (originalNitroPort === undefined) delete process.env.NITRO_PORT;
     else process.env.NITRO_PORT = originalNitroPort;
   });
 
   it("initializes the backend, restores saved ports, measures usage, and serves metadata", async () => {
+    expect(backend.port).toBe(8081);
     expect(await invoke("GET", "/api/version")).toEqual({
       status: 200,
       body: { version: "abcdef0" },

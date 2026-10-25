@@ -44,7 +44,14 @@ export const version = getVersion(
 /**
  * The port the web server of blockcluster is listening on.
  */
-export const port = Number(process.env.NITRO_PORT ?? process.env.PORT ?? 3000);
+export const port = Number(
+  process.env.NODE_ENV === "development"
+    ? 8081
+    : (process.env.NUXT_PORT ??
+        process.env.NITRO_PORT ??
+        process.env.PORT ??
+        3000),
+);
 
 export const servers: Server[] = [];
 export const creatingServerNames = new Set<string>();

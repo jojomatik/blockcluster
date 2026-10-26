@@ -26,7 +26,8 @@ export default defineNuxtConfig({
   ogImage: { enabled: false },
   licenseModule: {
     licenseOverrides: {
-      "socket.io-client": "MIT",
+      "socket.io-client": (license) =>
+        license === undefined ? "MIT" : license,
     },
     allowedLicenses: [
       "MIT",

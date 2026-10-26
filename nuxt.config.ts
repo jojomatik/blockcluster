@@ -15,6 +15,10 @@ export default defineNuxtConfig({
     restructureDir: ".",
     langDir: "locales",
   },
+  site: {
+    url:
+      process.env.NUXT_PUBLIC_SITE_URL ?? "https://blockcluster.jojomatik.dev",
+  },
   sitemap: {
     zeroRuntime: true,
   },

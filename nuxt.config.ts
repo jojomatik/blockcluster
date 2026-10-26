@@ -17,7 +17,7 @@ export default defineNuxtConfig({
   },
   site: {
     url:
-      process.env.NUXT_PUBLIC_SITE_URL ?? "https://blockcluster.jojomatik.dev",
+      process.env.NUXT_PUBLIC_SITE_URL ?? "https://blockcluster.org",
   },
   sitemap: {
     zeroRuntime: true,

@@ -1,5 +1,4 @@
-// The ESM builds have nested package.json files without a license, which the build's license check rejects.
-import { io } from "socket.io-client/dist/socket.io.js";
+import { io } from "socket.io-client";
 
 /**
  * Connects to the websocket of the backend, which updates the clients about the state of the servers.

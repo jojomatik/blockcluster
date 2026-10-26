@@ -19,7 +19,7 @@ export default defineNuxtConfig({
     url: process.env.NUXT_PUBLIC_SITE_URL ?? "https://blockcluster.org",
   },
   sitemap: {
-    zeroRuntime: true,
+    zeroPrerender: true,
   },
   vuetify: {
     vuetifyOptions,
@@ -28,6 +28,10 @@ export default defineNuxtConfig({
   image: { provider: "none" },
   ogImage: { enabled: false },
   licenseModule: {
+    licenseOverrides: {
+      "socket.io-client": (license) =>
+        license === undefined ? "MIT" : license,
+    },
     allowedLicenses: [
       "MIT",
       "Apache-2.0",

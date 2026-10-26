@@ -42,6 +42,7 @@ export default defineNuxtConfig({
       {
         "SEE LICENSE IN LICENSE.md": ["apexcharts", "vue3-apexcharts"],
       },
+      "ISC",
     ],
   },
   runtimeConfig: {

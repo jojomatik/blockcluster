@@ -19,20 +19,19 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 <template>
   <tr>
     <td>Flags</td>
-    <td style="display: flex; flex-direction: row">
+    <td style="display: flex; flex-direction: row; align-items: center">
       <v-text-field
         v-model="flagString"
         variant="underlined"
         hide-details
         density="compact"
-        class="flagInput mt-2 pr-2"
+        class="flagInput pr-2"
         @focus="flagsFocussed = true"
         @blur="flagsFocussed = false"
         @update:model-value="input"
       />
       <v-btn
         variant="elevated"
-        class="mt-1"
         color="secondary"
         :disabled="!flagsChanged"
         @click="sendFlags()"

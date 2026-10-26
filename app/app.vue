@@ -23,8 +23,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         <v-chip
           variant="flat"
           theme="light"
+          color="primary"
           style="height: 40px; padding: 0"
-          class="mr-2 rounded-pill"
+          class="ml-4 mr-2 rounded-pill"
         >
           <v-img
             alt="blockcluster Icon"
@@ -114,11 +115,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             <v-chip
               id="gh-link"
               variant="flat"
-              size="small"
               :href="GIT_ROOT"
               color="#24292e"
             >
-              <v-icon class="pr-1" :icon="mdiGithub" />
+              <v-icon start size="24" :icon="mdiGithub" />
               GitHub
             </v-chip>
             <GitHubVersionLink :git-root="GIT_ROOT" :version="version">
@@ -195,7 +195,7 @@ function isAvailableLocale(value: string): value is AppLocale {
 }
 
 #gh-link {
-  padding: 2px 6px 2px 0;
-  margin: 0;
+  margin: 0 4px;
+  vertical-align: middle;
 }
 </style>

@@ -25,6 +25,9 @@ export default defineNuxtConfig({
   image: { provider: "none" },
   ogImage: { enabled: false },
   licenseModule: {
+    licenseOverrides: {
+      "socket.io-client": "MIT",
+    },
     allowedLicenses: [
       "MIT",
       "Apache-2.0",

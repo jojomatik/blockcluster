@@ -21,7 +21,7 @@
     "chromatic": "chromatic"
   },
   "dependencies": {
-    "@jojomatik/nuxt-bundle": "2.0.0-beta.10",
+    "@jojomatik/nuxt-bundle": "2.0.0-beta.12",
     "apexcharts": "8.5.0",
     "dayjs": "1.11.23",
     "engine.io": "6.6.11",

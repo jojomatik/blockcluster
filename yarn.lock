@@ -6550,7 +6550,7 @@ eslint-visitor-keys@^4.2.1:
   resolved "https://registry.yarnpkg.com/eslint-visitor-keys/-/eslint-visitor-keys-4.2.1.tgz#4cfea60fe7dd0ad8e816e1ed026c1d5251b512c1"
   integrity sha512-Uhdk5sfqcee/9H/rCOJikYz67o0a2Tw2hGRPOG2Y1R2dg7brRe1uG0yaNQDHu+TO/uQPF/5eCapvYSmHUjt7JQ==
 
-eslint@^9.39.2:
+eslint@9.39.5:
   version "9.39.5"
   resolved "https://registry.yarnpkg.com/eslint/-/eslint-9.39.5.tgz#2a4e3c8b0f753196efae943c8ffaa8730fc6a3fa"
   integrity sha512-DgZS62aPLXKlnxILS/AYCoRvHaZeXceIzlXPkkGGzJWSow1aEk0lbTlxUSlyjC8jcaKxAdOnTDz+o1JFSBsyjw==
@@ -11297,7 +11297,7 @@ setprototypeof@~1.2.0:
   resolved "https://registry.yarnpkg.com/setprototypeof/-/setprototypeof-1.2.0.tgz#66c9a24a73f9fc28cbe66b09fed3d33dcaf1b424"
   integrity sha512-E5LDX7Wrp85Kil5bhZv46j8jOeboKq5JMmYM3gVGdGH8xFpPWXUMsNrlODCrkoxMEeNi/XZIwuRvY4XNwYMJpw==
 
-sharp@^0.34.4, sharp@^0.35.0:
+sharp@0.35.5, sharp@^0.34.4, sharp@^0.35.0:
   version "0.35.5"
   resolved "https://registry.yarnpkg.com/sharp/-/sharp-0.35.5.tgz#43fb539872ec5f53cc7162eb850dbf6514692fbf"
   integrity sha512-Ywn4OnzGukp7CDMrp08RQ50YKmuwG47brZgIVPTvBaaAfQlRlygrRqSrxdCiL9M+LlzLBiJ68IR1QqvzHyjC7g==
@@ -12637,7 +12637,7 @@ vite-plugin-vuetify@^2.1.3:
     debug "^4.3.3"
     upath "^2.0.1"
 
-vite@^7.3.0, vite@^7.3.1, vite@^7.3.3, vite@^7.3.6:
+vite@7.3.7, vite@^7.3.1, vite@^7.3.3, vite@^7.3.6:
   version "7.3.7"
   resolved "https://registry.yarnpkg.com/vite/-/vite-7.3.7.tgz#017a80fdce051003a4aa290dddd0b159aa769282"
   integrity sha512-AHEzTORMbi7/7aXp7w7KZ5+DCUdSeLsJz0grY8xHpc9DHdYb0vQu6DqJfm2tOw3gDExNgPgnJTXxM6syYFHaCA==
@@ -12815,7 +12815,7 @@ vue3-apexcharts@1.11.3:
   resolved "https://registry.yarnpkg.com/vue3-apexcharts/-/vue3-apexcharts-1.11.3.tgz#ed01b5ecc521b0e1053d6401440dfb9d4c9f2bba"
   integrity sha512-YmXi+cslU5XYg3uNF30R3B2MS7TfHsx1bcemi389GipELpzS4jGCs/iZjeXm8R3Brgrlp/ZqOpwemd39AmGWVQ==
 
-vue@^3.5.26, vue@^3.5.35, vue@~3.5.34:
+vue@3.5.44, vue@^3.5.35, vue@~3.5.34:
   version "3.5.44"
   resolved "https://registry.yarnpkg.com/vue/-/vue-3.5.44.tgz#de7828ab2cf53757ecb920564b7b6c36bf187aca"
   integrity sha512-dvvmaOCG7lAMkJTPqPwWeGMsPS6DIsFsfZDUgBp9V6mHf9b3+/wyVwYR4Es+WV6uJC0FKRxp81Obcq0ZwUcGFQ==

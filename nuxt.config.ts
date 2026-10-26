@@ -16,8 +16,7 @@ export default defineNuxtConfig({
     langDir: "locales",
   },
   site: {
-    url:
-      process.env.NUXT_PUBLIC_SITE_URL ?? "https://blockcluster.org",
+    url: process.env.NUXT_PUBLIC_SITE_URL ?? "https://blockcluster.org",
   },
   sitemap: {
     zeroRuntime: true,

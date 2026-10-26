@@ -39,8 +39,9 @@ export default defineNuxtConfig({
       "BSD-3-Clause",
       "0BSD",
       "OFL-1.1",
-      // apexcharts uses a custom license that is referenced by file.
-      "SEE LICENSE IN LICENSE.md",
+      {
+        "SEE LICENSE IN LICENSE.md": ["apexcharts", "vue3-apexcharts"],
+      },
     ],
   },
   runtimeConfig: {

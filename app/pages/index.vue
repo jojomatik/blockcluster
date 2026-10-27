@@ -18,8 +18,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 <template>
   <v-container class="home" fluid>
-    <v-alert v-if="loadError" class="mb-4" type="error">
-      {{ loadError }}
+    <v-alert v-if="serversError" class="mb-4" type="error">
+      {{ t("gui.views.home.load_error.servers") }}
+      {{ serversError.message }}
+    </v-alert>
+    <v-alert v-if="systemUsageError" class="mb-4" type="error">
+      {{ t("gui.views.home.load_error.system_usage") }}
+      {{ systemUsageError.message }}
     </v-alert>
     <v-row>
       <v-col cols="12">
@@ -28,10 +33,19 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
             {{ t("gui.views.home.resource_usage.total") }}
           </v-card-title>
           <v-card-text>
-            <ResourceChartComponent :resource-usage="getTotalUsage()">
+            <v-skeleton-loader
+              v-if="systemUsageLoading && systemUsage.length === 0"
+              type="image"
+            />
+            <ResourceChartComponent v-else :resource-usage="getTotalUsage()">
             </ResourceChartComponent>
           </v-card-text>
         </v-card>
+      </v-col>
+    </v-row>
+    <v-row v-if="serversLoading && servers.length === 0" dense>
+      <v-col cols="12">
+        <v-skeleton-loader type="card" />
       </v-col>
     </v-row>
     <v-row v-for="server in servers" :key="server.name" dense>
@@ -41,8 +55,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     </v-row>
     <v-row>
       <v-col cols="12">
-        <CreateServerDialogComponent @created="updateServers" />
-        <v-btn variant="elevated" color="secondary" @click="updateServers">
+        <CreateServerDialogComponent @created="refreshServers()" />
+        <v-btn
+          variant="elevated"
+          color="secondary"
+          :loading="serversLoading"
+          @click="refreshServers()"
+        >
           <v-icon start :icon="mdiReload"></v-icon>
           {{ t("gui.views.home.update_status") }}
         </v-btn>
@@ -69,31 +88,62 @@ useHead({ title: "Home" });
 type ServerData = ConstructorParameters<typeof Server>[0];
 type ResourceUsageData = Pick<ResourceUsage, "time" | "cpu" | "memory">;
 
-const { data: initialData, error: initialLoadError } = await useAsyncData(
-  "home-dashboard",
-  async () => {
-    const [serverData, systemUsageData] = await Promise.all([
-      requestFetch<ServerData[]>("/api/servers"),
-      requestFetch<ResourceUsageData[]>("/api/system-usage"),
-    ]);
-    return { serverData, systemUsageData };
+const [
+  {
+    data: serverData,
+    status: serversStatus,
+    error: serversError,
+    refresh: refreshServers,
   },
+  { data: systemUsageData, status: systemUsageStatus, error: systemUsageError },
+] = await Promise.all([
+  useAsyncData("home-servers", () =>
+    requestFetch<ServerData[]>("/api/servers"),
+  ),
+  useAsyncData("home-system-usage", () =>
+    requestFetch<ResourceUsageData[]>("/api/system-usage"),
+  ),
+]);
+
+const serversLoading = computed(() => serversStatus.value === "pending");
+const systemUsageLoading = computed(
+  () => systemUsageStatus.value === "pending",
 );
 
 // noinspection JSMismatchedCollectionQueryUpdate
-const servers = shallowRef<Server[]>(
-  (initialData.value?.serverData ?? []).map(createServer),
-);
+const servers = shallowRef<Server[]>([]);
 
 /**
  * The {@link ResourceUsage} of the blockcluster backend.
  */
-const systemUsage = ref(
-  (initialData.value?.systemUsageData ?? []).map(createResourceUsage),
+const systemUsage = ref<ResourceUsage[]>([]);
+
+/**
+ * Keeps existing {@link Server} instances (and thereby their live socket state) when the list is refreshed.
+ */
+watch(
+  serverData,
+  (data) => {
+    if (!data) return;
+    const existingServers = new Map(
+      servers.value.map((server) => [server.name, server]),
+    );
+    servers.value = data.map((entry) => {
+      const existingServer = existingServers.get(entry._name);
+      if (!existingServer) return createServer(entry);
+      Object.assign(existingServer, createServer(entry));
+      return existingServer;
+    });
+  },
+  { immediate: true },
 );
-const refreshError = ref<string | null>(null);
-const loadError = computed(
-  () => initialLoadError.value?.message ?? refreshError.value,
+
+watch(
+  systemUsageData,
+  (data) => {
+    if (data) systemUsage.value = data.map(createResourceUsage);
+  },
+  { immediate: true },
 );
 
 /**
@@ -115,25 +165,6 @@ onMounted(() => {
 onUnmounted(() => {
   socket.off("SYSTEM_USAGE");
 });
-
-async function updateServers(): Promise<void> {
-  try {
-    const data = await requestFetch<ServerData[]>("/api/servers");
-    const existingServers = new Map(
-      servers.value.map((server) => [server.name, server]),
-    );
-    servers.value = data.map((serverData) => {
-      const existingServer = existingServers.get(serverData._name);
-      if (!existingServer) return createServer(serverData);
-      Object.assign(existingServer, createServer(serverData));
-      return existingServer;
-    });
-    refreshError.value = null;
-  } catch (error) {
-    refreshError.value =
-      error instanceof Error ? error.message : "Failed to refresh servers.";
-  }
-}
 
 function createServer(data: ServerData): Server {
   const server = new Server(data);

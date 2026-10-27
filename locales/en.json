@@ -58,9 +58,18 @@
         "server": {
           "details": "Details"
         },
+        "load_error": {
+          "servers": "Could not load servers:",
+          "system_usage": "Could not load system usage:"
+        },
         "update_status": "Update status"
       },
       "server": {
+        "load_error": {
+          "info": "Could not load server information:",
+          "java_runtimes": "Could not load Java runtimes.",
+          "retry": "Retry"
+        },
         "autostart": "Autostart",
         "console": {
           "title": "Console"

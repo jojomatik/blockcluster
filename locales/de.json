@@ -58,9 +58,18 @@
         "server": {
           "details": "Details"
         },
+        "load_error": {
+          "servers": "Server konnten nicht geladen werden:",
+          "system_usage": "Systemauslastung konnte nicht geladen werden:"
+        },
         "update_status": "Status aktualisieren"
       },
       "server": {
+        "load_error": {
+          "info": "Serverinformationen konnten nicht geladen werden:",
+          "java_runtimes": "Java-Laufzeiten konnten nicht geladen werden.",
+          "retry": "Erneut versuchen"
+        },
         "autostart": "Autostart",
         "console": {
           "title": "Konsole"

@@ -21,6 +21,22 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
     <v-row>
       <v-col cols="12">
         <v-card class="server">
+          <v-skeleton-loader v-if="infoLoading" type="text" />
+          <v-alert
+            v-if="infoError"
+            class="ma-4"
+            type="error"
+            density="compact"
+            variant="tonal"
+          >
+            {{ t("gui.views.server.load_error.info") }}
+            {{ infoError.message }}
+            <template #append>
+              <v-btn variant="text" @click="refreshInfo()">
+                {{ t("gui.views.server.load_error.retry") }}
+              </v-btn>
+            </template>
+          </v-alert>
           <v-card-title>
             <img
               v-if="server.favicon"
@@ -119,6 +135,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                           hide-details
                           density="compact"
                           :items="javaRuntimes"
+                          :loading="javaRuntimesLoading"
+                          :error-messages="
+                            javaRuntimesError
+                              ? t('gui.views.server.load_error.java_runtimes')
+                              : undefined
+                          "
                           :item-title="
                             (item) =>
                               `${item.isDefault ? 'Default - ' : ''}${
@@ -314,10 +336,31 @@ const { t } = useI18n();
 const route = useRoute();
 const socket = useSocket();
 
+const detailed = props.detailed === true;
+
+// Detailed data is only needed (and only available for the right server) on the client in detailed mode.
+const detailedOptions = { immediate: detailed, server: false } as const;
+
 /**
  * The list of available {@link JavaRuntime}s.
  */
-const javaRuntimes = shallowRef<JavaRuntime[]>([]);
+const {
+  data: javaRuntimeData,
+  status: javaRuntimesStatus,
+  error: javaRuntimesError,
+} = useAsyncData(
+  "java-runtimes",
+  () => $fetch<Record<string, unknown>[]>("/api/java-runtimes"),
+  detailedOptions,
+);
+const javaRuntimesLoading = computed(
+  () => javaRuntimesStatus.value === "pending",
+);
+const javaRuntimes = computed<JavaRuntime[]>(() =>
+  (javaRuntimeData.value ?? []).map((elem) =>
+    Object.assign(new JavaRuntime(), elem),
+  ),
+);
 
 const hasJavaRuntime = computed(
   () =>
@@ -326,12 +369,47 @@ const hasJavaRuntime = computed(
 );
 
 /**
+ * The current server snapshot from the REST API.
+ */
+const {
+  data: serverInfo,
+  status: infoStatus,
+  error: infoError,
+  refresh: refreshInfo,
+} = useAsyncData(
+  () => "server-info-" + encodeURIComponent(getName()),
+  () =>
+    $fetch<Record<string, unknown>>(
+      `/api/servers/${encodeURIComponent(getName())}`,
+    ),
+  detailedOptions,
+);
+const infoLoading = computed(() => infoStatus.value === "pending");
+
+watch(serverInfo, (data) => {
+  if (!data) return;
+  Object.assign(server, data);
+  server.players.sample = server.players.sample.map((player) =>
+    Object.assign(new Player(), player),
+  );
+});
+
+/**
  * The available jar updates, or `null` if unknown or not applicable.
  */
-const updates = ref<{
+type JarUpdates = {
   build: { version: string; build: number } | null;
   patch: { version: string; build: number } | null;
-} | null>(null);
+};
+const { data: updatesData, refresh: refreshUpdates } = useAsyncData(
+  () => "server-updates-" + encodeURIComponent(getName()),
+  () =>
+    $fetch<JarUpdates | null>(
+      `/api/servers/${encodeURIComponent(getName())}/updates`,
+    ),
+  detailedOptions,
+);
+const updates = computed(() => updatesData.value ?? null);
 
 const eulaDialog = ref(false);
 
@@ -344,7 +422,7 @@ const eulaError = ref("");
 /**
  * Listens to a channel named according to the {@link Server}'s name for updated information.
  */
-onMounted(async () => {
+onMounted(() => {
   socket.on(
     "server_" + encodeURIComponent(getName()),
     async (data: Record<string, unknown>) => {
@@ -355,28 +433,10 @@ onMounted(async () => {
       });
     },
   );
-  if (props.detailed) {
-    const response = await fetch("/api/java-runtimes");
-    const data: Record<string, unknown>[] = await response.json();
-    javaRuntimes.value = data.map((elem) =>
-      Object.assign(new JavaRuntime(), elem),
-    );
-  }
-  if (props.detailed) await update();
-  if (props.detailed) await loadUpdates();
 });
 
-async function loadUpdates(): Promise<void> {
-  try {
-    updates.value = await server.fetchUpdates(encodeURIComponent(getName()));
-  } catch {
-    updates.value = null;
-  }
-}
-
 async function onVersionInstalled(): Promise<void> {
-  await update();
-  await loadUpdates();
+  await Promise.all([refreshInfo(), refreshUpdates()]);
 }
 
 /**
@@ -385,21 +445,6 @@ async function onVersionInstalled(): Promise<void> {
 onBeforeUnmount(() => {
   socket.off("server_" + encodeURIComponent(getName()));
 });
-
-/**
- * Fetches the current server snapshot from the REST API.
- */
-async function update(): Promise<void> {
-  try {
-    const data = await server.fetchInfo(encodeURIComponent(getName()));
-    Object.assign(server, data);
-    server.players.sample = server.players.sample.map((player) =>
-      Object.assign(new Player(), player),
-    );
-  } catch (error) {
-    console.error("Could not update server information:", error);
-  }
-}
 
 function saveConfig(config: Record<string, unknown>, rollback: () => void) {
   void server.updateConfig(config).catch((error: unknown) => {

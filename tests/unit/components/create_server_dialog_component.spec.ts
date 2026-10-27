@@ -1,6 +1,10 @@
 import { vi } from "vitest";
 import { shallowMount } from "@vue/test-utils";
+import { mockNuxtImport } from "@nuxt/test-utils/runtime";
 import CreateServerDialogComponent from "@/components/CreateServerDialogComponent.vue";
+
+const { fetchData } = vi.hoisted(() => ({ fetchData: vi.fn() }));
+mockNuxtImport("$fetch", () => fetchData);
 
 const originalFetch = global.fetch;
 afterEach(() => {
@@ -58,13 +62,8 @@ describe("CreateServerDialogComponent", () => {
   });
 
   it("loads Paper versions and submits the directory name and selected version", async () => {
-    const fetch = vi
-      .fn()
-      .mockResolvedValueOnce({
-        ok: true,
-        json: vi.fn().mockResolvedValue(["1.21.8", "1.21.7"]),
-      })
-      .mockResolvedValueOnce({ ok: true });
+    fetchData.mockResolvedValue(["1.21.8", "1.21.7"]);
+    const fetch = vi.fn().mockResolvedValue({ ok: true });
     global.fetch = fetch as unknown as typeof global.fetch;
     const wrapper = shallowMount(CreateServerDialogComponent);
     await wrapper.findAllComponents({ name: "VBtn" })[0]!.trigger("click");
@@ -74,7 +73,8 @@ describe("CreateServerDialogComponent", () => {
     ).toEqual(["1.21.8", "1.21.7"]);
     await fillForm(wrapper, "  My Paper Server  ");
     await submit(wrapper);
-    expect(fetch).toHaveBeenNthCalledWith(2, "/api/servers", {
+    expect(fetchData).toHaveBeenCalledWith("/api/paper/versions");
+    expect(fetch).toHaveBeenCalledWith("/api/servers", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name: "My Paper Server", version: "1.21.8" }),

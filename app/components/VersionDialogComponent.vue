@@ -158,68 +158,85 @@ const emit = defineEmits<{ (e: "installed"): void }>();
 
 const { t } = useI18n();
 
-const oldJars = ref<string[]>([]);
 const oldJar = ref<string | null>(null);
-const loadingOldJars = ref(false);
 
 const encodedName = computed<string>(() =>
   encodeURIComponent(props.server.name),
 );
 
 const dialog = ref(false);
-const versions = ref<string[]>([]);
-const builds = ref<{ build: number; time: string }[]>([]);
 const version = ref<string | null>(null);
 const build = ref<number | null>(null);
-const loadingVersions = ref(false);
-const loadingBuilds = ref(false);
 const installing = ref(false);
-const error = ref(false);
-let openingGeneration = 0;
+const installError = ref(false);
+
+const asyncOptions = { immediate: false, server: false } as const;
+const {
+  data: versions,
+  status: versionsStatus,
+  error: versionsError,
+  refresh: refreshVersions,
+} = useAsyncData(
+  "paper-versions",
+  () => $fetch<string[]>("/api/paper/versions"),
+  { ...asyncOptions, default: () => [] },
+);
+const {
+  data: oldJars,
+  status: oldJarsStatus,
+  error: oldJarsError,
+  refresh: refreshOldJars,
+  clear: clearOldJars,
+} = useAsyncData(
+  () => "old-jars-" + encodedName.value,
+  () => $fetch<string[]>(`/api/servers/${encodedName.value}/oldjars`),
+  { ...asyncOptions, default: () => [] },
+);
+const {
+  data: builds,
+  status: buildsStatus,
+  error: buildsError,
+  refresh: refreshBuilds,
+  clear: clearBuilds,
+} = useAsyncData(
+  () => "paper-builds-" + encodedName.value,
+  () =>
+    $fetch<{ build: number; time: string }[]>(
+      `/api/paper/versions/${encodeURIComponent(version.value ?? "")}/builds`,
+    ),
+  { ...asyncOptions, default: () => [] },
+);
+const loadingVersions = computed(() => versionsStatus.value === "pending");
+const loadingOldJars = computed(() => oldJarsStatus.value === "pending");
+const loadingBuilds = computed(() => buildsStatus.value === "pending");
+const error = computed(
+  () =>
+    installError.value ||
+    !!versionsError.value ||
+    !!oldJarsError.value ||
+    !!buildsError.value,
+);
 
 async function open(): Promise<void> {
-  const generation = ++openingGeneration;
   dialog.value = true;
-  error.value = false;
-  versions.value = [];
+  installError.value = false;
   version.value = null;
   build.value = null;
-  builds.value = [];
-  oldJars.value = [];
   oldJar.value = null;
-  loadingVersions.value = true;
-  loadingOldJars.value = true;
-  const [fetchedVersions, fetchedOldJars] = await Promise.allSettled([
-    props.server.fetchPaperVersions(),
-    props.server.fetchOldJars(encodedName.value),
-  ]);
-  if (generation !== openingGeneration) return;
-  if (fetchedVersions.status === "fulfilled")
-    versions.value = fetchedVersions.value;
-  else error.value = true;
-  if (fetchedOldJars.status === "fulfilled")
-    oldJars.value = fetchedOldJars.value;
-  else error.value = true;
-  loadingVersions.value = false;
-  loadingOldJars.value = false;
+  clearBuilds();
+  clearOldJars();
+  await Promise.all([refreshVersions(), refreshOldJars()]);
 }
 
 async function loadBuilds(selectedVersion: string): Promise<void> {
   build.value = null;
-  builds.value = [];
-  error.value = false;
-  loadingBuilds.value = true;
-  try {
-    const fetchedBuilds = await props.server.fetchPaperBuilds(selectedVersion);
-    if (version.value !== selectedVersion) return;
-    builds.value = fetchedBuilds;
-    const latestBuild = fetchedBuilds[0];
-    if (latestBuild) build.value = latestBuild.build;
-  } catch {
-    if (version.value === selectedVersion) error.value = true;
-  } finally {
-    if (version.value === selectedVersion) loadingBuilds.value = false;
-  }
+  clearBuilds();
+  installError.value = false;
+  await refreshBuilds();
+  // Ignore results of superseded requests.
+  if (version.value !== selectedVersion || buildsError.value) return;
+  const latestBuild = builds.value?.[0];
+  if (latestBuild) build.value = latestBuild.build;
 }
 
 function installSelectedVersion(): Promise<Response> {
@@ -249,7 +266,7 @@ async function run(action: () => Promise<unknown>): Promise<void> {
     emit("installed");
     close();
   } catch {
-    error.value = true;
+    installError.value = true;
   } finally {
     installing.value = false;
   }

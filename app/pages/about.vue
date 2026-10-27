@@ -29,11 +29,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
           </v-card-title>
           <v-card-text>
             {{ t("gui.views.about.description") }}
-            <NoticeComponent
-              v-if="!loading"
-              class="mt-4"
-              :notice="projectNotice"
-            />
+            <v-skeleton-loader v-if="loading" class="mt-4" type="article" />
+            <NoticeComponent v-else class="mt-4" :notice="projectNotice" />
           </v-card-text>
         </v-card>
       </v-col>
@@ -46,7 +43,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
           </v-card-title>
           <v-card-text>
             {{ t("gui.views.about.libraries.description") }}
-            <div v-if="!loading" class="mt-4">
+            <v-skeleton-loader v-if="loading" class="mt-4" type="article@3" />
+            <div v-else class="mt-4">
               <v-container fluid class="pa-0">
                 <v-row>
                   <v-col

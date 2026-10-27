@@ -55,9 +55,18 @@
         "server": {
           "details": "Détails"
         },
+        "load_error": {
+          "servers": "Impossible de charger les serveurs :",
+          "system_usage": "Impossible de charger l'utilisation du système :"
+        },
         "update_status": "Actualiser le statut"
       },
       "server": {
+        "load_error": {
+          "info": "Impossible de charger les informations du serveur :",
+          "java_runtimes": "Impossible de charger les environnements Java.",
+          "retry": "Réessayer"
+        },
         "autostart": "Autostart",
         "console": {
           "title": "Console"

@@ -20,6 +20,31 @@
         <v-alert v-if="error" type="error" density="compact" variant="tonal">
           {{ t("gui.views.server.version_dialog.error") }}
         </v-alert>
+        <v-alert
+          v-if="updatesError"
+          type="error"
+          density="compact"
+          variant="tonal"
+        >
+          {{ t("gui.views.server.version_dialog.update_error") }}
+          <template #append>
+            <v-btn
+              v-if="retryUpdates"
+              variant="text"
+              :loading="updatesLoading"
+              @click="retryUpdates()"
+            >
+              {{ t("gui.views.server.load_error.retry") }}
+            </v-btn>
+          </template>
+        </v-alert>
+        <p
+          v-else-if="!updatesLoading && !hasUpdates"
+          class="font-weight-light mb-4"
+          style="font-size: 12px"
+        >
+          {{ t("gui.views.server.version_dialog.no_updates") }}
+        </p>
 
         <div v-if="updates && (updates.build || updates.patch)" class="mb-4">
           <v-btn
@@ -150,8 +175,20 @@ const props = withDefaults(
       build: { version: string; build: number } | null;
       patch: { version: string; build: number } | null;
     } | null;
+
+    updatesError?: unknown;
+
+    updatesLoading?: boolean;
+
+    retryUpdates?: () => Promise<unknown>;
   }>(),
-  { disabled: false, updates: null },
+  {
+    disabled: false,
+    updates: null,
+    updatesError: null,
+    updatesLoading: false,
+    retryUpdates: undefined,
+  },
 );
 
 const emit = defineEmits<{ (e: "installed"): void }>();
@@ -215,6 +252,9 @@ const error = computed(
     !!versionsError.value ||
     !!oldJarsError.value ||
     !!buildsError.value,
+);
+const hasUpdates = computed(
+  () => !!props.updates?.build || !!props.updates?.patch,
 );
 
 async function open(): Promise<void> {

@@ -97,11 +97,15 @@ const [
   },
   { data: systemUsageData, status: systemUsageStatus, error: systemUsageError },
 ] = await Promise.all([
-  useAsyncData("home-servers", () =>
-    requestFetch<ServerData[]>("/api/servers"),
+  useAsyncData(
+    "home-servers",
+    () => requestFetch<ServerData[]>("/api/servers"),
+    { lazy: true },
   ),
-  useAsyncData("home-system-usage", () =>
-    requestFetch<ResourceUsageData[]>("/api/system-usage"),
+  useAsyncData(
+    "home-system-usage",
+    () => requestFetch<ResourceUsageData[]>("/api/system-usage"),
+    { lazy: true },
   ),
 ]);
 

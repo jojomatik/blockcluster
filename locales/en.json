@@ -50,7 +50,8 @@
           "port_invalid": "Enter a port between 1024 and 65535.",
           "create": "Create",
           "cancel": "Cancel",
-          "error": "Could not load Paper versions or create the server."
+          "error": "Could not create the server.",
+          "versions_error": "Could not load Paper versions."
         },
         "resource_usage": {
           "total": "Total resource usage"
@@ -103,6 +104,8 @@
           "install": "Install",
           "cancel": "Cancel",
           "error": "Could not load data from the Paper API.",
+          "update_error": "Could not check for available updates.",
+          "no_updates": "No updates are available.",
           "warning": "Installing a different version replaces the current jar, which is archived. Back up your world before downgrading.",
           "main_title": "Choose Paper version",
           "update_build": "Update to build {build} ({version})",

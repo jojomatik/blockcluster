@@ -110,13 +110,17 @@ const {
   data: notices,
   pending: loading,
   error: loadError,
-} = await useAsyncData("about-dependency-notices", async () => {
-  const licenses = await requestFetch<LibraryLicense[]>("/dependencies.json");
-  // Plain objects, since class instances can not be serialized into the SSR payload.
-  return parseLibraryNotices(licenses).map((notice) => ({
-    ...notice,
-  }));
-});
+} = await useAsyncData(
+  "about-dependency-notices",
+  async () => {
+    const licenses = await requestFetch<LibraryLicense[]>("/dependencies.json");
+    // Plain objects, since class instances can not be serialized into the SSR payload.
+    return parseLibraryNotices(licenses).map((notice) => ({
+      ...notice,
+    }));
+  },
+  { lazy: true },
+);
 const libraryNotices = computed(() => notices.value ?? []);
 
 /**

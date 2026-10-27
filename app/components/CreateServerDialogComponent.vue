@@ -40,7 +40,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
           density="compact"
           variant="tonal"
         >
-          {{ t("gui.views.home.create_server.error") }}
+          {{
+            t(
+              versionsError
+                ? "gui.views.home.create_server.versions_error"
+                : "gui.views.home.create_server.error",
+            )
+          }}
         </v-alert>
         <v-text-field
           v-model="name"

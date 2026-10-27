@@ -76,6 +76,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                           :server="server"
                           :disabled="server.status !== ServerStatus.Stopped"
                           :updates="updates"
+                          :updates-error="updatesError"
+                          :updates-loading="updatesLoading"
+                          :retry-updates="refreshUpdates"
                           @installed="onVersionInstalled"
                         />
                       </td>
@@ -234,7 +237,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
               variant="elevated"
               class="server-card-button"
               color="secondary"
-              @click="update"
+              @click="refreshInfo()"
             >
               <v-icon start :icon="mdiReload" />
               {{ t("gui.views.server.update_status") }}
@@ -401,7 +404,12 @@ type JarUpdates = {
   build: { version: string; build: number } | null;
   patch: { version: string; build: number } | null;
 };
-const { data: updatesData, refresh: refreshUpdates } = useAsyncData(
+const {
+  data: updatesData,
+  error: updatesError,
+  status: updatesStatus,
+  refresh: refreshUpdates,
+} = useAsyncData(
   () => "server-updates-" + encodeURIComponent(getName()),
   () =>
     $fetch<JarUpdates | null>(
@@ -410,6 +418,7 @@ const { data: updatesData, refresh: refreshUpdates } = useAsyncData(
   detailedOptions,
 );
 const updates = computed(() => updatesData.value ?? null);
+const updatesLoading = computed(() => updatesStatus.value === "pending");
 
 const eulaDialog = ref(false);
 

@@ -47,7 +47,8 @@
           "port_invalid": "Saisissez un port entre 1024 et 65535.",
           "create": "Créer",
           "cancel": "Annuler",
-          "error": "Impossible de charger les versions de Paper ou de créer le serveur."
+          "error": "Impossible de créer le serveur.",
+          "versions_error": "Impossible de charger les versions de Paper."
         },
         "resource_usage": {
           "total": "Utilisation totale des ressources"
@@ -100,6 +101,8 @@
           "install": "Installer",
           "cancel": "Annuler",
           "error": "Impossible de charger les données de l'API Paper.",
+          "update_error": "Impossible de vérifier les mises à jour disponibles.",
+          "no_updates": "Aucune mise à jour disponible.",
           "warning": "L'installation d'une autre version remplace le JAR actuel, qui est archivé. Sauvegardez votre monde avant de rétrograder.",
           "main_title": "Choisir la version de Paper",
           "update_build": "Mettre à jour vers le build {build} ({version})",

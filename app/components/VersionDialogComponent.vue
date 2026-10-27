@@ -21,7 +21,7 @@
           {{ t("gui.views.server.version_dialog.error") }}
         </v-alert>
         <v-alert
-          v-if="updatesError"
+          v-if="updateLookupFailed"
           type="error"
           density="compact"
           variant="tonal"
@@ -255,6 +255,9 @@ const error = computed(
 );
 const hasUpdates = computed(
   () => !!props.updates?.build || !!props.updates?.patch,
+);
+const updateLookupFailed = computed(
+  () => !!props.updatesError || !!props.updates?.lookupFailed,
 );
 
 async function open(): Promise<void> {

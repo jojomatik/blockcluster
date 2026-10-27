@@ -403,6 +403,7 @@ watch(serverInfo, (data) => {
 type JarUpdates = {
   build: { version: string; build: number } | null;
   patch: { version: string; build: number } | null;
+  lookupFailed?: boolean;
 };
 const {
   data: updatesData,

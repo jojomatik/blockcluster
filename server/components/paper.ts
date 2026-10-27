@@ -20,6 +20,8 @@ export interface PaperJarInfo {
  */
 export interface PaperUpdates {
   current: PaperJarInfo | null;
+  /** Whether any Paper API lookup failed while checking for updates. */
+  lookupFailed?: boolean;
   /** The newest build of the current version, if newer than the current one. */
   build: PaperJarInfo | null;
   /** The newest build of the newest patch of the current minor version, if newer than the current patch. */
@@ -100,7 +102,12 @@ export async function getPaperUpdates(
   const result: PaperUpdates = { current, build: null, patch: null };
   if (!current) return result;
 
-  const latest = await getLatestStableBuild(current.version).catch(() => null);
+  let latest: PaperBuild | null = null;
+  try {
+    latest = await getLatestStableBuild(current.version);
+  } catch {
+    result.lookupFailed = true;
+  }
   if (latest && latest.id > current.build)
     result.build = { version: current.version, build: latest.id };
 
@@ -122,8 +129,7 @@ export async function getPaperUpdates(
       }
     }
   } catch {
-    // A failed patch lookup must not discard an available build update.
-    return result;
+    result.lookupFailed = true;
   }
   return result;
 }

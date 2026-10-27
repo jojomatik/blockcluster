@@ -127,6 +127,7 @@ describe("paper", () => {
 
     it("reports when checking the current version build fails", async () => {
       const fetchSpy = mockApi({
+        "1.21.11": [build("1.21.11", 9)],
         "1.21.10": [build("1.21.10", 5)],
       });
       const respond = fetchSpy.getMockImplementation();
@@ -141,7 +142,7 @@ describe("paper", () => {
         current: { version: "1.21.8", build: 60 },
         lookupFailed: true,
         build: null,
-        patch: { version: "1.21.10", build: 5 },
+        patch: { version: "1.21.11", build: 9 },
       });
     });
 

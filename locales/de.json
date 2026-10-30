@@ -50,7 +50,8 @@
           "port_invalid": "Gib einen Port zwischen 1024 und 65535 ein.",
           "create": "Erstellen",
           "cancel": "Abbrechen",
-          "error": "Paper-Versionen konnten nicht geladen oder der Server nicht erstellt werden."
+          "error": "Der Server konnte nicht erstellt werden.",
+          "versions_error": "Paper-Versionen konnten nicht geladen werden."
         },
         "resource_usage": {
           "total": "Gesamtauslastung"
@@ -58,9 +59,18 @@
         "server": {
           "details": "Details"
         },
+        "load_error": {
+          "servers": "Server konnten nicht geladen werden:",
+          "system_usage": "Systemauslastung konnte nicht geladen werden:"
+        },
         "update_status": "Status aktualisieren"
       },
       "server": {
+        "load_error": {
+          "info": "Serverinformationen konnten nicht geladen werden:",
+          "java_runtimes": "Java-Laufzeiten konnten nicht geladen werden.",
+          "retry": "Erneut versuchen"
+        },
         "autostart": "Autostart",
         "console": {
           "title": "Konsole"
@@ -94,6 +104,8 @@
           "install": "Installieren",
           "cancel": "Abbrechen",
           "error": "Daten der Paper-API konnten nicht geladen werden.",
+          "update_error": "Verfügbare Updates konnten nicht geprüft werden.",
+          "no_updates": "Keine Updates verfügbar.",
           "warning": "Die Installation einer anderen Version ersetzt die aktuelle JAR-Datei, die archiviert wird. Sichere deine Welt vor einem Downgrade.",
           "main_title": "Paper-Version wählen",
           "update_build": "Auf Build {build} ({version}) aktualisieren",

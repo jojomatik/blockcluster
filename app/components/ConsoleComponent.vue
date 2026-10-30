@@ -119,6 +119,25 @@ const messages = ref<Message[]>([]);
 
 let messagesLoading = true;
 
+function encodedServerName(): string {
+  return encodeURIComponent(
+    props.server.name || (route.params["server"] as string),
+  );
+}
+
+const {
+  data: messageHistory,
+  error: messagesError,
+  refresh: refreshMessages,
+} = useAsyncData(
+  () => "server-messages-" + encodedServerName(),
+  () =>
+    $fetch<Record<string, unknown>[]>(
+      `/api/servers/${encodedServerName()}/messages`,
+    ),
+  { immediate: false, server: false },
+);
+
 let bufferedMessages: Record<string, unknown>[] = [];
 
 /**
@@ -274,35 +293,23 @@ function checkScrollEnd(element: Element, lastTop = -1) {
  * Fetches the latest 50 messages from the REST API.
  */
 async function getMessages(): Promise<void> {
-  const serverName = encodeURIComponent(
-    props.server.name || (route.params["server"] as string),
-  );
-  let loadError: unknown;
-  let failedToLoad = false;
-  try {
-    const data: Record<string, unknown>[] =
-      await props.server.fetchMessages(serverName);
-    appendMessages(data);
-  } catch (error) {
-    loadError = error;
-    failedToLoad = true;
-  } finally {
-    messagesLoading = false;
-    appendMessages(bufferedMessages);
-    bufferedMessages = [];
-    checkEulaRequired();
-    if (failedToLoad) {
-      messages.value.push(
-        new Message(
-          MessageType.Error,
-          `Could not load server messages: ${
-            loadError instanceof Error ? loadError.message : String(loadError)
-          }`,
-        ),
-      );
-    }
-    void nextTick(scrollConsole);
+  await refreshMessages();
+  const failedToLoad = messagesError.value !== undefined;
+  if (messageHistory.value && !failedToLoad)
+    appendMessages(messageHistory.value);
+  messagesLoading = false;
+  appendMessages(bufferedMessages);
+  bufferedMessages = [];
+  checkEulaRequired();
+  if (failedToLoad) {
+    messages.value.push(
+      new Message(
+        MessageType.Error,
+        `Could not load server messages: ${messagesError.value?.message}`,
+      ),
+    );
   }
+  void nextTick(scrollConsole);
 }
 
 /**

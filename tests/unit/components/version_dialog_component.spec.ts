@@ -1,6 +1,10 @@
 import { vi } from "vitest";
 import { flushPromises, shallowMount } from "@vue/test-utils";
+import { mockNuxtImport } from "@nuxt/test-utils/runtime";
 import VersionDialogComponent from "@/components/VersionDialogComponent.vue";
+
+const { fetchData } = vi.hoisted(() => ({ fetchData: vi.fn() }));
+mockNuxtImport("$fetch", () => fetchData);
 
 type Build = { build: number; time: string };
 function deferred<T>() {
@@ -17,11 +21,15 @@ function mountDialog(
     .fn()
     .mockResolvedValue([{ build: 70, time: "2025-01-01" }]),
 ) {
+  fetchData.mockReset();
+  fetchData.mockImplementation((url: string) => {
+    if (url === "/api/paper/versions")
+      return Promise.resolve(["1.21.8", "1.21.10"]);
+    if (url.endsWith("/oldjars")) return Promise.resolve(["old.jar"]);
+    return fetchPaperBuilds(url);
+  });
   const server = {
     name: "test",
-    fetchPaperVersions: vi.fn().mockResolvedValue(["1.21.8", "1.21.10"]),
-    fetchOldJars: vi.fn().mockResolvedValue(["old.jar"]),
-    fetchPaperBuilds,
     installUpdate: vi.fn().mockResolvedValue(undefined),
     installVersion: vi.fn().mockResolvedValue(undefined),
     installExistingJar: vi.fn().mockResolvedValue(undefined),

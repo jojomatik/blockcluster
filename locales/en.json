@@ -50,7 +50,8 @@
           "port_invalid": "Enter a port between 1024 and 65535.",
           "create": "Create",
           "cancel": "Cancel",
-          "error": "Could not load Paper versions or create the server."
+          "error": "Could not create the server.",
+          "versions_error": "Could not load Paper versions."
         },
         "resource_usage": {
           "total": "Total resource usage"
@@ -58,9 +59,18 @@
         "server": {
           "details": "Details"
         },
+        "load_error": {
+          "servers": "Could not load servers:",
+          "system_usage": "Could not load system usage:"
+        },
         "update_status": "Update status"
       },
       "server": {
+        "load_error": {
+          "info": "Could not load server information:",
+          "java_runtimes": "Could not load Java runtimes.",
+          "retry": "Retry"
+        },
         "autostart": "Autostart",
         "console": {
           "title": "Console"
@@ -94,6 +104,8 @@
           "install": "Install",
           "cancel": "Cancel",
           "error": "Could not load data from the Paper API.",
+          "update_error": "Could not check for available updates.",
+          "no_updates": "No updates are available.",
           "warning": "Installing a different version replaces the current jar, which is archived. Back up your world before downgrading.",
           "main_title": "Choose Paper version",
           "update_build": "Update to build {build} ({version})",

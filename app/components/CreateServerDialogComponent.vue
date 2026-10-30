@@ -34,8 +34,19 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         {{ t("gui.views.home.create_server.title") }}
       </v-card-title>
       <v-card-text>
-        <v-alert v-if="error" type="error" density="compact" variant="tonal">
-          {{ t("gui.views.home.create_server.error") }}
+        <v-alert
+          v-if="error || versionsError"
+          type="error"
+          density="compact"
+          variant="tonal"
+        >
+          {{
+            t(
+              versionsError
+                ? "gui.views.home.create_server.versions_error"
+                : "gui.views.home.create_server.error",
+            )
+          }}
         </v-alert>
         <v-text-field
           v-model="name"
@@ -46,6 +57,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
           :disabled="creating"
           autofocus
         />
+        <v-skeleton-loader v-if="loadingVersions" type="text" />
         <v-select
           v-model="version"
           variant="underlined"
@@ -95,11 +107,24 @@ const emit = defineEmits<{ (e: "created"): void }>();
 const { t } = useI18n();
 
 const dialog = ref(false);
-const versions = ref<string[]>([]);
 const name = ref("");
 const version = ref<string | null>(null);
 const port = ref("");
-const loadingVersions = ref(false);
+const {
+  data: versions,
+  status: versionsStatus,
+  error: versionsError,
+  refresh: refreshVersions,
+} = useAsyncData(
+  "paper-versions",
+  () => $fetch<string[]>("/api/paper/versions"),
+  {
+    immediate: false,
+    server: false,
+    default: () => [],
+  },
+);
+const loadingVersions = computed(() => versionsStatus.value === "pending");
 const creating = ref(false);
 const error = ref(false);
 
@@ -126,16 +151,7 @@ async function open(): Promise<void> {
   version.value = null;
   port.value = "";
   error.value = false;
-  loadingVersions.value = true;
-  try {
-    const response = await fetch("/api/paper/versions");
-    if (!response.ok) throw new Error("Could not load Paper versions");
-    versions.value = await response.json();
-  } catch {
-    error.value = true;
-  } finally {
-    loadingVersions.value = false;
-  }
+  await refreshVersions();
 }
 
 async function create(): Promise<void> {

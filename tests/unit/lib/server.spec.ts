@@ -46,30 +46,16 @@ describe("client Server API", () => {
     ]);
   });
 
-  it("returns JSON payloads and reports unsuccessful HTTP responses", async () => {
-    const json = vi.fn().mockResolvedValue({ _name: "test" });
-    const fetch = vi
-      .fn()
-      .mockResolvedValueOnce({ ok: true, json })
-      .mockResolvedValueOnce({ ok: true, json })
-      .mockResolvedValueOnce({
-        ok: false,
-        status: 503,
-        statusText: "Unavailable",
-      });
-    global.fetch = fetch;
+  it("reports unsuccessful HTTP responses", async () => {
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 503,
+      statusText: "Unavailable",
+    });
     const server = new Server({ _name: "test server" });
 
-    await expect(server.fetchInfo()).resolves.toEqual({ _name: "test" });
-    await expect(server.fetchMessages("explicit%20name")).resolves.toEqual({
-      _name: "test",
-    });
     await expect(server.sendAction("start")).rejects.toThrow(
       "Request failed (503 Unavailable)",
-    );
-    expect(fetch.mock.calls[0]![0]).toBe("/api/servers/test%20server");
-    expect(fetch.mock.calls[1]![0]).toBe(
-      "/api/servers/explicit%20name/messages",
     );
   });
 });

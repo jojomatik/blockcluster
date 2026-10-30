@@ -27,6 +27,12 @@ function createMessage(
   return { _uuid: uuid, _timestamp: timestamp, _text: text, _type: type };
 }
 
+const { fetchMock } = vi.hoisted(() => ({ fetchMock: vi.fn() }));
+mockNuxtImport("$fetch", () => fetchMock);
+beforeEach(() => {
+  fetchMock.mockReset();
+});
+
 describe("ConsoleComponent", () => {
   it("buffers live messages while history loads, marks date changes, and deduplicates", async () => {
     let resolveHistory!: (messages: MessageData[]) => void;
@@ -34,7 +40,7 @@ describe("ConsoleComponent", () => {
       resolveHistory = resolve;
     });
     const server = new Server({ _name: "a server" });
-    server.fetchMessages = vi.fn().mockReturnValue(history);
+    fetchMock.mockReturnValue(history);
     let onMessage: ((data: Record<string, unknown>) => void) | undefined;
     socketMock.on.mockImplementation((_event, callback) => {
       onMessage = callback;
@@ -64,14 +70,14 @@ describe("ConsoleComponent", () => {
     expect(messages).toContain("history");
     expect(messages).toContain("2025-01-02");
     expect(messages).toContain("live event");
-    expect(server.fetchMessages).toHaveBeenCalledWith("a%20server");
+    expect(fetchMock).toHaveBeenCalledWith("/api/servers/a%20server/messages");
     wrapper.unmount();
     expect(socketMock.off).toHaveBeenCalledWith("server_a%20server");
   });
 
   it("reports history and command errors to the console message list", async () => {
     const server = new Server({ _name: "broken" });
-    server.fetchMessages = vi.fn().mockRejectedValue("offline");
+    fetchMock.mockRejectedValue(new Error("offline"));
     server.sendCommand = vi.fn().mockRejectedValue(new Error("unavailable"));
     const wrapper = shallowMount(ConsoleComponent, {
       props: { server, status: ServerStatus.Started },
@@ -95,7 +101,7 @@ describe("ConsoleComponent", () => {
 
     async function mountWithHistory(history: MessageData[]) {
       const server = new Server({ _name: "eula" });
-      server.fetchMessages = vi.fn().mockResolvedValue(history);
+      fetchMock.mockResolvedValue(history);
       let onMessage: ((data: Record<string, unknown>) => void) | undefined;
       socketMock.on.mockImplementation((_event, callback) => {
         onMessage = callback;

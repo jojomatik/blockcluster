@@ -105,7 +105,7 @@ describe("paper", () => {
       ["project metadata", "/projects/paper"],
       ["patch build", "/versions/1.21.11/builds"],
     ])(
-      "preserves the build update when the %s lookup fails",
+      "preserves partial update results and reports when the %s lookup fails",
       async (_failure, failedRequest) => {
         const fetchSpy = mockApi({ "1.21.8": [build("1.21.8", 70)] });
         const respond = fetchSpy.getMockImplementation();
@@ -118,17 +118,40 @@ describe("paper", () => {
 
         await expect(getPaperUpdates("paper-1.21.8-60.jar")).resolves.toEqual({
           current: { version: "1.21.8", build: 60 },
+          lookupFailed: true,
           build: { version: "1.21.8", build: 70 },
           patch: null,
         });
       },
     );
 
+    it("reports when checking the current version build fails", async () => {
+      const fetchSpy = mockApi({
+        "1.21.11": [build("1.21.11", 9)],
+        "1.21.10": [build("1.21.10", 5)],
+      });
+      const respond = fetchSpy.getMockImplementation();
+      if (!respond) throw new Error("Missing API mock implementation");
+      fetchSpy.mockImplementation((input, init) =>
+        String(input).endsWith("/versions/1.21.8/builds")
+          ? Promise.reject(new Error("lookup failed"))
+          : respond(input, init),
+      );
+
+      await expect(getPaperUpdates("paper-1.21.8-60.jar")).resolves.toEqual({
+        current: { version: "1.21.8", build: 60 },
+        lookupFailed: true,
+        build: null,
+        patch: { version: "1.21.11", build: 9 },
+      });
+    });
+
     it("offers nothing when already up to date", async () => {
       mockApi({ "1.20.6": [build("1.20.6", 10)] });
       const result = await getPaperUpdates("paper-1.20.6-10.jar");
       expect(result.build).toBeNull();
       expect(result.patch).toBeNull();
+      expect(result.lookupFailed).toBeUndefined();
     });
   });
 

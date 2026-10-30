@@ -34,14 +34,17 @@ function makeServer(
 }
 
 function mockFetch() {
-  window.fetch = async (input) => {
-    const url = new URL(String(input), window.location.origin);
+  window.fetch = (input) => {
+    const url = new URL(
+      input instanceof Request ? input.url : input,
+      window.location.origin,
+    );
     if (url.pathname.endsWith("/messages")) {
       if (url.pathname.includes(encodeURIComponent("Load Error Story Server")))
-        return new Response("network down", { status: 502 });
-      return new Response(JSON.stringify(initialMessages));
+        return Promise.resolve(new Response("network down", { status: 502 }));
+      return Promise.resolve(new Response(JSON.stringify(initialMessages)));
     }
-    return new Response("{}");
+    return Promise.resolve(new Response("{}"));
   };
 }
 

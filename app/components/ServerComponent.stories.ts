@@ -132,8 +132,11 @@ function makeServer(status: ServerStatus, name = "Survival World") {
 }
 
 const mockFetch = () => {
-  window.fetch = async (input) => {
-    const url = new URL(String(input), window.location.origin);
+  window.fetch = (input) => {
+    const url = new URL(
+      input instanceof Request ? input.url : input,
+      window.location.origin,
+    );
     const path = url.pathname;
     let data: unknown = {};
     if (path === "/api/java-runtimes") data = javaRuntimes;
@@ -153,7 +156,7 @@ const mockFetch = () => {
     } else if (/^\/api\/paper\/versions\/.+\/builds$/.test(path)) {
       data = [{ build: 497, time: "2024-03-01T12:00:00.000Z" }];
     }
-    return new Response(JSON.stringify(data));
+    return Promise.resolve(new Response(JSON.stringify(data)));
   };
 };
 

@@ -17,8 +17,11 @@ class MockServer extends Server {
 }
 
 function mockFetch() {
-  window.fetch = async (input) => {
-    const url = new URL(String(input), window.location.origin);
+  window.fetch = (input) => {
+    const url = new URL(
+      input instanceof Request ? input.url : input,
+      window.location.origin,
+    );
     let data: unknown = {};
     if (url.pathname === "/api/paper/versions")
       data = ["1.21.8", "1.21.7", "1.20.6"];
@@ -29,7 +32,7 @@ function mockFetch() {
         { build: 60, time: "2025-09-06T21:50:11.982Z" },
         { build: 59, time: "2025-09-06T21:03:20.324Z" },
       ];
-    return new Response(JSON.stringify(data));
+    return Promise.resolve(new Response(JSON.stringify(data)));
   };
 }
 

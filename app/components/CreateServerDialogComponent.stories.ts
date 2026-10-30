@@ -11,8 +11,16 @@ export const Default = {};
 export const Open = {
   play: async ({ canvasElement }: { canvasElement: HTMLElement }) => {
     const originalFetch = window.fetch;
-    window.fetch = async () =>
-      new Response(JSON.stringify(["1.21.8", "1.21.7", "1.20.6"]));
+    window.fetch = async (input) => {
+      const url = new URL(String(input), window.location.origin);
+      return new Response(
+        JSON.stringify(
+          url.pathname === "/api/paper/versions"
+            ? ["1.21.8", "1.21.7", "1.20.6"]
+            : [],
+        ),
+      );
+    };
     try {
       const canvas = within(canvasElement);
       await userEvent.click(

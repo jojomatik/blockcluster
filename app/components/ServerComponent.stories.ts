@@ -19,6 +19,16 @@ const jojomatikHead =
 const itspolderHead =
   "iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAACXBIWXMAAAsSAAALEgHS3X78AAAAmUlEQVQYlWPI9TD6n+qs/x9El/ia/U+w0/kfa6sN5oNohmIfU7Bgor3ufxAbRsPYDCBJGOfDvjlgDGLDMEOYpcb/7xc2/P96Yx+Y/nx4EZztbaj8n+Hjvjn/v768/T/UQv3/j5v7/38+uADMBomB5FAU/Hx48v+7Lf2oCt5u6AEzPh+cDzYWhkFiIDmGZzOLwAyQADIGiYHkAMEjq+CVYnJuAAAAAElFTkSuQmCC";
 
+const messagesByServer = new Map<string, Record<string, unknown>[]>();
+const defaultMessages = [
+  {
+    _timestamp: FIXTURE_TIME - 5000,
+    _uuid: "m1",
+    _type: MessageType.Default,
+    _text: '[Server thread/INFO]: Done (3.2s)! For help, type "help"',
+  },
+];
+
 /** A {@link Server} whose network calls are simulated in memory. */
 class MockServer extends Server {
   override async sendAction(action: string) {
@@ -42,43 +52,8 @@ class MockServer extends Server {
     return new Response();
   }
 
-  override async fetchInfo() {
-    return {};
-  }
-
-  override async fetchMessages() {
-    return [
-      {
-        _timestamp: FIXTURE_TIME - 5000,
-        _uuid: "m1",
-        _type: MessageType.Default,
-        _text: '[Server thread/INFO]: Done (3.2s)! For help, type "help"',
-      },
-    ];
-  }
-
-  override async fetchUpdates() {
-    return {
-      current: { version: "1.20.4", build: 400 },
-      build: { version: "1.20.4", build: 497 },
-      patch: { version: "1.20.6", build: 151 },
-    };
-  }
-
   override async installUpdate() {
     return new Response();
-  }
-
-  override async fetchPaperVersions() {
-    return ["1.20.6", "1.20.4", "1.19.4"];
-  }
-
-  override async fetchPaperBuilds() {
-    return [{ build: 497, time: "2024-03-01T12:00:00.000Z" }];
-  }
-
-  override async fetchOldJars() {
-    return ["paper-1.20.2-318.jar"];
   }
 
   override async installExistingJar() {
@@ -104,20 +79,22 @@ const eulaText =
   "[Server thread/INFO]: You need to agree to the EULA in order to run the server. Go to eula.txt for more info.";
 
 /** A stopped {@link Server} whose console history ends with the given messages. */
-function makeServerWithMessages(texts: string[]) {
-  const server = makeServer(ServerStatus.Stopped);
-  server.fetchMessages = async () =>
+function makeServerWithMessages(texts: string[], name: string) {
+  const server = makeServer(ServerStatus.Stopped, name);
+  messagesByServer.set(
+    name,
     texts.map((text, i) => ({
       _timestamp: FIXTURE_TIME - (texts.length - i) * 1000,
       _uuid: `eula-${i}`,
       _type: MessageType.Default,
       _text: text,
-    }));
+    })),
+  );
   return server;
 }
 
 function makeServer(status: ServerStatus, name = "Survival World") {
-  return new MockServer({
+  const server = new MockServer({
     _name: name,
     _status: status,
     _jar: "paper-1.20.4.jar",
@@ -150,13 +127,34 @@ function makeServer(status: ServerStatus, name = "Survival World") {
         ),
     ),
   } as ConstructorParameters<typeof Server>[0]);
+  messagesByServer.set(name, defaultMessages);
+  return server;
 }
 
 const mockFetch = () => {
-  window.fetch = (async (url: RequestInfo | URL) =>
-    new Response(
-      JSON.stringify(String(url).includes("java-runtimes") ? javaRuntimes : {}),
-    )) as typeof window.fetch;
+  window.fetch = async (input) => {
+    const url = new URL(String(input), window.location.origin);
+    const path = url.pathname;
+    let data: unknown = {};
+    if (path === "/api/java-runtimes") data = javaRuntimes;
+    else if (path.endsWith("/messages")) {
+      const name = decodeURIComponent(path.split("/").at(-2) ?? "");
+      data = messagesByServer.get(name) ?? defaultMessages;
+    } else if (path.endsWith("/updates")) {
+      data = {
+        current: { version: "1.20.4", build: 400 },
+        build: { version: "1.20.4", build: 497 },
+        patch: { version: "1.20.6", build: 151 },
+      };
+    } else if (path.endsWith("/oldjars")) {
+      data = ["paper-1.20.2-318.jar"];
+    } else if (path === "/api/paper/versions") {
+      data = ["1.20.6", "1.20.4", "1.19.4"];
+    } else if (/^\/api\/paper\/versions\/.+\/builds$/.test(path)) {
+      data = [{ build: 497, time: "2024-03-01T12:00:00.000Z" }];
+    }
+    return new Response(JSON.stringify(data));
+  };
 };
 
 export default {
@@ -173,7 +171,7 @@ export default {
           originalFetch = window.fetch;
           mockFetch();
         },
-        mounted() {
+        beforeUnmount() {
           window.fetch = originalFetch;
         },
         template: "<story/>",
@@ -254,7 +252,7 @@ export const PauseServer = {
 /** Shows the EULA dialog, which only allows starting after agreeing, and starts the server. */
 export const EulaDialog = {
   args: {
-    server: makeServerWithMessages(["Loading libraries", eulaText]),
+    server: makeServerWithMessages(["Loading libraries", eulaText], "EULA World"),
     detailed: true,
   },
   play: async () => {
@@ -297,11 +295,14 @@ export const EulaDialogAccept = {
 /** The EULA message is followed by later messages, so the dialog must not open again. */
 export const EulaAlreadyAccepted = {
   args: {
-    server: makeServerWithMessages([
-      eulaText,
-      "[Server thread/INFO]: Starting minecraft server",
-      '[Server thread/INFO]: Done (3.2s)! For help, type "help"',
-    ]),
+    server: makeServerWithMessages(
+      [
+        eulaText,
+        "[Server thread/INFO]: Starting minecraft server",
+        '[Server thread/INFO]: Done (3.2s)! For help, type "help"',
+      ],
+      "EULA Accepted World",
+    ),
     detailed: true,
   },
   play: async ({ canvasElement }: { canvasElement: HTMLElement }) => {

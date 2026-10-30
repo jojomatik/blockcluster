@@ -22,18 +22,47 @@ const initialMessages = [
   msg(3, MessageType.Error, "[Server thread/WARN]: Can't keep up!"),
 ];
 
-function makeServer(overrides: Record<string, unknown> = {}) {
+function makeServer(
+  overrides: Record<string, unknown> = {},
+  name = "Story Server",
+) {
   return {
-    name: "Story Server",
-    fetchMessages: async () => initialMessages,
+    name,
     sendCommand: async () => ({ ok: true, status: 200, statusText: "OK" }),
     ...overrides,
+  };
+}
+
+function mockFetch() {
+  window.fetch = async (input) => {
+    const url = new URL(String(input), window.location.origin);
+    if (url.pathname.endsWith("/messages")) {
+      if (url.pathname.includes(encodeURIComponent("Load Error Story Server")))
+        return new Response("network down", { status: 502 });
+      return new Response(JSON.stringify(initialMessages));
+    }
+    return new Response("{}");
   };
 }
 
 export default {
   title: "Organisms/ConsoleComponent",
   component: ConsoleComponent,
+  decorators: [
+    () => {
+      let originalFetch: typeof window.fetch;
+      return {
+        beforeMount() {
+          originalFetch = window.fetch;
+          mockFetch();
+        },
+        beforeUnmount() {
+          window.fetch = originalFetch;
+        },
+        template: "<story/>",
+      };
+    },
+  ],
   argTypes: {
     status: { control: "select", options: prepareEnum(ServerStatus) },
   },
@@ -77,11 +106,12 @@ export const FailingCommand = {
 
 export const LoadError = {
   args: {
-    server: makeServer({
-      fetchMessages: async () => {
-        throw new Error("network down");
-      },
-    }),
+    server: makeServer({}, "Load Error Story Server"),
     status: ServerStatus.Started,
+  },
+  play: async ({ canvasElement }: { canvasElement: HTMLElement }) => {
+    await expect(
+      await within(canvasElement).findByText(/Could not load server messages/),
+    ).toBeVisible();
   },
 };

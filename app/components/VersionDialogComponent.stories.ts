@@ -3,21 +3,6 @@ import Server from "@/lib/components/server";
 import { expect, userEvent, waitFor, within } from "storybook/test";
 
 class MockServer extends Server {
-  override async fetchPaperVersions() {
-    return ["1.21.8", "1.21.7", "1.20.6"];
-  }
-
-  override async fetchPaperBuilds() {
-    return [
-      { build: 60, time: "2025-09-06T21:50:11.982Z" },
-      { build: 59, time: "2025-09-06T21:03:20.324Z" },
-    ];
-  }
-
-  override async fetchOldJars() {
-    return ["paper-1.20.4-400.jar", "custom.jar"];
-  }
-
   override async installExistingJar() {
     return new Response();
   }
@@ -31,12 +16,44 @@ class MockServer extends Server {
   }
 }
 
+function mockFetch() {
+  window.fetch = async (input) => {
+    const url = new URL(String(input), window.location.origin);
+    let data: unknown = {};
+    if (url.pathname === "/api/paper/versions")
+      data = ["1.21.8", "1.21.7", "1.20.6"];
+    else if (url.pathname.endsWith("/oldjars"))
+      data = ["paper-1.20.4-400.jar", "custom.jar"];
+    else if (/^\/api\/paper\/versions\/.+\/builds$/.test(url.pathname))
+      data = [
+        { build: 60, time: "2025-09-06T21:50:11.982Z" },
+        { build: 59, time: "2025-09-06T21:03:20.324Z" },
+      ];
+    return new Response(JSON.stringify(data));
+  };
+}
+
 export default {
   title: "Molecules/VersionDialogComponent",
   component: VersionDialogComponent,
   argTypes: {
     disabled: { control: "boolean" },
   },
+  decorators: [
+    () => {
+      let originalFetch: typeof window.fetch;
+      return {
+        beforeMount() {
+          originalFetch = window.fetch;
+          mockFetch();
+        },
+        beforeUnmount() {
+          window.fetch = originalFetch;
+        },
+        template: "<story/>",
+      };
+    },
+  ],
 };
 
 const updates = {

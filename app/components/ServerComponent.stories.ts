@@ -252,7 +252,10 @@ export const PauseServer = {
 /** Shows the EULA dialog, which only allows starting after agreeing, and starts the server. */
 export const EulaDialog = {
   args: {
-    server: makeServerWithMessages(["Loading libraries", eulaText], "EULA World"),
+    server: makeServerWithMessages(
+      ["Loading libraries", eulaText],
+      "EULA World",
+    ),
     detailed: true,
   },
   play: async () => {

@@ -156,7 +156,7 @@ const mockFetch = () => {
     } else if (/^\/api\/paper\/versions\/.+\/builds$/.test(path)) {
       data = [{ build: 497, time: "2024-03-01T12:00:00.000Z" }];
     }
-    return Promise.resolve(new Response(JSON.stringify(data)));
+    return Promise.resolve(Response.json(data));
   };
 };
 

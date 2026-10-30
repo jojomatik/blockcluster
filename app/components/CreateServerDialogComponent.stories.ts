@@ -17,12 +17,10 @@ export const Open = {
         window.location.origin,
       );
       return Promise.resolve(
-        new Response(
-          JSON.stringify(
-            url.pathname === "/api/paper/versions"
-              ? ["1.21.8", "1.21.7", "1.20.6"]
-              : [],
-          ),
+        Response.json(
+          url.pathname === "/api/paper/versions"
+            ? ["1.21.8", "1.21.7", "1.20.6"]
+            : [],
         ),
       );
     };

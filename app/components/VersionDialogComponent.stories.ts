@@ -32,7 +32,7 @@ function mockFetch() {
         { build: 60, time: "2025-09-06T21:50:11.982Z" },
         { build: 59, time: "2025-09-06T21:03:20.324Z" },
       ];
-    return Promise.resolve(new Response(JSON.stringify(data)));
+    return Promise.resolve(Response.json(data));
   };
 }
 

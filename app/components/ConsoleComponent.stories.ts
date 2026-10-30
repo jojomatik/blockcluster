@@ -42,9 +42,9 @@ function mockFetch() {
     if (url.pathname.endsWith("/messages")) {
       if (url.pathname.includes(encodeURIComponent("Load Error Story Server")))
         return Promise.resolve(new Response("network down", { status: 502 }));
-      return Promise.resolve(new Response(JSON.stringify(initialMessages)));
+      return Promise.resolve(Response.json(initialMessages));
     }
-    return Promise.resolve(new Response("{}"));
+    return Promise.resolve(Response.json({}));
   };
 }
 

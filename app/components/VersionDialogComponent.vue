@@ -174,6 +174,7 @@ const props = withDefaults(
     updates?: {
       build: { version: string; build: number } | null;
       patch: { version: string; build: number } | null;
+      lookupFailed?: boolean;
     } | null;
 
     updatesError?: unknown;

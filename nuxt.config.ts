@@ -8,6 +8,9 @@ export default defineNuxtConfig({
       titleTemplate: "%s - blockcluster",
     },
   },
+  faviconModule: {
+    enabled: true,
+  },
   i18n: {
     locales: getLocales(),
     defaultLocale: "en",

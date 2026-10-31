@@ -2,6 +2,7 @@
   "name": "blockcluster",
   "version": "0.14.0-beta.36",
   "private": true,
+  "packageManager": "yarn@1.22.22",
   "type": "module",
   "author": {
     "name": "jojomatik",

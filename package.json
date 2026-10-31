@@ -53,10 +53,6 @@
     "vue-router": "5.4.0",
     "vue-tsc": "3.3.13"
   },
-  "resolutions": {
-    "jiti": "2.7.0",
-    "sharp": "0.35.5"
-  },
   "bugs": {
     "url": "https://github.com/jojomatik/blockcluster/issues",
     "email": "dev@jojomatik.de"

@@ -3,7 +3,7 @@ ARG ENVIRONMENT=production
 FROM node:26.12.0@sha256:45a2bf9d9300e9cf47ecb375e38447c140c45ef5fbae869c430475b05b98d86e AS builder
 # Set working directory.
 WORKDIR /usr/games/blockcluster
-# Node.js 25+ no longer bundles corepack, so install yarn classic via npm.
+# Node.js 25+ no longer bundles yarn.
 RUN npm install -g yarn@1
 # Copy package.json and yarn.lock and install dependencies, before copying the rest. This is more efficient as only changes to these files require a new yarn install.
 COPY package.json yarn.lock ./

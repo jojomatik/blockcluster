@@ -1,16 +1,22 @@
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import { mkdtempSync, rmSync } from "node:fs";
+import { createRequire } from "node:module";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
-import releaseConfig from "../release.config.js";
+import semanticRelease from "semantic-release";
 
-async function checkReleaseNotes() {
-  const { default: semanticRelease } = await import("semantic-release");
-  const cwd = mkdtempSync(join(tmpdir(), "blockcluster-release-notes-"));
-  const git = (...args) =>
-    execFileSync("git", args, { cwd, encoding: "utf8" }).trim();
+type ReleasePlugin = string | [string, Record<string, unknown>];
+type ReleaseConfig = { plugins: ReleasePlugin[] };
+
+const require = createRequire(import.meta.url);
+const releaseConfig = require("../release.config.cjs") as ReleaseConfig;
+
+async function checkReleaseNotes(): Promise<void> {
+  const cwd = mkdtempSync(join(tmpdir(), "nuxt-bundle-release-notes-"));
+  const git = (...args: string[]): string =>
+    execFileSync("/usr/bin/git", args, { cwd, encoding: "utf8" }).trim();
 
   try {
     git("init", "--initial-branch=main");
@@ -32,7 +38,7 @@ async function checkReleaseNotes() {
 
     // Exercise the configured analyzer and writer without publishing plugins.
     const plugins = releaseConfig.plugins.filter(
-      (plugin) =>
+      (plugin): plugin is [string, Record<string, unknown>] =>
         Array.isArray(plugin) &&
         [
           "@semantic-release/commit-analyzer",
@@ -48,13 +54,15 @@ async function checkReleaseNotes() {
         ci: false,
       },
       // Let semantic-release detect the fixture branch, independent of CI metadata.
-      { cwd, env: { PATH: process.env.PATH, HOME: process.env.HOME } },
+      { cwd, env: { PATH: "/usr/bin:/bin", HOME: process.env.HOME } },
     );
 
     assert.ok(result, "The dry run must produce a release");
     // The existing pre-1.0 release rules map breaking changes to minor releases.
     assert.equal(result.nextRelease.type, "minor");
     assert.equal(result.nextRelease.version, "0.15.0");
+    const notes = result.nextRelease.notes;
+    assert.ok(notes, "The release must include notes");
     for (const text of [
       "Features",
       "add release-note fixture",
@@ -63,10 +71,7 @@ async function checkReleaseNotes() {
       "BREAKING CHANGES",
       "clients must provide a server identifier",
     ]) {
-      assert.ok(
-        result.nextRelease.notes.includes(text),
-        `Missing notes: ${text}`,
-      );
+      assert.ok(notes.includes(text), `Missing notes: ${text}`);
     }
     assert.equal(git("tag", "--list"), "v0.14.0");
     console.log(
@@ -77,7 +82,9 @@ async function checkReleaseNotes() {
   }
 }
 
-checkReleaseNotes().catch((error) => {
+try {
+  await checkReleaseNotes();
+} catch (error: unknown) {
   console.error(error);
   process.exitCode = 1;
-});
+}

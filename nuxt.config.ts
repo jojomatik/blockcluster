@@ -3,6 +3,7 @@ import vuetifyOptions from "./vuetify-options";
 
 export default defineNuxtConfig({
   extends: "@jojomatik/nuxt-bundle",
+  faviconModule: { enabled: true },
   app: {
     head: {
       titleTemplate: "%s - blockcluster",

@@ -21,10 +21,7 @@ export default defineEventHandler(async (event) => {
   const server = await findServer(event);
   const body = await readValidatedBody(event, updateBodySchema.parse);
   let update:
-    | "build"
-    | "patch"
-    | { file: string }
-    | { version: string; build: number };
+    "build" | "patch" | { file: string } | { version: string; build: number };
   switch (body.type) {
     case "existing":
       update = { file: body.file };

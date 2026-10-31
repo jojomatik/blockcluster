@@ -11,10 +11,10 @@ type ReleasePlugin = string | [string, Record<string, unknown>];
 type ReleaseConfig = { plugins: ReleasePlugin[] };
 
 const require = createRequire(import.meta.url);
-const releaseConfig = require("../release.config.cjs") as ReleaseConfig;
+const releaseConfig = require("../release.config.js") as ReleaseConfig;
 
 async function checkReleaseNotes(): Promise<void> {
-  const cwd = mkdtempSync(join(tmpdir(), "nuxt-bundle-release-notes-"));
+  const cwd = mkdtempSync(join(tmpdir(), "blockcluster-release-notes-"));
   const git = (...args: string[]): string =>
     execFileSync("/usr/bin/git", args, { cwd, encoding: "utf8" }).trim();
 

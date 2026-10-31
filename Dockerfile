@@ -3,8 +3,8 @@ ARG ENVIRONMENT=production
 FROM node:26.12.0@sha256:45a2bf9d9300e9cf47ecb375e38447c140c45ef5fbae869c430475b05b98d86e AS builder
 # Set working directory.
 WORKDIR /usr/games/blockcluster
-# Node.js 25+ no longer bundles corepack, so install it to get the yarn version pinned in package.json.
-RUN npm install -g corepack && corepack enable
+# Node.js 25+ no longer bundles corepack and yarn, so install yarn classic via npm.
+RUN npm install -g yarn@1
 # Copy package.json and yarn.lock and install dependencies, before copying the rest. This is more efficient as only changes to these files require a new yarn install.
 COPY package.json yarn.lock ./
 # The postinstall script prepares nuxt, which requires its config and the following directories.
@@ -61,7 +61,7 @@ FROM base AS base-develop
 COPY package.json yarn.lock ./
 COPY nuxt.config.ts vuetify-options.ts tsconfig.json ./
 COPY locales ./locales/
-RUN apk add --no-cache npm && npm install -g corepack && corepack enable
+RUN apk add --no-cache npm && npm install -g yarn@1
 RUN yarn install --frozen-lockfile
 
 # Create cache and build directories with the blockcluster user as the owner.

@@ -238,10 +238,13 @@ const {
   clear: clearBuilds,
 } = useAsyncData(
   () => "paper-builds-" + encodedName.value,
-  () =>
-    $fetch<{ build: number; time: string }[]>(
-      `/api/paper/versions/${encodeURIComponent(version.value ?? "")}/builds`,
-    ),
+  async () => {
+    const selectedVersion = version.value;
+    if (!selectedVersion) return [];
+    return await $fetch<{ build: number; time: string }[]>(
+      `/api/paper/versions/${encodeURIComponent(selectedVersion)}/builds`,
+    );
+  },
   { ...asyncOptions, default: () => [] },
 );
 const loadingVersions = computed(() => versionsStatus.value === "pending");
@@ -272,10 +275,12 @@ async function open(): Promise<void> {
   await Promise.all([refreshVersions(), refreshOldJars()]);
 }
 
-async function loadBuilds(selectedVersion: string): Promise<void> {
+async function loadBuilds(selectedVersion: string | null): Promise<void> {
   build.value = null;
   clearBuilds();
   installError.value = false;
+  if (!selectedVersion) return;
+  version.value = selectedVersion;
   await refreshBuilds();
   // Ignore results of superseded requests.
   if (version.value !== selectedVersion || buildsError.value) return;

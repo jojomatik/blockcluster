@@ -1,5 +1,5 @@
 import { execFileSync } from "node:child_process";
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures";
 
 const container = process.env.SMOKE_CONTAINER || "blockcluster-smoke";
 const serversPath = "/usr/games/blockcluster/servers";

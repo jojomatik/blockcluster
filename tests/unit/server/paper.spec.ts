@@ -32,21 +32,20 @@ const build = (version: string, id: number, channel = "STABLE", sha = SHA) => ({
 const json = (body: unknown) =>
   Promise.resolve(new Response(JSON.stringify(body)));
 
-function mockApi(builds: Record<string, unknown[]>) {
+function mockApi(
+  builds: Record<string, unknown[]>,
+  versions: Record<string, string[]> = {
+    "1.21": ["1.21.11", "1.21.11-rc1", "1.21.8", "1.21.10", "1.21"],
+    "1.20": ["1.20.6"],
+  },
+) {
   return vi.spyOn(global, "fetch").mockImplementation((async (
     input: RequestInfo | URL,
   ) => {
     const url = String(input);
     if (url.endsWith(".jar")) return new Response(JAR_BODY);
     if (url.endsWith("/projects/paper"))
-      return new Response(
-        JSON.stringify({
-          versions: {
-            "1.21": ["1.21.11", "1.21.11-rc1", "1.21.8", "1.21.10", "1.21"],
-            "1.20": ["1.20.6"],
-          },
-        }),
-      );
+      return new Response(JSON.stringify({ versions }));
     const match = /versions\/([^/]+)\/builds$/.exec(url);
     const version = match?.[1];
     if (version && builds[version]) return json(builds[version]);
@@ -62,6 +61,10 @@ describe("paper", () => {
       version: "1.21.8",
       build: 60,
     });
+    expect(parsePaperJar("paper-26.1.1-60.jar")).toEqual({
+      version: "26.1.1",
+      build: 60,
+    });
   });
 
   it("ignores custom jars", () => {
@@ -74,6 +77,8 @@ describe("paper", () => {
   it("compares semantic versions while normalizing two-part Paper versions", () => {
     expect(compareVersions("1.21.10", "1.21.9")).toBeGreaterThan(0);
     expect(compareVersions("1.21", "1.21.0")).toBe(0);
+    expect(compareVersions("26.1.1", "26.1")).toBeGreaterThan(0);
+    expect(compareVersions("26.2", "26.1.2")).toBeGreaterThan(0);
     expect(compareVersions("1.21.8-alpha.2", "1.21.8-alpha.10")).toBeLessThan(
       0,
     );
@@ -100,6 +105,31 @@ describe("paper", () => {
       expect(result.build).toEqual({ version: "1.21.8", build: 70 });
       expect(result.patch).toEqual({ version: "1.21.10", build: 5 });
     });
+
+    it.each([
+      ["26.1", "26.1.1", ["26.1.1", "26.1"]],
+      ["26.1.1", "26.1.2", ["26.1.2", "26.1.1"]],
+    ])(
+      "finds a patch update from %s to %s, but not the next drop",
+      async (currentVersion, patchVersion, patchVersions) => {
+        mockApi(
+          {
+            [currentVersion]: [build(currentVersion, 60)],
+            [patchVersion]: [build(patchVersion, 70)],
+            "26.2": [build("26.2", 5)],
+          },
+          {
+            "26.1": patchVersions,
+            "26.2": ["26.2"],
+          },
+        );
+
+        const result = await getPaperUpdates(`paper-${currentVersion}-60.jar`);
+
+        expect(result.patch).toEqual({ version: patchVersion, build: 70 });
+        expect(result.patch?.version).not.toBe("26.2");
+      },
+    );
 
     it.each([
       ["project metadata", "/projects/paper"],

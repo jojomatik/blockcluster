@@ -22,7 +22,7 @@
   },
   "dependencies": {
     "@jojomatik/nuxt-bundle": "2.0.0-beta.33",
-    "apexcharts": "8.5.0",
+    "apexcharts": "8.6.0",
     "dayjs": "1.11.23",
     "engine.io": "6.6.11",
     "minecraft-protocol": "1.68.0",

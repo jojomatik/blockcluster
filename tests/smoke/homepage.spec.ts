@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures";
 
 test("the backend answers the version API", async ({ request }) => {
   const response = await request.get("/api/version");
@@ -9,10 +9,6 @@ test("the backend answers the version API", async ({ request }) => {
 
 test("the container serves the working homepage", async ({ page }) => {
   const errors: string[] = [];
-  page.on("pageerror", (error) => errors.push(error.message));
-  page.on("console", (message) => {
-    if (message.type() === "error") errors.push(message.text());
-  });
   page.on("requestfailed", (request) =>
     errors.push(`${request.url()}: ${request.failure()?.errorText}`)
   );
@@ -39,7 +35,6 @@ test("the container serves the about page with dependency notices", async ({
   page,
 }) => {
   const errors: string[] = [];
-  page.on("pageerror", (error) => errors.push(error.message));
   page.on("response", (response) => {
     if (response.status() >= 400) {
       errors.push(`${response.status()} ${response.url()}`);

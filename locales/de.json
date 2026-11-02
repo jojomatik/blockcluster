@@ -155,5 +155,8 @@
         "update_status": "Status aktualisieren"
       }
     }
+  },
+  "$vuetify": {
+    "loading": "Wird geladen..."
   }
 }

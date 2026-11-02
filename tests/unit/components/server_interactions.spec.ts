@@ -74,13 +74,14 @@ describe("server interaction components", () => {
     wrapper.unmount();
   });
 
-  it("builds CPU and memory chart series from resource measurements", () => {
+  it("builds CPU and memory chart series from resource measurements", async () => {
     const usage = [
       new ResourceUsage(1000, 50, 1024 * 1024),
       new ResourceUsage(2000, 25, 2 * 1024 * 1024),
     ];
     const wrapper = shallowMount(ResourceChartComponent, {
       props: { resourceUsage: usage },
+      attachTo: document.body,
       global: {
         stubs: {
           apexchart: {
@@ -91,12 +92,33 @@ describe("server interaction components", () => {
         },
       },
     });
+    await vi.waitFor(() =>
+      expect(wrapper.findComponent({ name: "ApexChart" }).exists()).toBe(true),
+    );
     expect(
       wrapper.findComponent({ name: "ApexChart" }).props("series"),
     ).toEqual([
       { name: "gui.views.server.resource_usage.cpu", data: [0.5, 0.25] },
       { name: "gui.views.server.resource_usage.memory", data: [1, 2] },
     ]);
+    wrapper.unmount();
+  });
+
+  it("only renders the chart once its element is attached to the document", async () => {
+    const wrapper = shallowMount(ResourceChartComponent, {
+      props: { resourceUsage: [] },
+      global: {
+        stubs: {
+          apexchart: { name: "ApexChart", template: "<div />" },
+        },
+      },
+    });
+    await flushPromises();
+    expect(wrapper.findComponent({ name: "ApexChart" }).exists()).toBe(false);
+    document.body.appendChild(wrapper.element);
+    await vi.waitFor(() =>
+      expect(wrapper.findComponent({ name: "ApexChart" }).exists()).toBe(true),
+    );
     wrapper.unmount();
   });
 

@@ -581,6 +581,10 @@ export default class Server extends CommonServer {
       );
     });
 
+    this.wakeUpListener.on("error", (error: Error) => {
+      console.warn("Wake-up listener ignored invalid packet:", error.message);
+    });
+
     this.wakeUpListener.on("login", async (client: Client) => {
       await this.sendConsoleMessage(
         new Message(

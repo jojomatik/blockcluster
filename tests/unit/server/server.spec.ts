@@ -12,6 +12,7 @@ import fs from "fs";
 import path from "path";
 import { syncBuiltinESMExports } from "node:module";
 import childProcess from "child_process";
+import net, { type AddressInfo } from "net";
 import commandExists from "../../../server/utils/command_exists";
 import mc from "minecraft-protocol";
 import { EventEmitter } from "events";
@@ -418,6 +419,48 @@ describe("backend Server", () => {
     expect(server.resourceUsage).toHaveLength(60);
     expect(server.resourceUsage[0]?.time).toBe(1);
     expect(server.resourceUsage[59]?.time).toBe(60);
+  });
+
+  it("ignores malformed packets while waiting for wake-up connections", async () => {
+    const server = new Server({ _name: "survival" });
+    const portProbe = net.createServer();
+    await new Promise<void>((resolve) => portProbe.listen(0, resolve));
+    const address = portProbe.address();
+    if (!address || typeof address === "string")
+      throw new Error("Expected a numeric localhost port.");
+    await new Promise<void>((resolve, reject) =>
+      portProbe.close((error) => {
+        if (error) reject(error);
+        else resolve();
+      }),
+    );
+    server.port = (address as AddressInfo).port;
+    let wakeUpListener: EventEmitter | undefined;
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+
+    try {
+      await server.waitForConnection();
+      wakeUpListener = (server as unknown as { wakeUpListener?: EventEmitter })
+        .wakeUpListener;
+
+      expect(wakeUpListener).toBeDefined();
+      expect(wakeUpListener?.listenerCount("error")).toBeGreaterThan(0);
+      expect(() =>
+        wakeUpListener?.emit(
+          "error",
+          new Error("Chunk size is 79 but only 1 was read"),
+        ),
+      ).not.toThrow();
+      expect(warn).toHaveBeenCalledWith(
+        "Wake-up listener ignored invalid packet:",
+        "Chunk size is 79 but only 1 was read",
+      );
+    } finally {
+      (
+        wakeUpListener as unknown as { close?: () => void } | undefined
+      )?.close?.();
+      warn.mockRestore();
+    }
   });
 
   describe("installUpdate", () => {

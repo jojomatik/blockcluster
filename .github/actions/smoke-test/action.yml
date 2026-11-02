@@ -4,6 +4,10 @@ inputs:
   image:
     description: Local Docker image ID to test
     required: true
+  chromatic-token:
+    description: Chromatic project token for the Playwright project; snapshots are only uploaded when set
+    required: false
+    default: ""
 runs:
   using: composite
   steps:
@@ -48,6 +52,13 @@ runs:
     - name: Check backend and homepage
       shell: bash
       run: yarn --cwd tests/smoke test
+    - name: Check backend and homepage and publish to Chromatic
+      if: ${{ inputs.chromatic-token != '' }}
+      uses: chromaui/action@5bcadb5104b09e360e210c54f95a7437c2d82bab # v18.13.3
+      with:
+        playwright: true
+        workingDir: tests/smoke
+        projectToken: ${{ inputs.chromatic-token }}
     - name: Show container logs
       if: ${{ always() && steps.container.outcome != 'skipped' }}
       shell: bash

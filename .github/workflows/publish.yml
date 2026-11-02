@@ -42,6 +42,8 @@ jobs:
       - yarn_build
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
       - name: Docker meta
         id: docker_meta
         uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6.2.0
@@ -76,6 +78,7 @@ jobs:
         uses: ./.github/actions/smoke-test
         with:
           image: ${{ steps.build.outputs.imageid }}
+          chromatic-token: ${{ secrets.CHROMATIC_SMOKE_PROJECT_TOKEN }}
   semantic-release:
     if: ${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/beta' }}
     name: Create a semantic release

@@ -1,14 +1,35 @@
 import { execFileSync } from "node:child_process";
+import { readdirSync, readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { expect, test } from "./fixtures";
 
+// Set SMOKE_LOCAL=1 to skip `docker exec` and inspect the servers directory of a locally running app instead.
+const local = ["1", "true"].includes(process.env.SMOKE_LOCAL ?? "");
 const container = process.env.SMOKE_CONTAINER || "blockcluster-smoke";
-const serversPath = "/usr/games/blockcluster/servers";
+const serversPath = local
+  ? resolve(process.env.SMOKE_SERVERS_PATH || "../../servers")
+  : "/usr/games/blockcluster/servers";
 const customPort = 25570;
+// Pin the major version: a new major can require a newer Java runtime than
+// the environment provides. Update this deliberately when bumping the Java runtimes.
+const paperMajor = process.env.SMOKE_PAPER_MAJOR || "26";
 
-function inContainer(...command: string[]): string {
-  return execFileSync("docker", ["exec", container, ...command], {
-    encoding: "utf8",
-  });
+function listDirectory(path: string): string[] {
+  return local
+    ? readdirSync(path)
+    : execFileSync("docker", ["exec", container, "ls", "-A", path], {
+        encoding: "utf8",
+      })
+        .split("\n")
+        .filter(Boolean);
+}
+
+function readFile(path: string): string {
+  return local
+    ? readFileSync(path, "utf8")
+    : execFileSync("docker", ["exec", container, "cat", path], {
+        encoding: "utf8",
+      });
 }
 
 test("accepts the EULA through the UI and starts a Paper server", async ({
@@ -18,14 +39,20 @@ test("accepts the EULA through the UI and starts a Paper server", async ({
   await page.goto("/");
 
   const serverName = `smoke-eula-${Date.now()}`;
-  await page.getByRole("button", { name: "Create server" }).click();
+  // Clicks before hydration has attached the handler are lost, so retry until the dialog opens.
+  await expect(async () => {
+    await page.getByRole("button", { name: "Create server" }).click();
+    await expect(page.getByLabel("Server directory name")).toBeVisible({
+      timeout: 2_000,
+    });
+  }).toPass({ timeout: 30_000 });
   await page.getByLabel("Server directory name").fill(serverName);
   await page.getByLabel("Port").fill(String(customPort));
 
   await page.locator(".v-dialog .v-select").click();
-  // Pin the major version: a new major can require a newer Java runtime than
-  // the image provides. Update this deliberately when bumping the Java runtimes.
-  const availableVersion = page.getByRole("option", { name: /^26\./ }).first();
+  const availableVersion = page
+    .getByRole("option", { name: new RegExp(`^${paperMajor}\\.`) })
+    .first();
   await expect(availableVersion).toBeVisible({ timeout: 30_000 });
   await availableVersion.click();
   await page.getByRole("button", { name: /^create$/i }).click();
@@ -38,14 +65,14 @@ test("accepts the EULA through the UI and starts a Paper server", async ({
 
   await expect(
     page.getByText(
-      /You need to agree to the EULA in order to run the server\..*eula\.txt/i
-    )
+      /You need to agree to the EULA in order to run the server\..*eula\.txt/i,
+    ),
   ).toBeVisible({ timeout: 180_000 });
 
   const eulaDialog = page.getByRole("dialog");
   await expect(eulaDialog).toBeVisible();
   await expect(
-    eulaDialog.getByRole("link", { name: "Read the Minecraft EULA" })
+    eulaDialog.getByRole("link", { name: "Read the Minecraft EULA" }),
   ).toHaveAttribute("href", "https://www.minecraft.net/en-us/eula");
 
   const startButton = eulaDialog.getByRole("button", {
@@ -55,7 +82,7 @@ test("accepts the EULA through the UI and starts a Paper server", async ({
   // Vuetify overlays the native input, so toggle the checkbox through its label.
   await eulaDialog.getByText("I agree to the Minecraft EULA").click();
   await expect(
-    eulaDialog.getByRole("checkbox", { name: "I agree to the Minecraft EULA" })
+    eulaDialog.getByRole("checkbox", { name: "I agree to the Minecraft EULA" }),
   ).toBeChecked();
   await startButton.click();
 
@@ -70,7 +97,7 @@ test("accepts the EULA through the UI and starts a Paper server", async ({
   });
 
   const serverDirectory = `${serversPath}/${serverName}`;
-  const files = inContainer("ls", "-A", serverDirectory).split("\n");
+  const files = listDirectory(serverDirectory);
   expect(files).toEqual(
     expect.arrayContaining([
       "eula.txt",
@@ -80,14 +107,12 @@ test("accepts the EULA through the UI and starts a Paper server", async ({
       "config",
       "logs",
       "world",
-    ])
+    ]),
   );
   expect(files.some((file) => /^paper-.*\.jar$/.test(file))).toBe(true);
-  expect(inContainer("cat", `${serverDirectory}/eula.txt`)).toMatch(
-    /^eula=true$/m
+  expect(readFile(`${serverDirectory}/eula.txt`)).toMatch(/^eula=true$/m);
+  expect(readFile(`${serverDirectory}/server.properties`)).toMatch(
+    new RegExp(`^server-port=${customPort}$`, "m"),
   );
-  expect(inContainer("cat", `${serverDirectory}/server.properties`)).toMatch(
-    new RegExp(`^server-port=${customPort}$`, "m")
-  );
-  expect(inContainer("ls", `${serverDirectory}/logs`)).toContain("latest.log");
+  expect(listDirectory(`${serverDirectory}/logs`)).toContain("latest.log");
 });

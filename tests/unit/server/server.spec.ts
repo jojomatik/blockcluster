@@ -436,6 +436,21 @@ describe("backend Server", () => {
       expect(paper.installPaperJar).not.toHaveBeenCalled();
     });
 
+    it("allows updates while the server is sleeping", async () => {
+      const server = new Server({
+        _name: "s",
+        _status: ServerStatus.Paused,
+      });
+      vi.spyOn(server, "update").mockResolvedValue(undefined);
+      vi.spyOn(server, "sendServerData").mockImplementation(() => undefined);
+      const target = { version: "1.21.8", build: 5 };
+      await expect(server.installUpdate(target)).resolves.toBeUndefined();
+      expect(paper.installPaperJar).toHaveBeenCalledWith(
+        expect.any(String),
+        target,
+      );
+    });
+
     it("fails if no update is available", async () => {
       const server = new Server({
         _name: "s",

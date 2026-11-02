@@ -252,8 +252,11 @@ export default class Server extends CommonServer {
   ): Promise<void> {
     if (this.updateInProgress)
       throw new Error("A jar update is already in progress.");
-    if (this.status !== ServerStatus.Stopped)
-      throw new Error("The server must be stopped to update it.");
+    if (
+      this.status !== ServerStatus.Stopped &&
+      this.status !== ServerStatus.Paused
+    )
+      throw new Error("The server must be stopped or sleeping to update it.");
     this.updateInProgress = true;
     try {
       if (typeof type === "object" && "file" in type) {

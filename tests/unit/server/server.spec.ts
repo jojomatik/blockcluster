@@ -440,9 +440,8 @@ describe("backend Server", () => {
 
     try {
       await server.waitForConnection();
-      wakeUpListener = (
-        server as unknown as { wakeUpListener?: EventEmitter }
-      ).wakeUpListener;
+      wakeUpListener = (server as unknown as { wakeUpListener?: EventEmitter })
+        .wakeUpListener;
 
       expect(wakeUpListener).toBeDefined();
       expect(wakeUpListener?.listenerCount("error")).toBeGreaterThan(0);
@@ -458,9 +457,7 @@ describe("backend Server", () => {
       );
     } finally {
       (
-        wakeUpListener as unknown as
-          | { close?: () => void }
-          | undefined
+        wakeUpListener as unknown as { close?: () => void } | undefined
       )?.close?.();
       warn.mockRestore();
     }

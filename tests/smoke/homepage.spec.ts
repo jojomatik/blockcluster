@@ -51,7 +51,7 @@ test("the container serves the about page with dependency notices", async ({
     has: page.getByText("Libraries", { exact: true }),
   });
   await expect(
-    libraries.getByRole("heading", { name: /^@vue\/runtime-dom\s/ })
+    libraries.getByRole("heading", { name: /^nuxt\s/ })
   ).toBeVisible();
   expect(errors).toEqual([]);
 });

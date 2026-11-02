@@ -22,6 +22,7 @@ import {
   listPaperBuilds,
   listPaperVersions,
 } from "../../components/paper";
+import { upsertServerConfig } from "../../db/config_store";
 const createServerBodySchema = z.object({
   version: z
     .string()
@@ -136,10 +137,13 @@ export default defineEventHandler(async (event) => {
 
     const server = new Server({ _name: name });
     server.port = requestedPort ?? getAvailablePort(servers);
-    fs.writeFileSync(
-      path.join(serverPath, "blockcluster.cfg"),
-      JSON.stringify({ creationPort: server.port }),
-    );
+    await upsertServerConfig(name, {
+      creationPort: server.port,
+      flags: [],
+      autostart: false,
+      pauseOnIdle: { enable: false, timeout: 300 },
+      javaPath: null,
+    });
     servers.push(server);
     registeredServer = server;
     await server.update();

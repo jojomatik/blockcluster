@@ -12,6 +12,8 @@
     "build": "nuxi build",
     "start": "node .output/server/index.mjs",
     "postinstall": "nuxi prepare",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
     "test:unit": "vitest run --coverage",
     "lint": "eslint . --max-warnings 0",
     "semantic-release": "semantic-release",
@@ -21,9 +23,11 @@
     "chromatic": "chromatic"
   },
   "dependencies": {
+    "@electric-sql/pglite": "0.5.14",
     "@jojomatik/nuxt-bundle": "2.0.0-beta.33",
     "apexcharts": "8.6.0",
     "dayjs": "1.11.23",
+    "drizzle-orm": "0.45.4",
     "engine.io": "6.6.11",
     "minecraft-protocol": "1.68.0",
     "nuxt": "4.6.3",
@@ -45,6 +49,7 @@
     "@types/semver": "7.8.0",
     "@vitest/coverage-v8": "5.0.5",
     "@vue/test-utils": "2.5.1",
+    "drizzle-kit": "0.31.11",
     "eslint": "10.14.0",
     "happy-dom": "21.0.4",
     "typescript": "7.0.2",

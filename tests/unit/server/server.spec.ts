@@ -25,6 +25,11 @@ import { getJavaRuntimes } from "../../../server/components/java_runtime";
 import Server from "../../../server/components/server";
 import ResourceUsage from "#shared/components/resource_usage";
 import ServerConfig from "../../../server/components/server_config";
+import {
+  closeConfigStore,
+  getServerConfig,
+  initializeConfigStore,
+} from "../../../server/db/config_store";
 const serverMocks = vi.hoisted(() => ({
   basePath: `${process.cwd()}/.test-server-components`,
   mockIoEmit: vi.fn(),
@@ -72,6 +77,9 @@ describe("backend Server", () => {
     });
     mockGetJavaRuntimes.mockReset();
     mockGetJavaRuntimes.mockReturnValue([{ isDefault: true, path: "/java" }]);
+  });
+  afterEach(async () => {
+    await closeConfigStore();
   });
 
   it("marks a reachable process started and resolves a safe start", async () => {
@@ -148,7 +156,8 @@ describe("backend Server", () => {
     );
   });
 
-  it("writes updated settings to blockcluster.cfg", async () => {
+  it("writes updated settings to the DB config store", async () => {
+    await initializeConfigStore(serverMocks.basePath);
     const server = new Server({ _name: "survival" });
     const update = vi.spyOn(server, "update").mockResolvedValue(undefined);
     const settings = {
@@ -161,19 +170,16 @@ describe("backend Server", () => {
     try {
       await server.updateConfig(settings);
 
-      expect(
-        JSON.parse(
-          fs.readFileSync(
-            path.join(serverMocks.basePath, "survival", "blockcluster.cfg"),
-            "utf8",
-          ),
-        ),
-      ).toEqual(settings);
+      const saved = await getServerConfig("survival");
+      expect(saved).toEqual({
+        ...settings,
+        creationPort: undefined,
+      });
       expect(update).toHaveBeenCalledTimes(1);
     } finally {
       update.mockRestore();
     }
-  });
+  }, 15000);
 
   it("records EULA acceptance and broadcasts startup and running states", async () => {
     vi.useFakeTimers();

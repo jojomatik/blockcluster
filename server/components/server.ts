@@ -42,6 +42,7 @@ import {
   listOldJars,
   restoreOldJar,
 } from "./paper";
+import { getServerConfig, upsertServerConfig } from "../db/config_store";
 
 /**
  * The server side implementation of {@link CommonServer} with additional methods that won't run on the client side.
@@ -315,18 +316,15 @@ export default class Server extends CommonServer {
    * @private
    */
   private async readConfig(): Promise<ServerConfig> {
-    let conf: ServerConfig;
-    try {
-      conf = Object.assign(
-        new ServerConfig(),
-        JSON.parse(
-          String(fs.readFileSync(this.getPath() + "/blockcluster.cfg")),
-        ),
-      );
-    } catch {
-      conf = new ServerConfig();
-    }
-    return conf;
+    const config = await getServerConfig(this.name);
+    const persisted = new ServerConfig(
+      config.flags,
+      config.autostart,
+      config.pauseOnIdle,
+      config.javaPath,
+    );
+    persisted.creationPort = config.creationPort;
+    return persisted;
   }
 
   /**
@@ -334,11 +332,13 @@ export default class Server extends CommonServer {
    * @private
    */
   private async writeConfig(): Promise<void> {
-    await fs.writeFileSync(
-      this.getPath() + "/blockcluster.cfg",
-      JSON.stringify(this.config),
-      { mode: 0o666 },
-    );
+    await upsertServerConfig(this.name, {
+      creationPort: this.config.creationPort,
+      flags: this.config.flags,
+      autostart: this.config.autostart,
+      pauseOnIdle: this.config.pauseOnIdle,
+      javaPath: this.config.javaPath,
+    });
   }
 
   /**

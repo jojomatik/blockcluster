@@ -19,6 +19,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 <template>
   <ClientOnly>
     <VueApexChart height="200px" :options="chartOptions" :series="series" />
+    <template #fallback>
+      <v-skeleton-loader class="chart-placeholder" type="image" height="215" />
+    </template>
   </ClientOnly>
 </template>
 
@@ -93,4 +96,9 @@ const series = computed(() => [
 ]);
 </script>
 
-<style scoped></style>
+<style scoped>
+/* Match the space of the rendered chart so the page does not shift once it is drawn. */
+.chart-placeholder :deep(.v-skeleton-loader__image) {
+  height: 100%;
+}
+</style>

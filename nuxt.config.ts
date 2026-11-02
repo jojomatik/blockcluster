@@ -26,6 +26,8 @@ export default defineNuxtConfig({
   },
   vuetify: {
     vuetifyOptions,
+    // Nuxt 4.6+ ships a built-in `useLayout` which collides with Vuetify's.
+    moduleOptions: { prefixComposables: ["useLayout"] },
   },
   // The app uses static assets and doesn't need server-side image processing.
   image: { provider: "none" },

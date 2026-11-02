@@ -69,6 +69,14 @@ test("accepts the EULA through the UI and starts a Paper server", async ({
     timeout: 60_000,
   });
 
+  // Client-side navigation (no page reload) back to the home screen; the
+  // fixture fails the test on any console errors or warnings raised on the way.
+  await page.getByRole("tab", { name: "Home" }).click();
+  await expect(page).toHaveURL(/\/$/);
+  await expect(
+    page.getByRole("link", { name: new RegExp(serverName) })
+  ).toBeVisible();
+
   const serverDirectory = `${serversPath}/${serverName}`;
   const files = inContainer("ls", "-A", serverDirectory).split("\n");
   expect(files).toEqual(

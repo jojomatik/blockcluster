@@ -24,6 +24,10 @@ export default defineNuxtConfig({
   },
   // SEO is not a goal of this project.
   seo: { automaticTwitterTags: false },
+  $development: {
+    // The skew protection service worker is only built for production.
+    skewProtection: { enabled: false },
+  },
   sitemap: {
     zeroPrerender: true,
   },

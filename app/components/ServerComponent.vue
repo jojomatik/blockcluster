@@ -74,7 +74,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         {{ server.jar }}
                         <VersionDialogComponent
                           :server="server"
-                          :disabled="server.status !== ServerStatus.Stopped"
+                          :disabled="
+                            server.status !== ServerStatus.Stopped &&
+                            server.status !== ServerStatus.Paused
+                          "
                           :updates="updates"
                           :updates-error="updatesError"
                           :updates-loading="updatesLoading"

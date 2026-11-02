@@ -17,12 +17,20 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 -->
 
 <template>
-  <ClientOnly>
-    <VueApexChart height="200px" :options="chartOptions" :series="series" />
-    <template #fallback>
-      <v-skeleton-loader class="chart-placeholder" type="image" height="215" />
-    </template>
-  </ClientOnly>
+  <div ref="root">
+    <VueApexChart
+      v-if="attached"
+      height="200px"
+      :options="chartOptions"
+      :series="series"
+    />
+    <v-skeleton-loader
+      v-else
+      class="chart-placeholder"
+      type="image"
+      height="215"
+    />
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -39,6 +47,27 @@ const props = defineProps<{
    */
   resourceUsage: ResourceUsage[];
 }>();
+
+const root = ref<HTMLElement | null>(null);
+const attached = ref(false);
+let disposed = false;
+
+// During page transitions the component is mounted while still detached from the document. ApexCharts cannot render into a detached element, so the chart is only created once the element is attached.
+onMounted(() => {
+  const waitForAttach = () => {
+    if (disposed) return;
+    if (root.value?.isConnected) {
+      attached.value = true;
+    } else {
+      requestAnimationFrame(waitForAttach);
+    }
+  };
+  waitForAttach();
+});
+
+onBeforeUnmount(() => {
+  disposed = true;
+});
 
 const { t } = useI18n();
 const theme = useTheme();

@@ -2,7 +2,7 @@ import { getLocales } from "@jojomatik/nuxt-bundle";
 import vuetifyOptions from "./vuetify-options";
 
 export default defineNuxtConfig({
-  extends: "@jojomatik/nuxt-bundle",
+  extends: ["@jojomatik/nuxt-bundle"],
   app: {
     head: {
       titleTemplate: "%s - blockcluster",
@@ -26,6 +26,8 @@ export default defineNuxtConfig({
   },
   vuetify: {
     vuetifyOptions,
+    // Nuxt 4.6+ ships a built-in `useLayout` which collides with Vuetify's.
+    moduleOptions: { prefixComposables: ["useLayout"] },
   },
   // The app uses static assets and doesn't need server-side image processing.
   image: { provider: "none" },

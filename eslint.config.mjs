@@ -4,7 +4,7 @@ import eslintPluginPrettierRecommended from "eslint-plugin-prettier/recommended"
 
 export default withNuxt([
   {
-    ignores: ["tests/smoke/**"],
+    ignores: ["tests/smoke/test-results/**"],
   },
   eslintPluginPrettierRecommended,
   ...storybook.configs["flat/recommended"],

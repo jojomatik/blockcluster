@@ -1,6 +1,6 @@
-import { expect, test as base } from "@playwright/test";
+import { expect, test as base } from "@chromatic-com/playwright";
 
-export { expect };
+export { expect, takeSnapshot } from "@chromatic-com/playwright";
 
 // Vuetify inlines its styles in dev mode, which exceeds unhead's default critical CSS budget. Not relevant for this app.
 const allowedMessages = [/^\[unhead\] Inline <style> is [\d.]+KB/];

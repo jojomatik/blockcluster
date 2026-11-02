@@ -1,7 +1,7 @@
 import { execFileSync } from "node:child_process";
 import { readdirSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { expect, test } from "./fixtures";
+import { expect, takeSnapshot, test } from "./fixtures";
 
 // Set SMOKE_LOCAL=1 to skip `docker exec` and inspect the servers directory of a locally running app instead.
 const local = ["1", "true"].includes(process.env.SMOKE_LOCAL ?? "");
@@ -32,9 +32,9 @@ function readFile(path: string): string {
       });
 }
 
-test("accepts the EULA through the UI and starts a Paper server", async ({
+test("Accepts the EULA through the UI and starts a Paper server", async ({
   page,
-}) => {
+}, testInfo) => {
   test.setTimeout(240_000);
   await page.goto("/");
 
@@ -69,6 +69,8 @@ test("accepts the EULA through the UI and starts a Paper server", async ({
     ),
   ).toBeVisible({ timeout: 180_000 });
 
+  await takeSnapshot(page, "Server - EULA Required", testInfo);
+
   const eulaDialog = page.getByRole("dialog");
   await expect(eulaDialog).toBeVisible();
   await expect(
@@ -84,17 +86,24 @@ test("accepts the EULA through the UI and starts a Paper server", async ({
   await expect(
     eulaDialog.getByRole("checkbox", { name: "I agree to the Minecraft EULA" }),
   ).toBeChecked();
+
+  await takeSnapshot(page, "Server - EULA Dialog Accepted", testInfo);
+
   await startButton.click();
 
   await expect(page.getByText("Started", { exact: true }).first()).toBeVisible({
     timeout: 180_000,
   });
 
+  await takeSnapshot(page, "Server - Server Started", testInfo);
+
   // Stop the server so the Java process exits cleanly.
   await page.getByRole("button", { name: "Stop", exact: true }).click();
   await expect(page.getByText("Stopped", { exact: true }).first()).toBeVisible({
     timeout: 60_000,
   });
+
+  await takeSnapshot(page, "Server - Server Stopped", testInfo);
 
   const serverDirectory = `${serversPath}/${serverName}`;
   const files = listDirectory(serverDirectory);

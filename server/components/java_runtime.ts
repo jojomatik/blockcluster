@@ -51,13 +51,17 @@ const where = "where";
  * @param path the path that should be checked.
  */
 function isJavaDir(path: string): boolean {
-  const isDir: boolean = fs.lstatSync(path).isDirectory();
-  const hasBin = fs.readdirSync(path).includes(bin);
-  const hasJava: boolean = fs
-    .readdirSync(path + "/" + bin)
-    .map((file) => file.slice(0, 4)) // ignore file type
-    .includes(java);
-  return isDir && hasBin && hasJava;
+  try {
+    if (!fs.lstatSync(path).isDirectory()) return false;
+    if (!fs.readdirSync(path).includes(bin)) return false;
+    return fs
+      .readdirSync(path + "/" + bin)
+      .map((file) => file.slice(0, 4)) // ignore file type
+      .includes(java);
+  } catch {
+    // Unreadable or inaccessible directories (e.g. EACCES) are not java runtimes.
+    return false;
+  }
 }
 
 /**

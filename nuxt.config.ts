@@ -20,7 +20,10 @@ export default defineNuxtConfig({
   },
   site: {
     url: process.env.NUXT_PUBLIC_SITE_URL ?? "https://blockcluster.org",
+    description: "An in-browser manager for your minecraft servers.",
   },
+  // SEO is not a goal of this project.
+  seo: { automaticTwitterTags: false },
   sitemap: {
     zeroPrerender: true,
   },

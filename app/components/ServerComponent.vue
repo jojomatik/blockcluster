@@ -358,7 +358,9 @@ const {
   detailedOptions,
 );
 const javaRuntimesLoading = computed(
-  () => javaRuntimesStatus.value === "pending",
+  () =>
+    javaRuntimesStatus.value === "pending" ||
+    (detailed && javaRuntimesStatus.value === "idle"),
 );
 const javaRuntimes = computed<JavaRuntime[]>(() =>
   (javaRuntimeData.value ?? []).map((elem) =>
@@ -388,7 +390,11 @@ const {
     ),
   detailedOptions,
 );
-const infoLoading = computed(() => infoStatus.value === "pending");
+// "idle" is the SSR status of client-only fetches; treating it as loading keeps server and client markup identical.
+const infoLoading = computed(
+  () =>
+    infoStatus.value === "pending" || (detailed && infoStatus.value === "idle"),
+);
 
 watch(serverInfo, (data) => {
   if (!data) return;

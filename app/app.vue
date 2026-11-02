@@ -145,7 +145,17 @@ const theme = useTheme();
 const config = useRuntimeConfig();
 type AppLocale = typeof locale.value;
 
-useHead({ htmlAttrs: { lang: locale } });
+/**
+ * Whether Vuetify has measured the app bar. Until then the server rendered layout reserves no space for it.
+ */
+const layoutReady = ref(false);
+
+useHead({
+  htmlAttrs: {
+    lang: locale,
+    class: computed(() => (layoutReady.value ? "layout-ready" : undefined)),
+  },
+});
 
 /**
  * The current version of this software. Either a release version (e.g. `v0.1.0`) or a short commit SHA.
@@ -163,6 +173,7 @@ const dark = computed(() => theme.current.value.dark);
  * Loads the selected theme and language from local storage.
  */
 onMounted(() => {
+  void nextTick(() => (layoutReady.value = true));
   theme.change(localStorage.getItem("dark") === "true" ? "dark" : "light");
   const lang = localStorage.getItem("lang");
   if (lang && isAvailableLocale(lang)) void setLocale(lang);
@@ -188,6 +199,13 @@ function isAvailableLocale(value: string): value is AppLocale {
   return availableLocales.some((availableLocale) => availableLocale === value);
 }
 </script>
+
+<style lang="scss">
+// The app bar height is only known after mounting, so reserve its default height in the server rendered page.
+html:not(.layout-ready) .v-main {
+  padding-top: 64px;
+}
+</style>
 
 <style lang="scss" scoped>
 .footer {

@@ -289,10 +289,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
       </v-row>
     </v-card-text>
     <v-card-actions>
-      <v-btn
-        variant="elevated"
-        :to="'/server/' + encodeURIComponent(server.name)"
-      >
+      <!-- The card itself is the link. A nested <a> would be invalid HTML and be split by the browser parser. -->
+      <v-btn variant="elevated" tag="span">
         {{ t("gui.views.home.server.details") }}
       </v-btn>
     </v-card-actions>

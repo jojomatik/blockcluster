@@ -9655,10 +9655,10 @@ pify@^3.0.0:
   resolved "https://registry.yarnpkg.com/pify/-/pify-3.0.0.tgz#e5a4acd2c101fdf3d9a4d07f0dbc4db49dd28176"
   integrity sha512-C3FsVNH1udSEX48gGX1xfvwTWfsYWj5U+8/uK15BGzIGrKoUpghX8hWZwa/OFnakBiiVNmBvemTJR5mcy7iPcg==
 
-pixelheads@1.0.20:
-  version "1.0.20"
-  resolved "https://registry.yarnpkg.com/pixelheads/-/pixelheads-1.0.20.tgz#c3d10eb05ede9308d9852510fc1478bf7f0abec1"
-  integrity sha512-bVxLtlQf47JgqnqUIOGB3VmXXM4hjs1NbVClBrIikiiKYVzWk8G9kyJ8gfVnw+m61KjAU5h6juJS3oljXzSUlA==
+pixelheads@1.0.21:
+  version "1.0.21"
+  resolved "https://registry.yarnpkg.com/pixelheads/-/pixelheads-1.0.21.tgz#c94158f2cc603f20415997a2de9d726e40e1a9ba"
+  integrity sha512-3p2kkkanNCGAl0uvDMz3wan0LkMNNGPHbW5GC30bCPeEY4URROMUpld8yCwFe2sEGkkRHmbFk5jXgBOZH03iJw==
   dependencies:
     axios "^1.2.6"
     sharp "^0.35.0"

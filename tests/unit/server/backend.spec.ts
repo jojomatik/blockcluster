@@ -13,6 +13,10 @@ import {
 } from "vitest";
 import type { Mock } from "vitest";
 import { createApp, createRouter, toNodeListener } from "h3";
+import {
+  getServerConfig,
+  upsertServerConfig,
+} from "../../../server/db/config_store";
 
 interface MockServerData {
   _name: string;
@@ -525,14 +529,7 @@ describe("Nitro backend", () => {
       path.join(serversPath, "Survival Server"),
       { version: "1.21.8", build: 9 },
     );
-    expect(
-      JSON.parse(
-        fs.readFileSync(
-          path.join(serversPath, "Survival Server", "blockcluster.cfg"),
-          "utf8",
-        ),
-      ).creationPort,
-    ).toBe(25568);
+    expect((await getServerConfig("Survival Server")).creationPort).toBe(25568);
   });
 
   it("rejects invalid, conflicting, and unavailable Paper creation requests", async () => {
@@ -705,7 +702,7 @@ describe("Nitro backend", () => {
     const logError = vi
       .spyOn(console, "error")
       .mockImplementation(() => undefined);
-    mocks.failNextWrite = true;
+    mocks.installPaperJar.mockRejectedValueOnce(new Error("download failed"));
     try {
       expect(
         await invoke("POST", "/api/servers", {
@@ -753,45 +750,18 @@ describe("Nitro backend", () => {
     mocks.autoStart = false;
   });
 
-  it.each(["creationPort", "port"])(
-    "continues loading a server when legacy %s cleanup fails",
-    async (key) => {
-      const directory = path.join(serversPath, "cleanup-failure");
-      fs.mkdirSync(directory, { recursive: true });
-      fs.writeFileSync(
-        path.join(directory, "server.properties"),
-        "server-port=30126",
-      );
-      const configPath = path.join(directory, "blockcluster.cfg");
-      const config = { [key]: 30123, flags: ["-Xmx2G"], autostart: true };
-      fs.writeFileSync(configPath, JSON.stringify(config));
-      const writeError = new Error("read-only config");
-      mocks.failWritePath = configPath;
-      mocks.failWriteError = writeError;
-      const logError = vi
-        .spyOn(console, "error")
-        .mockImplementation(() => undefined);
-      const previousCount = mocks.instances.length;
-      try {
-        await backend.stopBackend();
-        await backend.startBackend();
-        const restored = mocks.instances.slice(previousCount);
-        expect(
-          restored.find((entry) => entry.name === "cleanup-failure")?.port,
-        ).toBe(30126);
-        expect(fs.readFileSync(configPath, "utf8")).toBe(
-          JSON.stringify(config),
-        );
-        expect(logError).toHaveBeenCalledWith(
-          'Could not clean up legacy port config for server "cleanup-failure".',
-          writeError,
-        );
-      } finally {
-        mocks.failWriteError = undefined;
-        logError.mockRestore();
-      }
-    },
-  );
+  it("deletes legacy config files after first-start import", () => {
+    expect(
+      fs.existsSync(
+        path.join(serversPath, "paper-uninitialized", "blockcluster.cfg"),
+      ),
+    ).toBe(false);
+    expect(
+      fs.existsSync(
+        path.join(serversPath, "another-uninitialized", "blockcluster.cfg"),
+      ),
+    ).toBe(false);
+  });
 
   it("restores configured ports after restart and reports occupied conflicts", async () => {
     const occupied = net.createServer();
@@ -810,10 +780,13 @@ describe("Nitro backend", () => {
       const directory = path.join(serversPath, name);
       fs.mkdirSync(directory);
       fs.writeFileSync(path.join(directory, "paper.jar"), "jar");
-      fs.writeFileSync(
-        path.join(directory, "blockcluster.cfg"),
-        JSON.stringify({ creationPort: port }),
-      );
+      await upsertServerConfig(name, {
+        creationPort: port,
+        flags: [],
+        autostart: false,
+        pauseOnIdle: { enable: false, timeout: 300 },
+        javaPath: null,
+      });
     }
     fs.writeFileSync(
       path.join(serversPath, "z-properties-port", "server.properties"),

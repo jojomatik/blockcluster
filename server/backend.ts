@@ -25,13 +25,18 @@ import { ServerStatus } from "#shared/components/server";
 import Server from "./components/server";
 import path from "path";
 import net from "net";
-import type ServerConfig from "./components/server_config";
 
 import { getVersion } from "#shared/version";
 import type { ServerPropertiesFile } from "#shared/components/server_properties";
 import { getPropertiesFromFile } from "#shared/components/server_properties";
 import pidusage from "pidusage";
 import ResourceUsage from "#shared/components/resource_usage";
+import {
+  closeConfigStore,
+  getServerConfig,
+  initializeConfigStore,
+  updateServerCreationPort,
+} from "./db/config_store";
 
 /**
  * The current version of this software. Either a release version (e.g. `v0.1.0`) or a short commit SHA.
@@ -136,42 +141,18 @@ export async function getServers(): Promise<Server[]> {
           ),
         })
       : new Server({ _name: file });
-    let configuredPort: number | undefined;
-    let config: (ServerConfig & { port?: number }) | undefined;
-    try {
-      const loadedConfig: ServerConfig & { port?: number } = JSON.parse(
-        fs.readFileSync(path.join(serverPath, "blockcluster.cfg"), "utf8"),
-      );
-      config = loadedConfig;
-      const savedPort = loadedConfig.creationPort ?? loadedConfig.port;
-      if (
-        typeof savedPort === "number" &&
-        Number.isInteger(savedPort) &&
-        savedPort >= 1024 &&
-        savedPort <= 65535
-      ) {
-        configuredPort = savedPort;
-      }
-    } catch {
-      // Existing servers may not have a blockcluster config yet.
-    }
+    const config = await getServerConfig(server.name);
+    const configuredPort = config.creationPort;
     if (hasProperties) {
-      if (config && ("creationPort" in config || "port" in config)) {
-        delete config.creationPort;
-        delete config.port;
-        try {
-          fs.writeFileSync(
-            path.join(serverPath, "blockcluster.cfg"),
-            JSON.stringify(config),
-          );
-        } catch (error) {
-          console.error(
-            `Could not clean up legacy port config for server "${server.name}".`,
-            error,
-          );
-        }
+      if (configuredPort !== undefined) {
+        await updateServerCreationPort(server.name, undefined);
       }
-    } else if (configuredPort !== undefined) {
+    } else if (
+      typeof configuredPort === "number" &&
+      Number.isInteger(configuredPort) &&
+      configuredPort >= 1024 &&
+      configuredPort <= 65535
+    ) {
       if (
         configuredPort === port ||
         servers.some((server) => server.port === configuredPort) ||
@@ -227,6 +208,7 @@ let usageInterval: ReturnType<typeof setInterval> | undefined;
  */
 export async function startBackend(): Promise<void> {
   fs.mkdirSync(basePath, { recursive: true });
+  await initializeConfigStore(basePath);
   const loadedServers = await getServers();
   servers.splice(0, servers.length, ...loadedServers);
 
@@ -280,6 +262,7 @@ export async function stopBackend(): Promise<void> {
   watchedFiles.length = 0;
   clearInterval(usageInterval);
   await io.close();
+  await closeConfigStore();
   console.log("Websocket stopped.");
 }
 

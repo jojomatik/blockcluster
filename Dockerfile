@@ -25,7 +25,7 @@ ENV GIT_SHA=$git_sha
 ENV GIT_REF=$git_ref
 RUN yarn build
 
-FROM eclipse-temurin:25-alpine@sha256:1e20ead9eec7234db293f1913438090d533ed47c0b9e12dc8c7627a802a44ed6 AS jdk-25
+FROM eclipse-temurin:25-alpine@sha256:425f0b733cb23843bd78dbe5552513976d0cf12b9722752c48a5161cf5cd2f32 AS jdk-25
 RUN /opt/java/openjdk/bin/jlink --output /opt/jre-25 --compress=2 --no-header-files --no-man-pages --module-path ../jmods --add-modules java.base,java.compiler,java.datatransfer,java.desktop,java.instrument,java.logging,java.management,java.management.rmi,java.naming,java.net.http,java.prefs,java.rmi,java.scripting,java.se,java.security.jgss,java.security.sasl,java.smartcardio,java.sql,java.sql.rowset,java.transaction.xa,java.xml,java.xml.crypto,jdk.crypto.cryptoki,jdk.crypto.ec,jdk.management,jdk.security.auth,jdk.unsupported,jdk.zipfs
 
 FROM eclipse-temurin:21-alpine@sha256:b78a1d385da875588e21207f07dddf9a1418849971ae857fb24c8f3a7d441a72 AS jdk-21

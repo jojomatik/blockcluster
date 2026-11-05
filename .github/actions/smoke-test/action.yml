@@ -54,7 +54,7 @@ runs:
       run: yarn --cwd tests/smoke test
     - name: Check backend and homepage and publish to Chromatic
       if: ${{ inputs.chromatic-token != '' }}
-      uses: chromaui/action@5bcadb5104b09e360e210c54f95a7437c2d82bab # v18.13.3
+      uses: chromaui/action@dc6182ace06884faf1d3edf73f652a80ca6dfddc # v18.13.4
       with:
         playwright: true
         workingDir: tests/smoke

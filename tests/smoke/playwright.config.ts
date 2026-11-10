@@ -11,5 +11,15 @@ export default defineConfig<ChromaticConfig>({
     locale: "en-US",
     // Snapshots are taken explicitly at the relevant points of each test.
     disableAutoSnapshot: true,
+    // These values come from the build or the running Minecraft server.
+    ignoreSelectors: [
+      ".v-footer a[href*='/tree/']",
+      ".v-footer a[href*='/releases/tag/']",
+      ".project-notice h5 code",
+      ".apexcharts-canvas",
+      ".server .server-name",
+      ".server .server-executable-name",
+      ".server .console-text > .v-row:first-child",
+    ],
   },
 });

@@ -4,7 +4,7 @@ import { ServerStatus } from "#shared/components/server";
 import { MessageType } from "#shared/components/message";
 import prepareEnum from "../../.storybook/enumPrepare";
 
-const now = Date.now();
+const now = new Date("2024-01-01T12:00:00.000Z").getTime();
 const msg = (i: number, type: MessageType, text: string) => ({
   _timestamp: now - 60000 + i * 1000,
   _uuid: `story-${i}`,

@@ -69,7 +69,18 @@ test("Accepts the EULA through the UI and starts a Paper server", async ({
     ),
   ).toBeVisible({ timeout: 180_000 });
 
-  await takeSnapshot(page, "Server - EULA Required", testInfo);
+  const assertSnapshotContent = async () => {
+    const name = page.locator(".server .server-name");
+    await expect(name).toHaveText(serverName);
+    const executable = page.locator(".server .server-executable-name");
+    await expect(executable).toBeVisible();
+  };
+  const takeServerSnapshot = async (name: string) => {
+    await assertSnapshotContent();
+    await takeSnapshot(page, name, testInfo);
+  };
+
+  await takeServerSnapshot("Server - EULA Required");
 
   const eulaDialog = page.getByRole("dialog");
   await expect(eulaDialog).toBeVisible();
@@ -87,7 +98,7 @@ test("Accepts the EULA through the UI and starts a Paper server", async ({
     eulaDialog.getByRole("checkbox", { name: "I agree to the Minecraft EULA" }),
   ).toBeChecked();
 
-  await takeSnapshot(page, "Server - EULA Dialog Accepted", testInfo);
+  await takeServerSnapshot("Server - EULA Dialog Accepted");
 
   await startButton.click();
 
@@ -95,7 +106,7 @@ test("Accepts the EULA through the UI and starts a Paper server", async ({
     timeout: 180_000,
   });
 
-  await takeSnapshot(page, "Server - Server Started", testInfo);
+  await takeServerSnapshot("Server - Server Started");
 
   // Stop the server so the Java process exits cleanly.
   await page.getByRole("button", { name: "Stop", exact: true }).click();
@@ -103,7 +114,7 @@ test("Accepts the EULA through the UI and starts a Paper server", async ({
     timeout: 60_000,
   });
 
-  await takeSnapshot(page, "Server - Server Stopped", testInfo);
+  await takeServerSnapshot("Server - Server Stopped");
 
   const serverDirectory = `${serversPath}/${serverName}`;
   const files = listDirectory(serverDirectory);

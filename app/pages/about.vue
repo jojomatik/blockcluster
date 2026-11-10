@@ -30,7 +30,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
           <v-card-text>
             {{ t("gui.views.about.description") }}
             <v-skeleton-loader v-if="loading" class="mt-4" type="article" />
-            <NoticeComponent v-else class="mt-4" :notice="projectNotice" />
+            <NoticeComponent
+              v-else
+              class="project-notice mt-4"
+              :notice="projectNotice"
+            />
           </v-card-text>
         </v-card>
       </v-col>

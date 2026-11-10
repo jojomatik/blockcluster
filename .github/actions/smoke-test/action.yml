@@ -59,6 +59,7 @@ runs:
         playwright: true
         workingDir: tests/smoke
         projectToken: ${{ inputs.chromatic-token }}
+        exitOnceUploaded: true
     - name: Show container logs
       if: ${{ always() && steps.container.outcome != 'skipped' }}
       shell: bash

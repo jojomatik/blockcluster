@@ -45,7 +45,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
               :src="server.favicon"
               :alt="t('gui.views.server.favicon.alt', { name: server.name })"
             />
-            {{ server.name }}
+            <span class="server-name">{{ server.name }}</span>
             <ServerStatusComponent :status="server.status" />
           </v-card-title>
           <v-card-text>
@@ -71,7 +71,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
                         {{ t("gui.views.server.executable") }}
                       </td>
                       <td>
-                        {{ server.jar }}
+                        <span class="server-executable-name">
+                          {{ server.jar }}
+                        </span>
                         <VersionDialogComponent
                           :server="server"
                           :disabled="
@@ -268,7 +270,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
         :src="server.favicon"
         :alt="t('gui.views.server.favicon.alt', { name: server.name })"
       />
-      {{ server.name }}
+      <span class="server-name">{{ server.name }}</span>
       <ServerStatusComponent :status="server.status" />
       <v-chip v-if="server.status === ServerStatus.Started" variant="flat">
         <PlayerStatsComponent :player-stats="server.players" :width="24" />

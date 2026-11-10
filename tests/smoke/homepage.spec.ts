@@ -82,6 +82,7 @@ test("The container serves the about page with dependency notices", async ({
   await expect(
     libraries.getByRole("heading", { name: /^nuxt\s/ }),
   ).toBeVisible();
+  await expect(page.locator(".project-notice h5 code")).toBeVisible();
   await takeSnapshot(page, "About - Notices loaded", testInfo);
   expect(errors).toEqual([]);
 });

@@ -1,6 +1,32 @@
-import { expect, test as base } from "@chromatic-com/playwright";
+import {
+  expect,
+  takeSnapshot as chromaticSnapshot,
+  test as base,
+} from "@chromatic-com/playwright";
+import type { Page, TestInfo } from "@playwright/test";
 
-export { expect, takeSnapshot } from "@chromatic-com/playwright";
+export { expect } from "@chromatic-com/playwright";
+
+export async function takeSnapshot(
+  page: Page,
+  name: string,
+  testInfo: TestInfo,
+) {
+  const logo = page.getByRole("img", {
+    name: "blockcluster Icon",
+    exact: true,
+  });
+  await expect(logo).toBeVisible();
+  await expect
+    .poll(() =>
+      logo.evaluate(
+        (image: HTMLImageElement) => image.complete && image.naturalWidth > 0,
+      ),
+    )
+    .toBe(true);
+
+  await chromaticSnapshot(page, name, testInfo);
+}
 
 // Vuetify inlines its styles in dev mode, which exceeds unhead's default critical CSS budget. Not relevant for this app.
 const allowedMessages = [/^\[unhead\] Inline <style> is [\d.]+KB/];

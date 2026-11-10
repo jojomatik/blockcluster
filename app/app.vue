@@ -27,12 +27,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
           style="height: 40px; padding: 0"
           class="ml-4 mr-2 rounded-pill"
         >
-          <v-img
-            alt="blockcluster Icon"
-            class="shrink"
-            src="/icon.svg"
-            width="40"
-          />
+          <img alt="blockcluster Icon" src="/icon.svg" width="40" height="40" />
         </v-chip>
         <v-app-bar-title style="letter-spacing: 1px">
           <h3>blockcluster</h3>

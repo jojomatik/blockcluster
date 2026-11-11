@@ -80,6 +80,9 @@ test("Accepts the EULA through the UI and starts a Paper server", async ({
     await takeSnapshot(page, name, testInfo);
   };
 
+  await expect(page.getByText("Stopped", { exact: true }).first()).toBeVisible({
+    timeout: 60_000,
+  });
   await takeServerSnapshot("Server - EULA Required");
 
   const eulaDialog = page.getByRole("dialog");

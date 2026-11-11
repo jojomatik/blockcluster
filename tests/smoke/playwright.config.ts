@@ -16,6 +16,8 @@ export default defineConfig<ChromaticConfig>({
       ".v-footer a[href*='/tree/']",
       ".v-footer a[href*='/releases/tag/']",
       ".project-notice h5 code",
+      // Library versions change with dependency updates.
+      ".v-card .v-col h5 code",
       ".apexcharts-canvas",
       ".server .server-name",
       ".server .server-executable-name",

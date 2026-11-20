@@ -15,9 +15,10 @@ export default defineConfig<ChromaticConfig>({
     ignoreSelectors: [
       ".v-footer a[href*='/tree/']",
       ".v-footer a[href*='/releases/tag/']",
-      ".project-notice h5 code",
-      // Library versions change with dependency updates.
-      ".v-card .v-col h5 code",
+      // Ignore notice contents, but retain the card outlines and layout.
+      ".notice-card > .v-card-title",
+      ".notice-card > .v-card-subtitle",
+      ".notice-card > .v-card-text",
       ".apexcharts-canvas",
       ".server .server-name",
       ".server .server-executable-name",

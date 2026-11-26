@@ -24,7 +24,7 @@
     "@jojomatik/nuxt-bundle": "2.0.3",
     "apexcharts": "8.9.1",
     "dayjs": "1.11.23",
-    "engine.io": "6.6.12",
+    "engine.io": "6.6.13",
     "minecraft-protocol": "1.68.0",
     "nuxt": "4.6.4",
     "pidusage": "4.1.0",

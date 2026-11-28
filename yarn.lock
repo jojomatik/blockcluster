@@ -4170,15 +4170,15 @@
   dependencies:
     "@rolldown/pluginutils" "^1.0.1"
 
-"@vitest/coverage-v8@5.1.1":
-  version "5.1.1"
-  resolved "https://registry.yarnpkg.com/@vitest/coverage-v8/-/coverage-v8-5.1.1.tgz#fa9ffc8dcec22ff0bde88df1d4db376c72e37801"
-  integrity sha512-xL4NkbVx/UqqDHaXSOyvB8qsSoLQ+dVNGR9H2Bh/4ggQtmaPFNPUC9gZQwKZePLOQ6WDcgwXVnPulFW9eCHt0w==
+"@vitest/coverage-v8@5.1.2":
+  version "5.1.2"
+  resolved "https://registry.yarnpkg.com/@vitest/coverage-v8/-/coverage-v8-5.1.2.tgz#65e91a4b55e1876057a34db40867af9b9f9748c6"
+  integrity sha512-VG0JLv0T4kr1fR6QAfe8PTou+Frc4t0u4j+oKgDH3djJpFawzBfGyX14/z56NXoCTNem3OEphzCJhc4DkE62xQ==
   dependencies:
     "@bcoe/v8-coverage" "^1.0.2"
-    "@vitest/istanbul-lib-coverage" "^2.1.0"
-    "@vitest/istanbul-lib-report" "^2.1.0"
-    ast-v8-to-istanbul "^1.0.7"
+    "@vitest/istanbul-lib-coverage" "^2.1.1"
+    "@vitest/istanbul-lib-report" "^2.1.1"
+    ast-v8-to-istanbul "^1.0.8"
     magicast "^0.5.5"
     obug "^3.0.0"
     std-env "^4.3.0"
@@ -4195,25 +4195,25 @@
     chai "^5.2.0"
     tinyrainbow "^2.0.0"
 
-"@vitest/istanbul-lib-coverage@2.1.1", "@vitest/istanbul-lib-coverage@^2.1.0":
+"@vitest/istanbul-lib-coverage@2.1.1", "@vitest/istanbul-lib-coverage@^2.1.1":
   version "2.1.1"
   resolved "https://registry.yarnpkg.com/@vitest/istanbul-lib-coverage/-/istanbul-lib-coverage-2.1.1.tgz#de2c39ea4f67fe9b844f3a67af44f9b507dbf90c"
   integrity sha512-pF9nMHHuyQzyEXdkWX3d4wElEKjymfL5TEoofegJn/jK2WjmTLOcJKfJ7/YwYGYdbZf8Ebrt4VDUoBPiTuO9zg==
 
-"@vitest/istanbul-lib-report@^2.1.0":
+"@vitest/istanbul-lib-report@^2.1.1":
   version "2.1.1"
   resolved "https://registry.yarnpkg.com/@vitest/istanbul-lib-report/-/istanbul-lib-report-2.1.1.tgz#670b2efc17bd30a9c90bd4795d6c3eadf396c118"
   integrity sha512-Qba+8OpQQAbWrmq3u1olh6jqE/vyW4OYJe6TLrrTBpXhjJhbY7Os69wyVvMQmNA64KJhGd5nQ/c7l4io8tPCHQ==
   dependencies:
     "@vitest/istanbul-lib-coverage" "2.1.1"
 
-"@vitest/mocker@5.1.1":
-  version "5.1.1"
-  resolved "https://registry.yarnpkg.com/@vitest/mocker/-/mocker-5.1.1.tgz#47b7815458abceb17e3b12218a7868376e02db56"
-  integrity sha512-b2OgTB4+3ImWIVafXKazJXwLKwQxUNnix6b3xUvUTMh7RyXlrtzoxfZr8aEz9zkHOMAS4K5lu3TvFWoiVeVTQg==
+"@vitest/mocker@5.1.2":
+  version "5.1.2"
+  resolved "https://registry.yarnpkg.com/@vitest/mocker/-/mocker-5.1.2.tgz#64291cafcc659f3058d0ddbcf8f45837bc8e9c1a"
+  integrity sha512-UGc97wUIy0Ji2+9GxzHEJiOhiwkaukgE7VYcUNnjpX3sWnwQ8XogmNXX4WyOukxYgKb8Nh2XFa7KId0ZjpmVhQ==
   dependencies:
     "@jridgewell/trace-mapping" "0.3.31"
-    "@vitest/spy" "5.1.1"
+    "@vitest/spy" "5.1.2"
     estree-walker "^3.0.3"
     magic-string "^1.4.5"
 
@@ -4231,10 +4231,10 @@
   dependencies:
     tinyspy "^4.0.3"
 
-"@vitest/spy@5.1.1":
-  version "5.1.1"
-  resolved "https://registry.yarnpkg.com/@vitest/spy/-/spy-5.1.1.tgz#9bdbcaf0b0d60486a10a03c3ba5a752ec80b3ca9"
-  integrity sha512-6K8C6alQG1/Yc8/ZI22iJS7JEsxPdVzqtqDq+/xM4Z0mGVykemMVjLhqMy/q6/IHYG3kKD8hKSwRen/ZdyI9vQ==
+"@vitest/spy@5.1.2":
+  version "5.1.2"
+  resolved "https://registry.yarnpkg.com/@vitest/spy/-/spy-5.1.2.tgz#8b072c4c9981e180d67ea19edb234cc535362384"
+  integrity sha512-PQl0/3+p9GaY71+MHywN6oyHfLhVDD5kcbm7oNRldA2F0ExMU3S8RQdnpteJ9gFAdK5P6KCgE6LqCpUgy57KzA==
 
 "@vitest/utils@3.2.4":
   version "3.2.4"
@@ -4791,7 +4791,7 @@ ast-types@^0.16.1:
   dependencies:
     tslib "^2.0.1"
 
-ast-v8-to-istanbul@^1.0.7:
+ast-v8-to-istanbul@^1.0.8:
   version "1.0.8"
   resolved "https://registry.yarnpkg.com/ast-v8-to-istanbul/-/ast-v8-to-istanbul-1.0.8.tgz#0d258b7578afd3cbf56c80ec4597af5447f221df"
   integrity sha512-lPdpagk13ANXV+HClJEpCZM7kUsl5XcvgqKzZhaj6Ve1ZFICcY2sGhAN1n1vT0tML6EclT7bfVgTxqL57Gkpow==
@@ -11882,13 +11882,13 @@ vitest-environment-nuxt@2.0.0:
   dependencies:
     "@nuxt/test-utils" "^4.0.0"
 
-vitest@5.1.1:
-  version "5.1.1"
-  resolved "https://registry.yarnpkg.com/vitest/-/vitest-5.1.1.tgz#6e823eba09e832ccdf85c00b9702e6eef9dab370"
-  integrity sha512-trVmzUFOSraCZcI3uZIMD5FqBh4atFkC/XuJP/IU7qtyQay0FCs3Ia+0QiQ2JJwGyWG/xrcBoJNel2+O7kEZ0g==
+vitest@5.1.2:
+  version "5.1.2"
+  resolved "https://registry.yarnpkg.com/vitest/-/vitest-5.1.2.tgz#6c278dd79b716577cbf5a2de353e781712141fae"
+  integrity sha512-VIa2wXV208WraXUbzH+dQUrGcFpPuaiRA8HlhXS8R6/sy9cynw6OMqGj8fmAlH1hot7huTCtWUE14+FdXU3eLw==
   dependencies:
     "@types/chai" "^5.2.2"
-    "@vitest/mocker" "5.1.1"
+    "@vitest/mocker" "5.1.2"
     chai "^6.3.0"
     es-module-lexer "^2.3.2"
     expect-type "^1.4.0"
